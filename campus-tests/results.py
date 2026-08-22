@@ -5,7 +5,7 @@ best-effort invite-bounce detection.
 
 import base64
 
-from models import Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Round
+from models import Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, FormAnswer, Round
 
 
 def kpi_summary(session, round_: Round) -> dict:
@@ -37,10 +37,19 @@ def ingest_results(session, round_: Round, service) -> dict:
 
     form = service.forms().get(formId=round_.form_id).execute()
     max_score = 0
+    question_lookup = {}  # questionId -> {"text": item title, "correct_answer": str or None}
     for item in form.get("items", []):
-        grading = item.get("questionItem", {}).get("question", {}).get("grading")
+        question = item.get("questionItem", {}).get("question")
+        if not question:
+            continue
+        grading = question.get("grading")
         if grading:
             max_score += grading.get("pointValue", 0)
+        correct_answers = (grading or {}).get("correctAnswers", {}).get("answers", [])
+        question_lookup[question["questionId"]] = {
+            "text": item.get("title", ""),
+            "correct_answer": correct_answers[0]["value"] if correct_answers else None,
+        }
 
     all_responses = []
     page_token = None
@@ -77,6 +86,21 @@ def ingest_results(session, round_: Round, service) -> dict:
         attempt.status = "submitted"
         attempt.submitted_at = r.get("lastSubmittedTime") or r.get("createTime")
         matched += 1
+
+        session.query(FormAnswer).filter_by(attempt_id=attempt.id).delete()
+        for question_id, answer in r.get("answers", {}).items():
+            meta = question_lookup.get(question_id)
+            if meta is None:
+                continue
+            text_answers = answer.get("textAnswers", {}).get("answers", [])
+            selected = text_answers[0]["value"] if text_answers else None
+            session.add(FormAnswer(
+                attempt_id=attempt.id,
+                question_text=meta["text"],
+                selected_answer=selected,
+                correct_answer=meta["correct_answer"],
+                is_correct=(selected == meta["correct_answer"]) if meta["correct_answer"] is not None else False,
+            ))
 
     session.commit()
     return {

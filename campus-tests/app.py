@@ -34,6 +34,26 @@ from react_grader import run_react_submission
 from sql_grader import run_sql_submission
 
 
+def _candidate_safe_status(status: str) -> str:
+    """The candidate never sees a correctness verdict, not even via a
+    status pill - passed/partial/failed all collapse to 'submitted' here.
+    The real status stays untouched in the DB for admin/analytics use."""
+    if status in ("passed", "partial", "failed"):
+        return "submitted"
+    return status
+
+
+def _candidate_safe_run_result(r: dict) -> dict:
+    """Strips the correctness verdict from a grader result before it goes
+    to the candidate's browser - passed/status/expected_output are never
+    sent, even for sample cases. Only raw output/errors are - the
+    candidate judges correctness themselves against the stated example."""
+    safe = {"stdout": r.get("stdout"), "stderr": r.get("stderr")}
+    if r.get("compile_output"):
+        safe["compile_output"] = r["compile_output"]
+    return safe
+
+
 def _grade(question: CodingQuestion, code: str, cases: list) -> list[dict]:
     """Dispatches to the right execution backend by question_type. Every
     backend returns the same {passed, weight, stdout, stderr, ...}-shaped
@@ -174,8 +194,7 @@ def session_state(token: str):
                 "harness_fixture": q.harness_fixture if q.question_type == "css" else None,
                 "hints": q.hints.split("\n") if q.hints else [],
                 "points": q.points,
-                "status": row.status,
-                "best_score": row.best_score,
+                "status": _candidate_safe_status(row.status),
                 "sample_test_cases": [{"stdin": t.stdin, "expected_output": t.expected_output} for t in samples],
             })
 
@@ -213,7 +232,10 @@ def run_code(token: str, question_id: int = Form(...), code: str = Form(...)):
             row.status = "attempted"
             session.commit()
 
-        return JSONResponse({"results": results})
+        # Candidate sees raw output/errors only - never a pass/fail verdict.
+        # They judge correctness themselves against the stated example.
+        safe_results = [_candidate_safe_run_result(r) for r in results]
+        return JSONResponse({"results": safe_results})
 
 
 @app.post("/coding/{token}/api/submit")
@@ -252,16 +274,11 @@ def submit_code(token: str, question_id: int = Form(...), code: str = Form(...))
             row.status = "failed"
         session.commit()
 
-        # hide hidden test cases' expected_output from the response
-        safe_results = []
-        for r, tc in zip(results, all_cases):
-            safe = dict(r)
-            if not tc.is_sample:
-                safe.pop("expected_output", None)
-                safe.pop("stdout", None)
-            safe_results.append(safe)
-
-        return JSONResponse({"results": safe_results, "score": score, "status": row.status})
+        # The candidate only ever sees a submission confirmation - no
+        # score, no pass/fail, not even indirectly via which test cases
+        # "failed". The real score/status are stored above for grading/
+        # analytics; nothing about correctness leaves this response.
+        return JSONResponse({"submitted": True})
 
 
 @app.post("/coding/{token}/api/finish")

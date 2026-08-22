@@ -1,5 +1,7 @@
 scripts/.logs/
 .DS_Store
+__pycache__/
+*.pyc
 campus-tests/credentials/
 campus-tests/.venv/
 campus-tests/data/

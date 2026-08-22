@@ -8,7 +8,7 @@
     --blue-500: #1a7ee8; --blue-600: #1450e8; --cyan-400: #3dd1f2;
     --ink-900: #17181b; --ink-700: #3d4045; --ink-500: #6c7077; --ink-300: #9ea3a9;
     --paper-0: #ffffff; --paper-50: #f6f9fc; --paper-100: #eef3f9; --line: #dfe6f0;
-    --ok: #146c43; --ok-bg: #eafaf1; --warn: #ffb020; --danger: #ff4d4d;
+    --warn: #ffb020; --danger: #ff4d4d; --ok: #146c43; --ok-bg: #eafaf1;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", sans-serif; color: var(--ink-900); background: var(--paper-50); }
@@ -19,6 +19,7 @@
     padding: 10px 20px; background: var(--paper-0); border-bottom: 1px solid var(--line);
     flex-shrink: 0;
   }
+  .brand-row { display: flex; align-items: center; gap: 18px; }
   .brand { display: flex; flex-direction: column; line-height: 1.15; }
   .brand .name {
     font-weight: 800; font-size: 17px;
@@ -26,6 +27,10 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .brand .powered { font-size: 10.5px; color: var(--ink-300); letter-spacing: 0.02em; }
+  #backBtn {
+    display: none; background: none; border: 1px solid var(--line); color: var(--ink-700);
+    padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
 
   .timer-block { display: flex; align-items: center; gap: 16px; }
   #clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 22px; color: var(--blue-600); }
@@ -36,38 +41,63 @@
     border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
   }
 
-  .body-row { flex: 1; display: flex; min-height: 0; }
+  /* ---------------- list view ---------------- */
+  #listView { flex: 1; overflow-y: auto; padding: 28px; }
+  #listView h1 { font-size: 20px; margin: 0 0 4px; }
+  #listView .sub { color: var(--ink-500); font-size: 13.5px; margin: 0 0 20px; }
+  .q-section-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-500); margin: 20px 0 8px;
+  }
+  .q-section-header:first-of-type { margin-top: 0; }
+  .q-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--paper-0); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 8px; cursor: pointer;
+  }
+  .q-card:hover { border-color: var(--blue-500); }
+  .q-card .q-name { font-size: 14.5px; font-weight: 600; }
+  .q-card .q-points { font-size: 12px; color: var(--ink-500); margin-left: 8px; font-weight: 400; }
 
-  #sidebar { width: 220px; flex-shrink: 0; background: var(--paper-0); border-right: 1px solid var(--line); overflow-y: auto; }
-  .q-section-header { padding: 10px 16px 4px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-500); background: var(--paper-50); }
-  .q-item { padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 13.5px; }
-  .q-item.active { background: var(--paper-100); }
-  .q-item .badge { display: inline-block; margin-top: 4px; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
-  .badge.not_attempted { background: var(--paper-100); color: var(--ink-500); }
-  .badge.attempted, .badge.failed { background: #fdecec; color: #b3261e; }
-  .badge.partial { background: #fff4e0; color: #a15c00; }
-  .badge.passed { background: var(--ok-bg); color: var(--ok); }
+  /* ---------------- detail view ---------------- */
+  #detailView { flex: 1; display: none; min-height: 0; }
+  .body-row { flex: 1; display: flex; min-height: 0; width: 100%; }
+  #statementPane { width: 42%; flex-shrink: 0; background: var(--paper-0); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 24px; }
+  #statementPane h2 { margin: 0 0 10px; font-size: 17px; }
+  #statementPane p#q-text { font-size: 13.5px; line-height: 1.6; color: var(--ink-700); white-space: pre-wrap; }
+  #hints { margin-top: 14px; font-size: 12.5px; color: var(--ink-500); }
+  #examples { margin-top: 16px; }
+  .example { background: var(--paper-50); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; font-size: 12.5px; }
+  .example .ex-label { font-weight: 700; margin-bottom: 6px; }
+  .example .ex-line { font-family: "SF Mono", Consolas, monospace; white-space: pre-wrap; margin: 2px 0; }
+  .example .ex-line b { font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 600; }
+  #css-scaffold { margin-top: 16px; }
+  #css-scaffold pre { background: var(--paper-50); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 12px; overflow-x: auto; }
 
-  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  #statement { padding: 16px 20px; background: var(--paper-0); border-bottom: 1px solid var(--line); overflow-y: auto; max-height: 32%; }
-  #statement h2 { margin: 0 0 8px; font-size: 16px; }
-  #statement p { font-size: 13.5px; line-height: 1.55; color: var(--ink-700); white-space: pre-wrap; }
-  #hints { margin-top: 8px; font-size: 12.5px; color: var(--ink-500); }
-
+  #editorPane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   #editor { flex: 1; min-height: 0; }
 
-  .action-row { display: flex; gap: 10px; padding: 10px 20px; background: var(--paper-0); border-top: 1px solid var(--line); }
+  .action-row { display: flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--paper-0); border-top: 1px solid var(--line); }
   .action-row button {
     padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; border: none;
   }
   #runBtn { background: var(--paper-100); color: var(--ink-700); }
   #submitBtn { background: linear-gradient(120deg, var(--cyan-400), var(--blue-600)); color: white; }
   button:disabled { opacity: 0.5; cursor: default; }
+  #submitConfirm { font-size: 12.5px; color: var(--ok); font-weight: 600; }
 
-  #results { max-height: 26%; overflow-y: auto; padding: 10px 20px; background: var(--paper-50); border-top: 1px solid var(--line); font-size: 12.5px; }
-  .result-row { padding: 6px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
-  .result-row.pass { color: var(--ok); }
-  .result-row.fail { color: #b3261e; }
+  #console { max-height: 30%; overflow-y: auto; padding: 12px 20px; background: #1e1e1e; border-top: 1px solid var(--line); font-size: 12.5px; color: #d4d4d4; font-family: "SF Mono", Consolas, monospace; }
+  #console .console-label { color: #8a8a8a; font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; }
+  #console .console-block { margin-bottom: 10px; }
+  #console .console-block .tc-label { color: #8a8a8a; margin-bottom: 3px; }
+  #console pre { margin: 0; white-space: pre-wrap; }
+  #console .stderr { color: #f48771; }
+  #console .empty { color: #8a8a8a; font-style: italic; }
+
+  .status-pill { display: inline-block; margin-left: 8px; font-size: 10.5px; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+  .status-pill.not_attempted { background: var(--paper-100); color: var(--ink-500); }
+  .status-pill.attempted { background: #fff4e0; color: #a15c00; }
+  .status-pill.submitted { background: var(--ok-bg); color: var(--ok); }
 
   #timesup {
     display: none; position: fixed; inset: 0; background: rgba(15,17,20,0.92); color: white;
@@ -79,9 +109,12 @@
 </head>
 <body data-token="{{ token }}">
 <header>
-  <div class="brand">
-    <span class="name">AICodeStudio</span>
-    <span class="powered">powered by Aizentify LLP</span>
+  <div class="brand-row">
+    <button id="backBtn">&larr; Question list</button>
+    <div class="brand">
+      <span class="name">AICodeStudio</span>
+      <span class="powered">powered by Aizentify LLP</span>
+    </div>
   </div>
   <div class="timer-block">
     <div id="clock">--:--</div>
@@ -89,30 +122,39 @@
   </div>
 </header>
 
-<div class="body-row">
-  <div id="sidebar"></div>
-  <main>
-    <div id="statement">
+<div id="listView">
+  <h1>Your questions</h1>
+  <p class="sub">Click a question to open it. You can move between questions freely until you finish the whole session.</p>
+  <div id="listBody"></div>
+</div>
+
+<div id="detailView">
+  <div class="body-row">
+    <div id="statementPane">
       <h2 id="q-title"></h2>
       <p id="q-text"></p>
+      <div id="examples"></div>
       <div id="hints"></div>
       <div id="css-scaffold" style="display:none;">
         <strong>HTML you're styling (read-only):</strong>
         <pre id="css-scaffold-code"></pre>
       </div>
     </div>
-    <div id="editor"></div>
-    <div class="action-row">
-      <button id="runBtn">Run (sample tests)</button>
-      <button id="submitBtn">Submit</button>
+    <div id="editorPane">
+      <div id="editor"></div>
+      <div class="action-row">
+        <button id="runBtn">Run</button>
+        <button id="submitBtn">Submit</button>
+        <span id="submitConfirm"></span>
+      </div>
+      <div id="console"><div class="console-label">Console</div><div class="empty">Run your code to see output here.</div></div>
     </div>
-    <div id="results"></div>
-  </main>
+  </div>
 </div>
 
 <div id="timesup">
   <h1>Time's up</h1>
-  <p>Your session has ended and your best submissions have been recorded.</p>
+  <p>Your session has ended and your submissions have been recorded.</p>
 </div>
 
 <script src="/coding-assets/vs/loader.js"></script>
@@ -127,7 +169,7 @@ function editorLanguageFor(q) {
 
 let editor = null;
 let questions = [];
-let currentIndex = 0;
+let currentIndex = -1;
 const codeByQuestion = {};
 
 function post(url, params) {
@@ -135,8 +177,12 @@ function post(url, params) {
   return fetch(url, { method: "POST", body }).then(r => r.json().then(data => ({ ok: r.ok, data })));
 }
 
-function renderSidebar() {
-  const el = document.getElementById("sidebar");
+function statusLabel(status) {
+  return status.replace(/_/g, " ");
+}
+
+function renderList() {
+  const el = document.getElementById("listBody");
   el.innerHTML = "";
   let lastTopic = null;
   questions.forEach((q, i) => {
@@ -147,23 +193,59 @@ function renderSidebar() {
       el.appendChild(header);
       lastTopic = q.topic;
     }
+    const card = document.createElement("div");
+    card.className = "q-card";
+    card.innerHTML = `<span class="q-name">${i + 1}. ${q.title}<span class="q-points">${q.points} pts</span></span>` +
+      `<span class="status-pill ${q.status}">${statusLabel(q.status)}</span>`;
+    card.addEventListener("click", () => openQuestion(i));
+    el.appendChild(card);
+  });
+}
+
+function showList() {
+  currentIndex = -1;
+  document.getElementById("listView").style.display = "block";
+  document.getElementById("detailView").style.display = "none";
+  document.getElementById("backBtn").style.display = "none";
+  renderList();
+}
+
+function renderExamples(q) {
+  const el = document.getElementById("examples");
+  el.innerHTML = "";
+  const cases = q.sample_test_cases || [];
+  const isCode = q.question_type === "code" || q.question_type === "sql";
+  if (!isCode || cases.length === 0) return;
+  cases.forEach((tc, i) => {
     const div = document.createElement("div");
-    div.className = "q-item" + (i === currentIndex ? " active" : "");
-    div.innerHTML = `${i + 1}. ${q.title}<br><span class="badge ${q.status}">${q.status.replace('_', ' ')}</span>`;
-    div.addEventListener("click", () => switchQuestion(i));
+    div.className = "example";
+    let html = `<div class="ex-label">Example ${i + 1}</div>`;
+    if (tc.stdin) html += `<div class="ex-line"><b>Input:</b> ${escapeHtml(tc.stdin)}</div>`;
+    html += `<div class="ex-line"><b>Output:</b> ${escapeHtml(tc.expected_output)}</div>`;
+    div.innerHTML = html;
     el.appendChild(div);
   });
 }
 
-function switchQuestion(i) {
-  if (editor) codeByQuestion[questions[currentIndex].question_id] = editor.getValue();
+function escapeHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function openQuestion(i) {
+  if (editor && currentIndex >= 0) codeByQuestion[questions[currentIndex].question_id] = editor.getValue();
   currentIndex = i;
   const q = questions[i];
+  document.getElementById("listView").style.display = "none";
+  document.getElementById("detailView").style.display = "block";
+  document.getElementById("backBtn").style.display = "inline-block";
   document.getElementById("q-title").textContent = q.title;
   document.getElementById("q-text").textContent = q.statement;
   document.getElementById("hints").innerHTML = q.hints.length
     ? "<strong>Hints:</strong><ul>" + q.hints.map(h => `<li>${h}</li>`).join("") + "</ul>"
     : "";
+  renderExamples(q);
   const scaffoldEl = document.getElementById("css-scaffold");
   if (q.question_type === "css" && q.harness_fixture) {
     document.getElementById("css-scaffold-code").textContent = q.harness_fixture.replace("{{CSS}}", "/* your CSS renders here */");
@@ -171,38 +253,43 @@ function switchQuestion(i) {
   } else {
     scaffoldEl.style.display = "none";
   }
-  document.getElementById("results").innerHTML = "";
+  document.getElementById("console").innerHTML = '<div class="console-label">Console</div><div class="empty">Run your code to see output here.</div>';
+  document.getElementById("submitConfirm").textContent = "";
   const code = codeByQuestion[q.question_id] !== undefined ? codeByQuestion[q.question_id] : q.starter_code;
   if (editor) {
     monaco.editor.setModelLanguage(editor.getModel(), editorLanguageFor(q));
     editor.setValue(code);
   }
-  renderSidebar();
 }
 
-function renderResults(results, label) {
-  const el = document.getElementById("results");
-  el.innerHTML = `<div style="margin-bottom:6px;"><strong>${label}</strong></div>`;
+function renderConsole(results) {
+  const el = document.getElementById("console");
+  el.innerHTML = '<div class="console-label">Console</div>';
   results.forEach((r, i) => {
-    const row = document.createElement("div");
-    row.className = "result-row " + (r.passed ? "pass" : "fail");
-    row.innerHTML = `<span>Test ${i + 1}</span><span>${r.passed ? "Passed" : "Failed"} (${r.status})</span>`;
-    el.appendChild(row);
+    const block = document.createElement("div");
+    block.className = "console-block";
+    let html = results.length > 1 ? `<div class="tc-label">Test case ${i + 1}</div>` : "";
+    if (r.stdout) html += `<pre>${escapeHtml(r.stdout)}</pre>`;
+    if (r.compile_output) html += `<pre class="stderr">${escapeHtml(r.compile_output)}</pre>`;
+    if (r.stderr) html += `<pre class="stderr">${escapeHtml(r.stderr)}</pre>`;
+    if (!r.stdout && !r.stderr && !r.compile_output) html += '<pre class="empty">(no output)</pre>';
+    block.innerHTML = html;
+    el.appendChild(block);
   });
 }
 
 async function runCode() {
   const q = questions[currentIndex];
   const { data } = await post(`/coding/${TOKEN}/api/run`, { question_id: q.question_id, code: editor.getValue() });
-  renderResults(data.results, "Sample test results");
+  renderConsole(data.results);
+  if (q.status === "not_attempted") { q.status = "attempted"; }
 }
 
 async function submitCode() {
   const q = questions[currentIndex];
-  const { data } = await post(`/coding/${TOKEN}/api/submit`, { question_id: q.question_id, code: editor.getValue() });
-  renderResults(data.results, `Submitted - score ${data.score}/${q.points}`);
-  q.status = data.status;
-  renderSidebar();
+  await post(`/coding/${TOKEN}/api/submit`, { question_id: q.question_id, code: editor.getValue() });
+  document.getElementById("submitConfirm").textContent = "Submitted";
+  q.status = "submitted";
 }
 
 async function finishSession() {
@@ -245,7 +332,8 @@ async function initSession() {
     showTimesUp();
     return;
   }
-  switchQuestion(0);
+  showList();
+  document.getElementById("backBtn").addEventListener("click", showList);
   document.getElementById("runBtn").addEventListener("click", runCode);
   document.getElementById("submitBtn").addEventListener("click", submitCode);
   document.getElementById("finishBtn").addEventListener("click", finishSession);

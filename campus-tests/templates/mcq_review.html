@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Answer Review — {{ candidate.name }}</h1>
+<p class="subtitle">{{ candidate.email }} &middot; {{ round_.drive.name }} ({{ round_.drive.campus }}) &middot; <a href="/results?round_id={{ round_.id }}">back to Results</a></p>
+
+<div class="card">
+  <div class="kv"><strong>Score</strong> {{ attempt.score }}/{{ attempt.max_score }} ({{ attempt.percent }}%)</div>
+</div>
+
+{% for a in answers %}
+<div class="card" style="border-left: 4px solid {{ '#146c43' if a.is_correct else '#b3261e' }};">
+  <div style="font-weight:600; font-size:14.5px;">{{ loop.index }}. {{ a.question_text }}</div>
+  <div class="kv" style="margin-top:8px;">
+    <strong>Answered</strong>
+    <span style="color: {{ '#146c43' if a.is_correct else '#b3261e' }}; font-weight:600;">{{ a.selected_answer or "(no answer)" }}</span>
+  </div>
+  {% if not a.is_correct %}
+  <div class="kv"><strong>Correct answer</strong> <span style="color:#146c43; font-weight:600;">{{ a.correct_answer or "—" }}</span></div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% if not answers %}
+<div class="card"><p class="muted">No per-question answers captured for this attempt yet — run "Pull &amp; score responses" on the Results page first.</p></div>
+{% endif %}
+{% endblock %}

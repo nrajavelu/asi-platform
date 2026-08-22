@@ -69,6 +69,7 @@
     margin: 40px auto;
     padding: 0 24px;
   }
+  main.embed { margin: 20px auto; }
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -110,6 +111,11 @@
   .status-pill.invited { background: var(--paper-200); color: var(--ink-700); }
   .status-pill.started { background: #fff4de; color: #9a6700; }
   .status-pill.submitted { background: #eafaf1; color: #146c43; }
+  .status-pill.not_attempted { background: var(--paper-200); color: var(--ink-700); }
+  .status-pill.attempted { background: #fff4de; color: #9a6700; }
+  .status-pill.passed { background: #eafaf1; color: #146c43; }
+  .status-pill.partial { background: #fff4de; color: #9a6700; }
+  .status-pill.failed { background: #fdecec; color: #b3261e; }
   .band-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
   .band-pill.shortlisted { background: #eafaf1; color: #146c43; }
   .band-pill.borderline { background: #fff4de; color: #9a6700; }
@@ -123,6 +129,37 @@
   .prev-scores { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 20px; }
   .prev-score-chip { background: var(--paper-0); border: 1px solid var(--paper-200); border-radius: 10px; padding: 8px 14px; font-size: 13px; }
   .prev-score-chip strong { display: block; font-size: 15px; color: var(--ink-700); }
+
+  .kpi-round-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin: 14px 0 4px; }
+  .kpi-round-card {
+    background: var(--paper-0); border: 1px solid var(--paper-200); border-radius: 12px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 4px;
+    box-shadow: 0 1px 2px rgba(11,30,61,0.04);
+  }
+  .kpi-round-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-500); font-weight: 600; }
+  .kpi-round-value { font-size: 28px; font-weight: 700; color: var(--ink-900); font-variant-numeric: tabular-nums; }
+  .kpi-round-sub { font-size: 12.5px; color: var(--ink-500); }
+  .kpi-round-link {
+    margin-top: 10px; background: none; border: none; color: var(--blue-500); font-weight: 600;
+    font-size: 12.5px; padding: 0; cursor: pointer; text-align: left;
+  }
+  .kpi-round-link:hover { text-decoration: underline; }
+
+  .review-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(15,17,20,0.55); z-index: 1000;
+    align-items: center; justify-content: center; padding: 40px;
+  }
+  .review-overlay.show { display: flex; }
+  .review-modal {
+    background: var(--paper-0); border-radius: 14px; width: 100%; max-width: 900px; height: 100%;
+    display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .review-modal-header {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 20px;
+    border-bottom: 1px solid var(--line); font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .review-modal-close { background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-500); }
+  .review-modal-frame { flex: 1; border: none; width: 100%; }
   .warning-banner {
     background: #fff4de;
     border: 1px solid #f5d896;
@@ -226,6 +263,7 @@
 </style>
 </head>
 <body>
+{% if not embed %}
 <header class="topbar">
   <img src="/static/brand-logo-header.png" alt="Aizentify">
   <span class="app-name">Campus Test Console</span>
@@ -240,7 +278,8 @@
   <a href="/technical-discussion" class="{{ 'active' if active == 'technical_discussion' else '' }}">Technical Discussion</a>
   <a href="/final-conclusion" class="{{ 'active' if active == 'final_conclusion' else '' }}">Final Conclusion</a>
 </nav>
-<main>
+{% endif %}
+<main class="{{ 'embed' if embed else '' }}">
 {% if flash %}
   <div class="flash {{ 'err' if flash_error else 'ok' }}">{{ flash }}</div>
 {% endif %}

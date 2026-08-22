@@ -28,8 +28,8 @@ from invite import send_invites
 from load_coding_questions import clear_bank as clear_coding_bank, load_question_file
 from load_questions import load_bank
 from models import (
-    Attempt, Candidate, CodingQuestion, Drive, InterviewAttemptQuestion, InterviewQuestion,
-    Question, Round, SessionLocal, init_db,
+    Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Drive, FormAnswer, InterviewAttemptQuestion,
+    InterviewQuestion, Question, Round, SessionLocal, init_db,
 )
 from results import coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, shortlist, top_n_attempts
 
@@ -135,16 +135,19 @@ async def bank_upload_coding(files: list[UploadFile], replace: bool = Form(False
 @app.get("/rounds/new")
 def build_round_page(request: Request):
     flash, err = flash_from_request(request)
-    return render(request, "build_round.html", {"active": "build", "flash": flash, "flash_error": err, "result": None})
+    session = SessionLocal()
+    drives = session.query(Drive).order_by(Drive.name).all()
+    return render(request, "build_round.html", {"active": "build", "flash": flash, "flash_error": err, "result": None, "drives": drives})
 
 
 @app.post("/rounds/new")
 def build_round_submit(
     request: Request,
-    campus: str = Form(...),
-    drive_name: str = Form(...),
     round_type: str = Form(...),
     count: int = Form(...),
+    campus: str = Form(""),
+    drive_name: str = Form(""),
+    existing_drive_id: str = Form(""),
     title: str = Form(""),
     topics: str = Form(""),
     duration_minutes: str = Form(""),
@@ -152,8 +155,12 @@ def build_round_submit(
 ):
     session = SessionLocal()
     parsed_duration = int(duration_minutes) if duration_minutes.strip() else None
+    drives = session.query(Drive).order_by(Drive.name).all()
 
     if round_type == "coding":
+        if not campus.strip() or not drive_name.strip():
+            return render(request, "build_round.html", {"active": "build", "flash": "Campus name and Drive name are required.", "flash_error": True, "result": None, "drives": drives})
+
         parsed_plan = None
         if section_plan.strip():
             parsed_plan = []
@@ -162,12 +169,12 @@ def build_round_submit(
                 if not line:
                     continue
                 if ":" not in line:
-                    return render(request, "build_round.html", {"active": "build", "flash": f"Bad section plan line (expected 'topic:count'): {line!r}", "flash_error": True, "result": None})
+                    return render(request, "build_round.html", {"active": "build", "flash": f"Bad section plan line (expected 'topic:count'): {line!r}", "flash_error": True, "result": None, "drives": drives})
                 topic, _, n = line.partition(":")
                 try:
                     parsed_plan.append((topic.strip(), int(n.strip())))
                 except ValueError:
-                    return render(request, "build_round.html", {"active": "build", "flash": f"Bad section plan count (expected an integer): {line!r}", "flash_error": True, "result": None})
+                    return render(request, "build_round.html", {"active": "build", "flash": f"Bad section plan count (expected an integer): {line!r}", "flash_error": True, "result": None, "drives": drives})
 
         try:
             round_ = build_coding_round(
@@ -175,7 +182,7 @@ def build_round_submit(
                 duration_minutes=parsed_duration, section_plan=parsed_plan,
             )
         except Exception as e:
-            return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None})
+            return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
 
         result = {
             "id": round_.id,
@@ -185,20 +192,27 @@ def build_round_submit(
             "section_plan": parsed_plan,
             "duration_was_auto": duration_minutes.strip() == "",
         }
-        return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result})
+        return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result, "drives": drives})
 
     if round_type == "technical_discussion":
+        if not existing_drive_id.strip():
+            return render(request, "build_round.html", {"active": "build", "flash": "Pick an existing drive - Technical Discussion always attaches to a drive that already has a scored round to promote candidates from.", "flash_error": True, "result": None, "drives": drives})
+
         try:
-            round_ = build_technical_discussion_round(session, campus, drive_name, count)
+            round_ = build_technical_discussion_round(session, int(existing_drive_id), count)
         except Exception as e:
-            return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None})
+            return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
 
         result = {
             "id": round_.id,
             "kind": "technical_discussion",
             "interview_question_count": round_.interview_question_count,
+            "drive_name": round_.drive.name,
         }
-        return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result})
+        return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result, "drives": drives})
+
+    if not campus.strip() or not drive_name.strip():
+        return render(request, "build_round.html", {"active": "build", "flash": "Campus name and Drive name are required.", "flash_error": True, "result": None, "drives": drives})
 
     final_title = title.strip() or f"{campus} - {round_type.title()} Test"
     topic_list = [t.strip() for t in topics.split(",")] if topics.strip() else None
@@ -210,7 +224,7 @@ def build_round_submit(
             duration_minutes=parsed_duration or 45,
         )
     except Exception as e:
-        return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None})
+        return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
 
     result = {
         "id": round_.id,
@@ -219,7 +233,7 @@ def build_round_submit(
         "responder_uri": round_.responder_uri,
         "timer_path": round_.timer_path,
     }
-    return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result})
+    return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result, "drives": drives})
 
 
 @app.get("/candidates")
@@ -437,6 +451,12 @@ def _previous_round_scores(session, candidate: Candidate, drive_id: int, exclude
     out = []
     for a in attempts:
         round_ = session.get(Round, a.round_id)
+        review_url = None
+        if a.status == "submitted":
+            if round_.round_type == "coding":
+                review_url = f"/results/coding-review/{a.id}?embed=1"
+            elif round_.round_type in ("aptitude", "programming"):
+                review_url = f"/results/mcq-review/{a.id}?embed=1"
         out.append({
             "round_type": round_.round_type,
             "status": a.status,
@@ -444,6 +464,7 @@ def _previous_round_scores(session, candidate: Candidate, drive_id: int, exclude
             "max_score": a.max_score,
             "percent": a.percent,
             "band": a.band,
+            "review_url": review_url,
         })
     return out
 
@@ -605,6 +626,57 @@ async def interview_session_submit(request: Request, token: str):
     return flash_redirect(
         f"/technical-discussion?round_id={round_.id}",
         f"Recorded technical discussion for this candidate - decision: {attempt.decision}.",
+    )
+
+
+@app.get("/results/coding-review/{attempt_id}")
+def coding_review_page(request: Request, attempt_id: int, embed: bool = False):
+    session = SessionLocal()
+    attempt = session.get(Attempt, attempt_id)
+    if attempt is None or attempt.round.round_type != "coding":
+        return Response("Not a coding-round attempt.", status_code=404)
+
+    candidate = session.get(Candidate, attempt.candidate_id)
+    rows = (
+        session.query(CodingAttemptQuestion)
+        .filter_by(attempt_id=attempt.id)
+        .order_by(CodingAttemptQuestion.assigned_order)
+        .all()
+    )
+    questions = []
+    for row in rows:
+        q = session.get(CodingQuestion, row.question_id)
+        questions.append({
+            "title": q.title,
+            "topic": q.topic,
+            "points": q.points,
+            "best_score": row.best_score,
+            "status": row.status,
+            "submitted_code": row.last_submitted_code,
+            "submitted_at": row.submitted_at,
+        })
+
+    return render(
+        request,
+        "coding_review.html",
+        {"active": "results", "attempt": attempt, "candidate": candidate, "round_": attempt.round, "questions": questions, "embed": embed},
+    )
+
+
+@app.get("/results/mcq-review/{attempt_id}")
+def mcq_review_page(request: Request, attempt_id: int, embed: bool = False):
+    session = SessionLocal()
+    attempt = session.get(Attempt, attempt_id)
+    if attempt is None or attempt.round.round_type not in ("aptitude", "programming"):
+        return Response("Not an MCQ-round attempt.", status_code=404)
+
+    candidate = session.get(Candidate, attempt.candidate_id)
+    answers = session.query(FormAnswer).filter_by(attempt_id=attempt.id).order_by(FormAnswer.id).all()
+
+    return render(
+        request,
+        "mcq_review.html",
+        {"active": "results", "attempt": attempt, "candidate": candidate, "round_": attempt.round, "answers": answers, "embed": embed},
     )
 
 

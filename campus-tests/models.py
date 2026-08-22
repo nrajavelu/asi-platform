@@ -168,6 +168,25 @@ class InterviewAttemptQuestion(Base):
     question = relationship("InterviewQuestion")
 
 
+class FormAnswer(Base):
+    """One row per (Attempt, question) for a Google Forms MCQ round -
+    captured at ingest time so results can show a real per-question review
+    (selected vs. correct answer), not just an aggregate score. Replaced
+    wholesale on every re-ingest for a given attempt, same idempotent
+    pattern as CodingTestCase."""
+
+    __tablename__ = "form_answers"
+
+    id = Column(Integer, primary_key=True)
+    attempt_id = Column(Integer, ForeignKey("attempts.id"), nullable=False)
+    question_text = Column(Text, nullable=False)
+    selected_answer = Column(Text)
+    correct_answer = Column(Text)
+    is_correct = Column(Boolean, nullable=False, default=False)
+
+    attempt = relationship("Attempt")
+
+
 DB_PATH = Path(__file__).parent / "data" / "campus.db"
 engine = create_engine(f"sqlite:///{DB_PATH}")
 SessionLocal = sessionmaker(bind=engine)

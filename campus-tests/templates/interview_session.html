@@ -7,13 +7,18 @@
   <div class="section-title">Previous round scores</div>
   <p class="hint">For your reference while conducting this discussion — not shown to the candidate.</p>
   {% if previous_scores %}
-  <div class="prev-scores">
+  <div class="kpi-round-grid">
     {% for p in previous_scores %}
-    <div class="prev-score-chip">
-      {{ p.round_type }}<br>
-      <strong>{% if p.percent is not none %}{{ p.percent }}%{% else %}{{ p.status }}{% endif %}</strong>
-      {% if p.score is not none %}{{ p.score }}/{{ p.max_score }}{% endif %}
-      {% if p.band %}<span class="band-pill {{ p.band }}" style="margin-left:6px;">{{ p.band }}</span>{% endif %}
+    <div class="kpi-round-card">
+      <div class="kpi-round-label">{{ p.round_type.replace('_', ' ') }}</div>
+      <div class="kpi-round-value">{% if p.percent is not none %}{{ p.percent }}%{% else %}—{% endif %}</div>
+      <div class="kpi-round-sub">
+        {% if p.score is not none %}{{ p.score }}/{{ p.max_score }}{% else %}{{ p.status }}{% endif %}
+        {% if p.band %}<span class="band-pill {{ p.band }}" style="margin-left:6px;">{{ p.band }}</span>{% endif %}
+      </div>
+      {% if p.review_url %}
+      <button type="button" class="kpi-round-link" onclick="openReview('{{ p.review_url }}')">View results &rarr;</button>
+      {% endif %}
     </div>
     {% endfor %}
   </div>
@@ -21,6 +26,27 @@
   <p class="muted">No prior round attempts found for this candidate in this drive.</p>
   {% endif %}
 </div>
+
+<div id="reviewOverlay" class="review-overlay" onclick="if(event.target===this) closeReview()">
+  <div class="review-modal">
+    <div class="review-modal-header">
+      <span>Round results</span>
+      <button type="button" class="review-modal-close" onclick="closeReview()">&times;</button>
+    </div>
+    <iframe id="reviewFrame" class="review-modal-frame" src="about:blank"></iframe>
+  </div>
+</div>
+
+<script>
+function openReview(url) {
+  document.getElementById('reviewFrame').src = url;
+  document.getElementById('reviewOverlay').classList.add('show');
+}
+function closeReview() {
+  document.getElementById('reviewOverlay').classList.remove('show');
+  document.getElementById('reviewFrame').src = 'about:blank';
+}
+</script>
 
 <form action="/interview/{{ token }}/submit" method="post">
   <div class="card">

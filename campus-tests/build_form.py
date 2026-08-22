@@ -249,15 +249,23 @@ def build_coding_round(
 
 def build_technical_discussion_round(
     session,
-    campus: str,
-    drive_name: str,
+    drive_id: int,
     count: int = 4,
 ) -> Round:
     """Technical Discussion rounds don't use Google Forms or a candidate
     self-test - they're an interviewer-scored session against a shortlisted
     candidate, served from webui.py. Just registers the Round and checks
-    the interview question bank has enough questions."""
-    drive = get_or_create_drive(session, drive_name, campus)
+    the interview question bank has enough questions.
+
+    Takes an EXISTING drive_id, never creates a new drive - a Technical
+    Discussion round only makes sense attached to a drive that already has
+    a scored round to promote shortlisted candidates from. Building it
+    against a fresh drive (the old campus/drive_name free-text behavior)
+    silently produced an empty, unusable round with no source rounds to
+    promote from - a real, repeated point of confusion."""
+    drive = session.get(Drive, drive_id)
+    if drive is None:
+        raise SystemExit(f"No drive with id {drive_id}")
 
     available = session.query(InterviewQuestion).count()
     if available < count:
