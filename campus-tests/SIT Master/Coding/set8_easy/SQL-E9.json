@@ -1,0 +1,23 @@
+{
+  "id": "SQL-E9",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Rows a Gold-Tier Update Would Touch",
+  "statement": "The `customers` table has columns id, name, total_spent, tier. Suppose we were about to run `UPDATE customers SET tier = 'gold' WHERE total_spent > 1000`. Since this grader can only run SELECT statements, write a SELECT query that returns `id, name` for exactly the rows that UPDATE would affect, ordered by id.",
+  "starter_code": "SELECT id, name FROM customers\nWHERE -- TODO\nORDER BY id;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL, total_spent INT NOT NULL, tier TEXT NOT NULL);\nINSERT INTO customers (id, name, total_spent, tier) VALUES\n  (1, 'Alice', 1500, 'silver'), (2, 'Bob', 800, 'silver'), (3, 'Carol', 1001, 'bronze'),\n  (4, 'Dave', 1000, 'bronze'), (5, 'Eve', 2500, 'gold');\n",
+  "hints": [
+    "Translate the UPDATE's WHERE clause directly into your SELECT's WHERE clause",
+    "total_spent > 1000 excludes a row where total_spent is exactly 1000"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, \"Alice\"], [3, \"Carol\"], [5, \"Eve\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

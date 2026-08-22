@@ -1,0 +1,30 @@
+{
+  "id": "PROMPT-E3",
+  "topic": "prompt_assembly",
+  "difficulty": "easy",
+  "title": "Prompt With Optional Constraints Section",
+  "statement": "Read three lines: a topic, a context string, and a flag ('1' or '0'). Assemble and print a prompt as follows: first print 'Topic: <topic>', then 'Context: <context>'. If the flag is '1', also print 'Constraints: Keep the answer under 50 words.'. Finally, always print 'Instruction: Provide a helpful response.'.",
+  "starter_code": "topic = input()\ncontext = input()\nflag = input().strip()\n# TODO: assemble and print the prompt, including the Constraints line only when flag == '1'\n",
+  "language_id": 71,
+  "hints": [
+    "Print the Topic and Context lines unconditionally first",
+    "Use an if statement on flag == '1' to decide whether to print the Constraints line",
+    "The Instruction line is always printed last, regardless of the flag"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "Photosynthesis\nFor a 10th grade biology class\n1",
+      "expected_output": "Topic: Photosynthesis\nContext: For a 10th grade biology class\nConstraints: Keep the answer under 50 words.\nInstruction: Provide a helpful response.",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "Black holes\nA quick pop-science overview\n0",
+      "expected_output": "Topic: Black holes\nContext: A quick pop-science overview\nInstruction: Provide a helpful response.",
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

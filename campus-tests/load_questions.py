@@ -7,8 +7,9 @@ Loads the question bank into the local SQLite DB. Accepts either:
     (see make_template.py). Keeping answers off the question sheets lets
     a question sheet be shared/reviewed without revealing correct answers.
 
-The file is treated as the source of truth for the bank: each run
-replaces all rows.
+The file is treated as the source of truth for whichever round type(s)
+it contains: each run replaces only rows of those round types (e.g.
+uploading an Aptitude-only file leaves Programming questions untouched).
 
 Usage:
     python load_questions.py question_bank_template.csv
@@ -109,9 +110,14 @@ def load_bank(bank_path: str) -> int:
     else:
         raise SystemExit(f"Unsupported file type: {path.suffix} (use .csv or .xlsx)")
 
+    round_types = {str(row["round_type"]).strip() for row in rows}
+
     init_db()
     session = SessionLocal()
-    session.query(Question).delete()
+    # Scoped to just the round type(s) in this file - so uploading an
+    # Aptitude-only file and a Programming-only file separately accumulates
+    # instead of each upload wiping the other's questions.
+    session.query(Question).filter(Question.round_type.in_(round_types)).delete(synchronize_session=False)
     for row in rows:
         session.add(
             Question(

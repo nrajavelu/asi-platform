@@ -1,0 +1,41 @@
+{
+  "id": "DSA-M23",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Prefix Count via Trie",
+  "statement": "Read n, then n words (one per line), then a prefix string. Build a trie (prefix tree) from the n words and print how many of the words start with the given prefix (an exact match to the prefix itself also counts).",
+  "starter_code": "n = int(input())\nwords = [input().strip() for _ in range(n)]\nprefix = input().strip()\n\n# TODO: insert all `words` into a trie (nested dict or a small Node class\n# with a per-node pass-through counter), then walk the trie along\n# `prefix` and print how many inserted words pass through that node.\n# If the prefix path doesn't exist in the trie at all, print 0.\n",
+  "language_id": 71,
+  "hints": [
+    "Give each trie node a counter that increments every time a word passes through it during insertion",
+    "To answer a prefix query, walk the trie character by character along the prefix; if you fall off the trie, the answer is 0, otherwise it's the counter at the final node"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\ncat\ncar\ncart\ndog\ndo\nca",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\ncat\ncar\ncart\ndog\ndo\ncar",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\ncat\ncar\ncart\ndog\ndo\nz",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "3\napple\napp\napplication\napp",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "PROMPT-M12",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Multi-Flag Constraint Injection",
+  "statement": "Read a base instruction, then a line with three space-separated flags 'true'/'false' in this fixed order: require_json, be_concise, no_opinions. Print the instruction on the first line. If at least one flag is true, follow it with a line 'Constraints:' and then a numbered list (starting at 1, renumbered sequentially, only for the active flags, in the fixed order above) using these exact texts: 'Respond with valid JSON only.', 'Be concise.', 'Do not include opinions.'. If no flags are true, print only the instruction line.",
+  "starter_code": "instruction = input()\nflags = input().split()\nrequire_json = flags[0] == 'true'\nbe_concise = flags[1] == 'true'\nno_opinions = flags[2] == 'true'\n\n# TODO: build a list of the active constraint texts (in the fixed\n# order), then print the instruction, and only if that list is\n# non-empty also print 'Constraints:' followed by the numbered list.\n",
+  "language_id": 71,
+  "hints": [
+    "Collect the active constraint sentences into a list first, in the fixed json/concise/opinions order",
+    "Only print the 'Constraints:' section at all if that list is non-empty",
+    "enumerate(constraint_texts, start=1) gives the renumbered index directly"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "Summarize the article.\ntrue false true",
+      "expected_output": "Summarize the article.\nConstraints:\n1. Respond with valid JSON only.\n2. Do not include opinions.",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "Explain photosynthesis.\nfalse false false",
+      "expected_output": "Explain photosynthesis.",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "List three facts.\nfalse true false",
+      "expected_output": "List three facts.\nConstraints:\n1. Be concise.",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

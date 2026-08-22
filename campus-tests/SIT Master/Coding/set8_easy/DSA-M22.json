@@ -1,0 +1,42 @@
+{
+  "id": "DSA-M22",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Fix the Longest Streak",
+  "statement": "The program below is meant to read an integer n, then a line with n integers, and print the length of the longest strictly increasing run of consecutive elements (a 'streak', where each element is strictly greater than the one before it). The code below has 3 subtle bugs. Fix them so it passes all test cases.",
+  "starter_code": "def longest_streak(nums):\n    if not nums:\n        return 0\n    best = 1\n    cur = 1\n    for i in range(1, len(nums) - 1):\n        if nums[i] >= nums[i - 1]:\n            cur += 1\n        if cur > best:\n            best = cur\n    return best\n\nn = int(input())\nnums = list(map(int, input().split()))\nprint(longest_streak(nums))\n",
+  "language_id": 71,
+  "hints": [
+    "The loop's range should let i reach the last valid index of nums - check the upper bound",
+    "'Strictly increasing' means each element must be greater than the previous one, not greater-or-equal",
+    "When the increasing run breaks, 'cur' is never reset back to 1 - trace through a list with a dip in it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "6\n1 2 3 2 3 4",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\n5 4 3 2 1",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "7\n1 2 2 3 4 1 2",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "1\n9",
+      "expected_output": "1",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

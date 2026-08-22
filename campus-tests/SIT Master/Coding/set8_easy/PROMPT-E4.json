@@ -1,0 +1,35 @@
+{
+  "id": "PROMPT-E4",
+  "topic": "prompt_assembly",
+  "difficulty": "easy",
+  "title": "Build a Few-Shot Prompt",
+  "statement": "Read an integer n, then n lines each formatted as 'input|output' (a few-shot example pair separated by a pipe). Then read one final line, the query. Print the few-shot prompt: for each example i (1-indexed, in the order given), print 'Example <i>: Input: <input> -> Output: <output>'. Finally print 'Query: <query>'.",
+  "starter_code": "n = int(input())\nexamples = []\nfor _ in range(n):\n    line = input()\n    inp, out = line.split(\"|\")\n    examples.append((inp, out))\nquery = input()\n# TODO: print each numbered example line, then the final Query line\n",
+  "language_id": 71,
+  "hints": [
+    "enumerate(examples, start=1) gives you the 1-indexed example number alongside each (input, output) pair",
+    "Print all example lines first, then the Query line last"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "2\ncat|animal\nrose|flower\ntulip",
+      "expected_output": "Example 1: Input: cat -> Output: animal\nExample 2: Input: rose -> Output: flower\nQuery: tulip",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1\nsun|star\nmoon",
+      "expected_output": "Example 1: Input: sun -> Output: star\nQuery: moon",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\nred|color\ncircle|shape\ndog|animal\ncat",
+      "expected_output": "Example 1: Input: red -> Output: color\nExample 2: Input: circle -> Output: shape\nExample 3: Input: dog -> Output: animal\nQuery: cat",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

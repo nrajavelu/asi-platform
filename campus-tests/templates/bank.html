@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Question Bank</h1>
-<p class="subtitle">Upload a .xlsx or .csv bank — this replaces the current bank entirely.</p>
+<p class="subtitle">Upload a .xlsx or .csv bank — replaces questions of the round type(s) in the file (e.g. an Aptitude-only file leaves Programming questions untouched, so you can upload each round type separately and they accumulate).</p>
 
 <div class="card">
   <div class="kv"><strong>Currently loaded</strong> {{ question_count }} questions</div>

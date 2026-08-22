@@ -1,0 +1,24 @@
+{
+  "id": "SQL-M9",
+  "topic": "sql_basics",
+  "difficulty": "medium",
+  "title": "High-Spending Customers by Product",
+  "statement": "The schema has `customers`, `products`, and `orders` (each order references one customer and one product, with a quantity). Write a query joining all three tables to return `name` and `total_spent` (SUM(quantity * price)) per customer, for customers whose total spend is greater than 500, ordered by total_spent descending.",
+  "starter_code": "SELECT c.name, SUM(o.quantity * p.price) AS total_spent\nFROM customers c\nJOIN orders o ON -- TODO\nJOIN products p ON -- TODO\nGROUP BY -- TODO\nHAVING -- TODO\nORDER BY total_spent DESC;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL);\nCREATE TABLE products (id INT PRIMARY KEY, name TEXT NOT NULL, price INT NOT NULL);\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), product_id INT NOT NULL REFERENCES products(id), quantity INT NOT NULL);\nINSERT INTO customers (id, name) VALUES (1, 'Aman'), (2, 'Bala'), (3, 'Chitra');\nINSERT INTO products (id, name, price) VALUES (1, 'Widget', 100), (2, 'Gadget', 250), (3, 'Gizmo', 50);\nINSERT INTO orders (id, customer_id, product_id, quantity) VALUES\n  (1, 1, 1, 2), (2, 1, 2, 2), (3, 2, 2, 3), (4, 3, 3, 5), (5, 3, 2, 1);\n",
+  "hints": [
+    "Join orders to customers on customer_id = id, and orders to products on product_id = id",
+    "GROUP BY the customer name, then filter the aggregated total with HAVING (not WHERE, since it's a filter on the SUM)",
+    "Chitra spends exactly 500, which is not strictly greater than 500 - she should be excluded"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Bala\", 750], [\"Aman\", 700]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

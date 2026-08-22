@@ -3,11 +3,11 @@
   "topic": "dsa",
   "difficulty": "easy",
   "title": "Second Largest",
-  "statement": "Read a line of space-separated integers (at least 2, all distinct) and print the second largest.",
-  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the second largest\n",
+  "statement": "Read a line of space-separated integers (at least 2 values, not necessarily distinct) and print the second largest distinct value.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the second largest distinct value\n",
   "language_id": 71,
   "hints": [
-    "Sort the numbers and look at the second-from-last"
+    "Remove duplicates first (e.g. via a set), then sort and look at the second-from-last"
   ],
   "points": 10,
   "question_type": "code",

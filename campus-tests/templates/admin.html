@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Admin / Settings</h1>
+<p class="subtitle">Backup, restore, and scoped data cleanup. Question banks (MCQ, coding, interview questions) are managed on the <a class="link" href="/bank">Question Bank</a> page and are never touched here.</p>
+
+<div class="card">
+  <div class="section-title">Backup</div>
+  <p class="hint">Snapshots the entire database. A backup is also taken automatically before any restore or cleanup below, so you always have a safety net.</p>
+  <form action="/admin/backup" method="post" class="inline-form">
+    <button type="submit">Create backup now</button>
+  </form>
+
+  {% if backups %}
+  <table>
+    <tr><th>Backup file</th><th>Size</th><th>Created</th><th></th></tr>
+    {% for b in backups %}
+    <tr>
+      <td>{{ b.name }}</td>
+      <td>{{ b.size_kb }} KB</td>
+      <td>{{ b.modified }}</td>
+      <td>
+        <form action="/admin/restore" method="post" class="inline-form" onsubmit="return confirm('Restore from {{ b.name }}?\n\nThis overwrites all current data. The current state will be saved as a backup first.');">
+          <input type="hidden" name="filename" value="{{ b.name }}">
+          <button type="submit">Restore</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted" style="margin-top:12px;">No backups yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-title">Clean up data</div>
+  <p class="hint">Deletes Drive / Round / Candidate / Attempt data for the scope you pick below. Question banks are never affected. A backup is taken automatically before cleanup runs, so this is always recoverable via Restore above.</p>
+  <form action="/admin/cleanup" method="post" onsubmit="return confirm('This permanently deletes data for the selected scope (a safety backup is taken first). Continue?');">
+    <label>Scope</label>
+    <div class="radio-row">
+      <label><input type="radio" name="scope" value="drive" checked onchange="toggleCleanupScope()"> Selected drive</label>
+      <label><input type="radio" name="scope" value="campus" onchange="toggleCleanupScope()"> Selected campus</label>
+      <label><input type="radio" name="scope" value="all" onchange="toggleCleanupScope()"> Everything</label>
+    </div>
+
+    <div id="cleanup-drive-field">
+      <label>Drive</label>
+      <select name="drive_id">
+        <option value="">— choose a drive —</option>
+        {% for d in drives %}
+        <option value="{{ d.id }}">{{ d.campus }} - {{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="cleanup-campus-field" style="display:none;">
+      <label>Campus</label>
+      <select name="campus">
+        <option value="">— choose a campus —</option>
+        {% for c in campuses %}
+        <option value="{{ c }}">{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="cleanup-all-hint" class="warning-banner" style="display:none;">
+      <strong>This deletes every drive, round, candidate, and attempt in the system.</strong>
+      Question banks are untouched by default — you'd start rebuilding rounds against the same banks.
+      <label style="display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:10px;">
+        <input type="checkbox" name="clear_banks" value="true" style="width:auto;">
+        Also clear question banks (MCQ, coding, interview) — full reset back to zero
+      </label>
+    </div>
+
+    <label>Type DELETE to confirm</label>
+    <input type="text" name="confirm_text" placeholder="DELETE" required style="max-width:200px;">
+
+    <button type="submit">Clean up</button>
+  </form>
+</div>
+
+<script>
+function toggleCleanupScope() {
+  const scope = document.querySelector('input[name="scope"]:checked').value;
+  document.getElementById('cleanup-drive-field').style.display = scope === 'drive' ? '' : 'none';
+  document.getElementById('cleanup-campus-field').style.display = scope === 'campus' ? '' : 'none';
+  document.getElementById('cleanup-all-hint').style.display = scope === 'all' ? '' : 'none';
+}
+</script>
+{% endblock %}

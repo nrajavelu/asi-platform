@@ -6,16 +6,28 @@
 <div class="card">
   <form action="/technical-discussion" method="get" class="inline-form">
     <div class="field">
-      <label>Round</label>
-      <select name="round_id" onchange="this.form.submit()">
-        <option value="">— choose a round —</option>
-        {% for r in rounds %}
-        <option value="{{ r.id }}" {{ 'selected' if round_ and r.id == round_.id else '' }}>#{{ r.id }} - {{ r.drive.name }} ({{ r.drive.campus }})</option>
+      <label>Drive</label>
+      <select name="drive_id" onchange="this.form.submit()">
+        <option value="">— choose a drive —</option>
+        {% for d in drives %}
+        <option value="{{ d.id }}" {{ 'selected' if drive_ and d.id == drive_.id else '' }}>{{ d.campus }} - {{ d.name }}</option>
         {% endfor %}
       </select>
     </div>
   </form>
 </div>
+
+{% if drive_ and rounds|length > 1 %}
+<div class="filter-tabs" style="margin-top:16px;">
+  {% for r in rounds %}
+  <a href="/technical-discussion?drive_id={{ drive_.id }}&round_id={{ r.id }}" class="{{ 'active' if round_ and r.id == round_.id else '' }}">Round #{{ r.id }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if drive_ and not rounds %}
+<div class="card"><p class="muted">No Technical Discussion round exists for this drive yet — build one from <a href="/rounds/new">Build Round</a>, selecting this drive as "Existing drive".</p></div>
+{% endif %}
 
 {% if round_ %}
 
@@ -28,7 +40,7 @@
       <label>Source round</label>
       <select name="source_round_id" required>
         {% for r in source_rounds %}
-        <option value="{{ r.id }}">#{{ r.id }} - {{ r.round_type }}</option>
+        <option value="{{ r.id }}">{{ round_label(r) }}</option>
         {% endfor %}
       </select>
     </div>

@@ -1,0 +1,23 @@
+{
+  "id": "SQL-H8",
+  "topic": "sql_basics",
+  "difficulty": "hard",
+  "title": "Rewrite the Correlated Subquery",
+  "statement": "This correlated-subquery pattern correctly finds every product priced above the average price of its own category, but it's slow: the subquery re-scans `products` and recomputes the category average once per outer row. `SELECT p.name, p.category, p.price FROM products p WHERE p.price > (SELECT AVG(p2.price) FROM products p2 WHERE p2.category = p.category);` Write an equivalent query that returns the exact same rows (same three columns) by joining `products` to a pre-aggregated per-category average instead of using a correlated subquery (no window functions either). Row order does not matter.",
+  "starter_code": "SELECT p.name, p.category, p.price\nFROM products p\nJOIN (\n  SELECT category, AVG(price) AS avg_price\n  FROM products\n  GROUP BY category\n) -- TODO: alias the derived table and complete the JOIN condition\nWHERE -- TODO: compare p.price against the derived table's avg_price\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE products (id INT PRIMARY KEY, name TEXT NOT NULL, category TEXT NOT NULL, price INT NOT NULL);\nINSERT INTO products (id, name, category, price) VALUES\n  (1, 'Phone', 'electronics', 100), (2, 'Laptop', 'electronics', 200), (3, 'Tablet', 'electronics', 300),\n  (4, 'Chair', 'furniture', 50), (5, 'Desk', 'furniture', 150), (6, 'Puzzle', 'toys', 20);\n",
+  "hints": [
+    "First compute a small per-category summary table with GROUP BY category, then JOIN the original products table to it on category",
+    "The toys category has only one product, priced exactly at its own (single-item) average, so it should NOT appear in the result"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Tablet\", \"electronics\", 300], [\"Desk\", \"furniture\", 150]]",
+      "ordered": false,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

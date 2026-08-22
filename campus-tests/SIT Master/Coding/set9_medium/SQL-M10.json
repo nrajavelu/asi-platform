@@ -1,0 +1,23 @@
+{
+  "id": "SQL-M10",
+  "topic": "sql_basics",
+  "difficulty": "medium",
+  "title": "Rows a Cleanup Delete Would Remove",
+  "statement": "The grader for this question can only run SELECT statements, never a real write. Suppose we were about to run `DELETE FROM orders WHERE status = 'cancelled' AND amount < 100;` as a cleanup job. Write a SELECT that returns exactly the rows (all columns: `id, customer_id, status, amount`) that this DELETE would remove, ordered by id ascending - i.e. translate the DELETE's WHERE-clause logic into a SELECT instead of running the write.",
+  "starter_code": "SELECT id, customer_id, status, amount\nFROM orders\nWHERE -- TODO: same condition as the hypothetical DELETE's WHERE clause\nORDER BY id ASC;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL, status TEXT NOT NULL, amount INT NOT NULL);\nINSERT INTO orders (id, customer_id, status, amount) VALUES\n  (1, 1, 'cancelled', 50), (2, 1, 'completed', 200), (3, 2, 'cancelled', 150), (4, 2, 'cancelled', 80), (5, 3, 'pending', 30);\n",
+  "hints": [
+    "The rows a DELETE removes are exactly the rows its WHERE clause matches - a SELECT with the same WHERE clause shows you those rows without deleting anything",
+    "Order id 3 is cancelled but its amount (150) is not less than 100, so it should NOT appear in the result"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, 1, \"cancelled\", 50], [4, 2, \"cancelled\", 80]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

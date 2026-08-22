@@ -1,0 +1,29 @@
+{
+  "id": "PROMPT-M11",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Numbered Few-Shot Block",
+  "statement": "Read n, then n pairs of lines (input, output) representing few-shot examples, then a final query line. Print a header line 'Here are <n> examples:', then for each example (1-indexed) three lines: 'Example <i>:', '  Input: <input>', '  Output: <output>', followed by a separator line '---'. After all examples, print 'Now answer:', then 'Input: <query>', then 'Output:' (left blank for the model to fill in).",
+  "starter_code": "n = int(input())\nexamples = [(input(), input()) for _ in range(n)]\nquery = input()\n\n# TODO: print the header, then for each example print its numbered\n# Input/Output block followed by a \"---\" separator, then print the\n# \"Now answer:\" footer with the final unanswered query.\n",
+  "language_id": 71,
+  "hints": [
+    "Build a list of lines first (header, then per-example lines with a separator, then the footer), then join with '\\n' and print once",
+    "enumerate(examples, start=1) gives you the 1-indexed example number for free"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "2\nhappy\npositive\nsad\nnegative\nexcited",
+      "expected_output": "Here are 2 examples:\nExample 1:\n  Input: happy\n  Output: positive\n---\nExample 2:\n  Input: sad\n  Output: negative\n---\nNow answer:\nInput: excited\nOutput:",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1\nHi\nHello\nBye",
+      "expected_output": "Here are 1 examples:\nExample 1:\n  Input: Hi\n  Output: Hello\n---\nNow answer:\nInput: Bye\nOutput:",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

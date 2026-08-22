@@ -1,0 +1,35 @@
+{
+  "id": "DSA-M21",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Group Anagrams",
+  "statement": "Read an integer n, then n lowercase words (one per line, letters only). Group the words so that words in the same group are anagrams of each other (contain exactly the same letters with the same multiplicity). Within each group, sort the words alphabetically and join them with a single space. Then order the groups by their sorted-letters 'signature' (e.g. 'eat' -> 'aet') and print one group per line.",
+  "starter_code": "n = int(input())\nwords = [input().strip() for _ in range(n)]\n# TODO: group words that are anagrams of each other and print one group per line\n# (sort words within a group alphabetically, and order groups by their sorted-letters signature)\n",
+  "language_id": 71,
+  "hints": [
+    "Two words are anagrams iff sorting their characters gives the same string - use that sorted string as a dict key",
+    "Collect words into lists keyed by their signature, then sort the keys and sort each group before printing"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "6\neat\ntea\ntan\nate\nnat\nbat",
+      "expected_output": "bat\nate eat tea\nnat tan",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\nabc\nbca\nxyz",
+      "expected_output": "abc bca\nxyz",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "4\na\na\nb\nbb",
+      "expected_output": "a a\nb\nbb",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

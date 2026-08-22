@@ -1,0 +1,54 @@
+{
+  "id": "DSA-E19",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Balanced Brackets",
+  "statement": "Read a string containing only the characters ( ) [ ] { }. Print 'YES' if every opening bracket has a matching closing bracket of the same type, correctly nested and in the right order, otherwise print 'NO'.",
+  "starter_code": "s = input().strip()\n# TODO: use a stack to check whether the brackets in s are balanced; print YES or NO\n",
+  "language_id": 71,
+  "hints": [
+    "Push opening brackets onto a stack",
+    "On a closing bracket, check the top of the stack is the matching opener before popping",
+    "At the end, the stack must be empty for the string to be balanced"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "()[]{}",
+      "expected_output": "YES",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "([{}])",
+      "expected_output": "YES",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "(]",
+      "expected_output": "NO",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "([)]",
+      "expected_output": "NO",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "{[()]}",
+      "expected_output": "YES",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "(",
+      "expected_output": "NO",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

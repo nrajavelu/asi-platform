@@ -1,0 +1,36 @@
+{
+  "id": "API-M8",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Fix the Score Aggregator",
+  "statement": "The program below reads a mock API response from stdin, a JSON object shaped like {\"results\": [{\"name\": \"a\", \"score\": 90}, ...]}. It is meant to count how many entries have score >= 60 ('passing') and print that count together with the average score of just the passing entries, rounded to 2 decimal places, as '<count> <avg>'. If there are no passing entries, it should print '0 0'. The code below has 3 bugs. Fix them so it passes all test cases.",
+  "starter_code": "import json\ndata = json.loads(input())\nresults = data[\"results\"]\ntotal = 0\ncount = 0\nfor r in results[1:]:\n    if r[\"score\"] > 60:\n        total = total + r[\"score\"]\n        count = count + 1\navg = total / len(results)\nprint(count, round(avg, 2))\n",
+  "language_id": 71,
+  "hints": [
+    "results[1:] silently drops the first entry from consideration - is that intended?",
+    "The spec says passing means score >= 60, but the comparison used is strictly greater than",
+    "The average should divide the total by the number of passing entries, not by the total number of results - and guard against dividing by zero"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"results\": [{\"name\":\"a\",\"score\":60},{\"name\":\"b\",\"score\":90},{\"name\":\"c\",\"score\":50},{\"name\":\"d\",\"score\":80}]}",
+      "expected_output": "3 76.67",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"results\": [{\"name\":\"a\",\"score\":60}]}",
+      "expected_output": "1 60.0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"results\": [{\"name\":\"a\",\"score\":10},{\"name\":\"b\",\"score\":20}]}",
+      "expected_output": "0 0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

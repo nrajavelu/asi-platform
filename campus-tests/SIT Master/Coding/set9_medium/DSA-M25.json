@@ -1,0 +1,41 @@
+{
+  "id": "DSA-M25",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Run-Length Decode",
+  "statement": "Read a run-length encoded string made of (count, character) runs, where each run is a possibly multi-digit count immediately followed by one character, e.g. '12a3b1c'. Print the fully decoded string, e.g. 'aaaaaaaaaaaabbbc'.",
+  "starter_code": "s = input().strip()\n\n# TODO: decode the run-length encoded string `s`. Walk through it,\n# accumulating digits into a count buffer; when you hit a non-digit\n# character, repeat that character `count` times (default count 1 if no\n# digits were seen), then reset the buffer. Print the decoded string.\n",
+  "language_id": 71,
+  "hints": [
+    "Keep a running string buffer of digit characters seen so far and convert it with int() once you hit a letter",
+    "Remember to reset the digit buffer after each letter is processed"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3a2b1c",
+      "expected_output": "aaabbc",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "12a3b",
+      "expected_output": "aaaaaaaaaaaabbb",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1x1y1z",
+      "expected_output": "xyz",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "5a",
+      "expected_output": "aaaaa",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

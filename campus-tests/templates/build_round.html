@@ -13,26 +13,32 @@
       <option value="technical_discussion">Technical Discussion</option>
     </select>
 
+    <div id="drive-mode-toggle" class="radio-row">
+      <label><input type="radio" name="drive_mode" value="new" checked onchange="toggleRoundFields()"> New drive</label>
+      <label><input type="radio" name="drive_mode" value="existing" onchange="toggleRoundFields()"> Existing drive</label>
+    </div>
+    <div class="hint" id="drive-mode-hint">
+      Campus + Drive is unique — building a new round against the same existing drive (instead of retyping the name)
+      is what chains Aptitude → Programming → Coding → Technical Discussion together with a shared candidate/score
+      history, and is required for Technical Discussion since it has no candidates of its own to invite.
+    </div>
+
     <div id="new-drive-fields">
       <label>Campus name</label>
-      <input type="text" name="campus" id="campus-input">
+      <input type="text" name="campus" id="campus-input" required>
 
       <label>Drive name</label>
-      <input type="text" name="drive_name" id="drive-name-input">
+      <input type="text" name="drive_name" id="drive-name-input" required>
     </div>
 
     <div id="existing-drive-field" style="display:none;">
       <label>Drive</label>
-      <select name="existing_drive_id">
+      <select name="existing_drive_id" id="existing-drive-select">
         <option value="">— choose a drive —</option>
         {% for d in drives %}
-        <option value="{{ d.id }}">{{ d.name }} ({{ d.campus }})</option>
+        <option value="{{ d.id }}">{{ d.campus }} - {{ d.name }}</option>
         {% endfor %}
       </select>
-      <div class="hint">
-        Technical Discussion always attaches to a drive that already has a scored round (Aptitude/Programming/Coding)
-        to promote shortlisted candidates from — pick that same drive here, don't create a new one.
-      </div>
     </div>
 
     <label id="count-label">Number of questions</label>
@@ -81,10 +87,18 @@ function toggleRoundFields() {
   const type = document.getElementById('round_type').value;
   const isCoding = type === 'coding';
   const isInterview = type === 'technical_discussion';
-  document.getElementById('new-drive-fields').style.display = isInterview ? 'none' : 'block';
-  document.getElementById('existing-drive-field').style.display = isInterview ? 'block' : 'none';
-  document.getElementById('campus-input').required = !isInterview;
-  document.getElementById('drive-name-input').required = !isInterview;
+  const driveMode = document.querySelector('input[name="drive_mode"]:checked').value;
+  const useExisting = isInterview || driveMode === 'existing';
+
+  // Technical Discussion has no drive of its own to create - force existing-drive mode, hide the toggle entirely
+  document.getElementById('drive-mode-toggle').style.display = isInterview ? 'none' : 'flex';
+  document.getElementById('drive-mode-hint').style.display = isInterview ? 'none' : 'block';
+
+  document.getElementById('new-drive-fields').style.display = useExisting ? 'none' : 'block';
+  document.getElementById('existing-drive-field').style.display = useExisting ? 'block' : 'none';
+  document.getElementById('campus-input').required = !useExisting;
+  document.getElementById('drive-name-input').required = !useExisting;
+  document.getElementById('existing-drive-select').required = useExisting;
   document.getElementById('forms-only-fields').style.display = (isCoding || isInterview) ? 'none' : 'block';
   document.getElementById('section-plan-field').style.display = isCoding ? 'block' : 'none';
   document.getElementById('duration-field').style.display = isInterview ? 'none' : 'block';

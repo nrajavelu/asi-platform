@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from add_candidates import add_candidates_from_file
+from admin_tools import create_backup, list_backups, restore_backup, wipe_question_banks, wipe_scope
 from build_form import build_coding_round, build_round, build_technical_discussion_round, promote_shortlisted
 from final_conclusion_pdf import generate_final_conclusion_pdf
 from google_auth import forms_service, gmail_service
@@ -31,7 +32,10 @@ from models import (
     Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Drive, FormAnswer, InterviewAttemptQuestion,
     InterviewQuestion, Question, Round, SessionLocal, init_db,
 )
-from results import coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, shortlist, top_n_attempts
+from results import (
+    coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, list_drives,
+    round_label, rounds_for_drive, shortlist, top_n_attempts,
+)
 
 BASE_DIR = Path(__file__).parent
 UPLOAD_DIR = BASE_DIR / "data" / "uploads"
@@ -157,10 +161,11 @@ def build_round_submit(
     parsed_duration = int(duration_minutes) if duration_minutes.strip() else None
     drives = session.query(Drive).order_by(Drive.name).all()
 
-    if round_type == "coding":
-        if not campus.strip() or not drive_name.strip():
-            return render(request, "build_round.html", {"active": "build", "flash": "Campus name and Drive name are required.", "flash_error": True, "result": None, "drives": drives})
+    parsed_drive_id = int(existing_drive_id) if existing_drive_id.strip() else None
+    if round_type != "technical_discussion" and parsed_drive_id is None and (not campus.strip() or not drive_name.strip()):
+        return render(request, "build_round.html", {"active": "build", "flash": "Pick an existing drive, or enter a Campus name and Drive name to create a new one.", "flash_error": True, "result": None, "drives": drives})
 
+    if round_type == "coding":
         parsed_plan = None
         if section_plan.strip():
             parsed_plan = []
@@ -178,8 +183,8 @@ def build_round_submit(
 
         try:
             round_ = build_coding_round(
-                session, campus, drive_name, count,
-                duration_minutes=parsed_duration, section_plan=parsed_plan,
+                session, campus or None, drive_name or None, count,
+                duration_minutes=parsed_duration, section_plan=parsed_plan, drive_id=parsed_drive_id,
             )
         except Exception as e:
             return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
@@ -195,11 +200,11 @@ def build_round_submit(
         return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result, "drives": drives})
 
     if round_type == "technical_discussion":
-        if not existing_drive_id.strip():
+        if parsed_drive_id is None:
             return render(request, "build_round.html", {"active": "build", "flash": "Pick an existing drive - Technical Discussion always attaches to a drive that already has a scored round to promote candidates from.", "flash_error": True, "result": None, "drives": drives})
 
         try:
-            round_ = build_technical_discussion_round(session, int(existing_drive_id), count)
+            round_ = build_technical_discussion_round(session, parsed_drive_id, count)
         except Exception as e:
             return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
 
@@ -211,17 +216,15 @@ def build_round_submit(
         }
         return render(request, "build_round.html", {"active": "build", "flash": None, "flash_error": False, "result": result, "drives": drives})
 
-    if not campus.strip() or not drive_name.strip():
-        return render(request, "build_round.html", {"active": "build", "flash": "Campus name and Drive name are required.", "flash_error": True, "result": None, "drives": drives})
-
-    final_title = title.strip() or f"{campus} - {round_type.title()} Test"
+    title_campus = campus.strip() or next((d.campus for d in drives if d.id == parsed_drive_id), "")
+    final_title = title.strip() or f"{title_campus} - {round_type.title()} Test"
     topic_list = [t.strip() for t in topics.split(",")] if topics.strip() else None
 
     try:
         service = forms_service()
         round_ = build_round(
-            session, service, campus, drive_name, round_type, count, final_title, topic_list,
-            duration_minutes=parsed_duration or 45,
+            session, service, campus or None, drive_name or None, round_type, count, final_title, topic_list,
+            duration_minutes=parsed_duration or 45, drive_id=parsed_drive_id,
         )
     except Exception as e:
         return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
@@ -237,11 +240,16 @@ def build_round_submit(
 
 
 @app.get("/candidates")
-def candidates_page(request: Request):
+def candidates_page(request: Request, drive_id: int | None = None):
     session = SessionLocal()
     flash, err = flash_from_request(request)
-    rounds = session.query(Round).order_by(Round.id).all()
-    return render(request, "candidates.html", {"active": "candidates", "flash": flash, "flash_error": err, "rounds": rounds})
+    drives = list_drives(session)
+    drive_ = session.get(Drive, drive_id) if drive_id else None
+    rounds = rounds_for_drive(session, drive_id) if drive_ else []
+    return render(request, "candidates.html", {
+        "active": "candidates", "flash": flash, "flash_error": err,
+        "drives": drives, "drive_": drive_, "rounds": rounds, "round_label": round_label,
+    })
 
 
 @app.post("/candidates/upload")
@@ -251,29 +259,39 @@ async def candidates_upload(round_id: int = Form(...), file: UploadFile = None):
     if round_ is None:
         return flash_redirect("/candidates", f"No round with id {round_id}", error=True)
 
+    back_url = f"/candidates?drive_id={round_.drive_id}"
     path = await save_upload(file)
     try:
         created = add_candidates_from_file(session, round_, path)
     except Exception as e:
-        return flash_redirect("/candidates", str(e), error=True)
-    return flash_redirect("/candidates", f"Added {created} candidate(s) to round #{round_.id}")
+        return flash_redirect(back_url, str(e), error=True)
+    return flash_redirect(back_url, f"Added {created} candidate(s) to round #{round_.id}")
+
+
+def _invites_context(session, drive_id: int | None):
+    drives = list_drives(session)
+    drive_ = session.get(Drive, drive_id) if drive_id else None
+    rounds = rounds_for_drive(session, drive_id) if drive_ else []
+    return {
+        "active": "invites", "flash": None, "flash_error": False,
+        "drives": drives, "drive_": drive_, "rounds": rounds, "round_label": round_label,
+        "results": None, "bounced": None,
+    }
 
 
 @app.get("/invites")
-def invites_page(request: Request):
+def invites_page(request: Request, drive_id: int | None = None):
     session = SessionLocal()
     flash, err = flash_from_request(request)
-    rounds = session.query(Round).order_by(Round.id).all()
-    return render(
-        request,
-        "invites.html",
-        {"active": "invites", "flash": flash, "flash_error": err, "rounds": rounds, "results": None, "bounced": None},
-    )
+    ctx = _invites_context(session, drive_id)
+    ctx["flash"], ctx["flash_error"] = flash, err
+    return render(request, "invites.html", ctx)
 
 
 @app.post("/invites/send")
 def invites_send(
     request: Request,
+    drive_id: int = Form(...),
     round_id: int = Form(...),
     mode: str = Form(...),
     base_url: str = Form(""),
@@ -281,13 +299,10 @@ def invites_send(
 ):
     session = SessionLocal()
     round_ = session.get(Round, round_id)
-    rounds = session.query(Round).order_by(Round.id).all()
+    ctx = _invites_context(session, drive_id)
     if round_ is None:
-        return render(
-            request,
-            "invites.html",
-            {"active": "invites", "flash": f"No round with id {round_id}", "flash_error": True, "rounds": rounds, "results": None, "bounced": None},
-        )
+        ctx["flash"], ctx["flash_error"] = f"No round with id {round_id}", True
+        return render(request, "invites.html", ctx)
 
     try:
         results = send_invites(
@@ -298,52 +313,41 @@ def invites_send(
             dry_run=(mode != "send"),
         )
     except Exception as e:
-        return render(
-            request,
-            "invites.html",
-            {"active": "invites", "flash": str(e), "flash_error": True, "rounds": rounds, "results": None, "bounced": None},
-        )
+        ctx["flash"], ctx["flash_error"] = str(e), True
+        return render(request, "invites.html", ctx)
 
-    return render(
-        request,
-        "invites.html",
-        {"active": "invites", "flash": None, "flash_error": False, "rounds": rounds, "results": results, "bounced": None},
-    )
+    ctx["results"] = results
+    return render(request, "invites.html", ctx)
 
 
 @app.post("/invites/check-bounces")
-def invites_check_bounces(request: Request, round_id: int = Form(...)):
+def invites_check_bounces(request: Request, drive_id: int = Form(...), round_id: int = Form(...)):
     session = SessionLocal()
     round_ = session.get(Round, round_id)
-    rounds = session.query(Round).order_by(Round.id).all()
+    ctx = _invites_context(session, drive_id)
     if round_ is None:
-        return render(
-            request,
-            "invites.html",
-            {"active": "invites", "flash": f"No round with id {round_id}", "flash_error": True, "rounds": rounds, "results": None, "bounced": None},
-        )
+        ctx["flash"], ctx["flash_error"] = f"No round with id {round_id}", True
+        return render(request, "invites.html", ctx)
 
     attempts = session.query(Attempt).filter_by(round_id=round_.id).all()
     emails = [session.get(Candidate, a.candidate_id).email for a in attempts]
     try:
         bounced = detect_bounces(gmail_service(), emails)
     except Exception as e:
-        return render(
-            request,
-            "invites.html",
-            {"active": "invites", "flash": str(e), "flash_error": True, "rounds": rounds, "results": None, "bounced": None},
-        )
+        ctx["flash"], ctx["flash_error"] = str(e), True
+        return render(request, "invites.html", ctx)
 
-    return render(
-        request,
-        "invites.html",
-        {"active": "invites", "flash": None, "flash_error": False, "rounds": rounds, "results": None, "bounced": bounced},
-    )
+    ctx["bounced"] = bounced
+    return render(request, "invites.html", ctx)
 
 
-def _results_context(session, round_id: int | None, status_filter: str | None):
-    rounds = session.query(Round).order_by(Round.id).all()
-    round_ = session.get(Round, round_id) if round_id else None
+def _results_context(session, drive_id: int | None, round_id: int | None, status_filter: str | None):
+    drives = list_drives(session)
+    drive_ = session.get(Drive, drive_id) if drive_id else None
+    rounds = rounds_for_drive(session, drive_id) if drive_ else []
+    # default to the first round in the drive so picking a drive shows
+    # something immediately, without a required second click into a tab
+    round_ = session.get(Round, round_id) if round_id else (rounds[0] if rounds else None)
     kpis = kpi_summary(session, round_) if round_ else None
     attempts = filter_attempts(session, round_, status_filter) if round_ else []
     coding_analytics = (
@@ -353,8 +357,11 @@ def _results_context(session, round_id: int | None, status_filter: str | None):
         "active": "results",
         "flash": None,
         "flash_error": False,
+        "drives": drives,
+        "drive_": drive_,
         "rounds": rounds,
         "round_": round_,
+        "round_label": round_label,
         "kpis": kpis,
         "attempts": attempts,
         "status_filter": status_filter,
@@ -368,25 +375,24 @@ def _results_context(session, round_id: int | None, status_filter: str | None):
 
 
 @app.get("/results")
-def results_page(request: Request, round_id: int | None = None, status: str | None = None):
+def results_page(request: Request, drive_id: int | None = None, round_id: int | None = None, status: str | None = None):
     session = SessionLocal()
-    ctx = _results_context(session, round_id, status)
+    ctx = _results_context(session, drive_id, round_id, status)
     flash, err = flash_from_request(request)
     ctx["flash"], ctx["flash_error"] = flash, err
     return render(request, "results.html", ctx)
 
 
 @app.post("/results/process")
-def results_process(request: Request, round_id: int = Form(...)):
+def results_process(request: Request, drive_id: int = Form(...), round_id: int = Form(...)):
     session = SessionLocal()
     round_ = session.get(Round, round_id)
-    ctx = _results_context(session, round_id, None)
+    ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
         ctx["flash"], ctx["flash_error"] = f"No round with id {round_id}", True
         return render(request, "results.html", ctx)
 
     if round_.round_type == "coding":
-        ctx = _results_context(session, round_id, None)
         ctx["flash"] = "Coding round scores are written live as candidates submit - nothing to pull."
         return render(request, "results.html", ctx)
 
@@ -396,24 +402,31 @@ def results_process(request: Request, round_id: int = Form(...)):
         ctx["flash"], ctx["flash_error"] = str(e), True
         return render(request, "results.html", ctx)
 
-    ctx = _results_context(session, round_id, None)
+    ctx = _results_context(session, drive_id, round_id, None)
     ctx["flash"] = (
         f"Pulled {summary['form_responses']} response(s), "
         f"matched {summary['matched_to_roster']} to the roster."
     )
+    if summary["flagged_unstarted"]:
+        ctx["flash"] += (
+            f" {summary['flagged_unstarted']} response(s) matched a candidate's email but that candidate's "
+            f"own invite link was never opened - not credited, needs manual review."
+        )
+        ctx["flash_error"] = True
     return render(request, "results.html", ctx)
 
 
 @app.post("/results/shortlist")
 def results_shortlist(
     request: Request,
+    drive_id: int = Form(...),
     round_id: int = Form(...),
     bench_pct: int = Form(...),
     borderline_pct: int = Form(...),
 ):
     session = SessionLocal()
     round_ = session.get(Round, round_id)
-    ctx = _results_context(session, round_id, None)
+    ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
         ctx["flash"], ctx["flash_error"] = f"No round with id {round_id}", True
         return render(request, "results.html", ctx)
@@ -425,10 +438,10 @@ def results_shortlist(
 
 
 @app.post("/results/top-n")
-def results_top_n(request: Request, round_id: int = Form(...), n: int = Form(...)):
+def results_top_n(request: Request, drive_id: int = Form(...), round_id: int = Form(...), n: int = Form(...)):
     session = SessionLocal()
     round_ = session.get(Round, round_id)
-    ctx = _results_context(session, round_id, None)
+    ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
         ctx["flash"], ctx["flash_error"] = f"No round with id {round_id}", True
         return render(request, "results.html", ctx)
@@ -470,11 +483,13 @@ def _previous_round_scores(session, candidate: Candidate, drive_id: int, exclude
 
 
 @app.get("/technical-discussion")
-def technical_discussion_page(request: Request, round_id: int | None = None):
+def technical_discussion_page(request: Request, drive_id: int | None = None, round_id: int | None = None):
     session = SessionLocal()
     flash, err = flash_from_request(request)
-    rounds = session.query(Round).filter_by(round_type="technical_discussion").order_by(Round.id).all()
-    round_ = session.get(Round, round_id) if round_id else None
+    drives = list_drives(session)
+    drive_ = session.get(Drive, drive_id) if drive_id else None
+    rounds = [r for r in rounds_for_drive(session, drive_id) if r.round_type == "technical_discussion"] if drive_ else []
+    round_ = session.get(Round, round_id) if round_id else (rounds[0] if rounds else None)
 
     source_rounds, attempts_view = [], []
     if round_ is not None:
@@ -498,7 +513,8 @@ def technical_discussion_page(request: Request, round_id: int | None = None):
         "technical_discussion.html",
         {
             "active": "technical_discussion", "flash": flash, "flash_error": err,
-            "rounds": rounds, "round_": round_, "source_rounds": source_rounds, "attempts_view": attempts_view,
+            "drives": drives, "drive_": drive_, "rounds": rounds, "round_": round_, "round_label": round_label,
+            "source_rounds": source_rounds, "attempts_view": attempts_view,
         },
     )
 
@@ -518,7 +534,7 @@ def technical_discussion_promote(
 
     count = promote_shortlisted(session, source, target, band=band)
     return flash_redirect(
-        f"/technical-discussion?round_id={target_round_id}",
+        f"/technical-discussion?drive_id={target.drive_id}&round_id={target_round_id}",
         f"Promoted {count} candidate(s) from round #{source_round_id} ({band}) into this Technical Discussion round.",
     )
 
@@ -533,14 +549,15 @@ def technical_discussion_override(
 ):
     session = SessionLocal()
     attempt = session.get(Attempt, attempt_id)
-    if attempt is None:
-        return flash_redirect(f"/technical-discussion?round_id={round_id}", "Attempt not found", error=True)
+    round_ = session.get(Round, round_id)
+    if attempt is None or round_ is None:
+        return flash_redirect(f"/technical-discussion?round_id={round_id}", "Attempt or round not found", error=True)
 
     attempt.decision = decision
     attempt.decision_by = f"{admin_name} (override)"
     attempt.decision_at = datetime.now(timezone.utc).isoformat()
     session.commit()
-    return flash_redirect(f"/technical-discussion?round_id={round_id}", f"Decision updated to '{decision}'.")
+    return flash_redirect(f"/technical-discussion?drive_id={round_.drive_id}&round_id={round_id}", f"Decision updated to '{decision}'.")
 
 
 @app.get("/interview/{token}")
@@ -624,7 +641,7 @@ async def interview_session_submit(request: Request, token: str):
     session.commit()
 
     return flash_redirect(
-        f"/technical-discussion?round_id={round_.id}",
+        f"/technical-discussion?drive_id={round_.drive_id}&round_id={round_.id}",
         f"Recorded technical discussion for this candidate - decision: {attempt.decision}.",
     )
 
@@ -720,6 +737,91 @@ def final_conclusion_pdf(round_id: int):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="final-conclusion-round-{round_id}.pdf"'},
     )
+
+
+@app.get("/admin")
+def admin_page(request: Request):
+    session = SessionLocal()
+    flash, err = flash_from_request(request)
+    drives = session.query(Drive).order_by(Drive.campus, Drive.name).all()
+    campuses = sorted({d.campus for d in drives})
+    return render(
+        request,
+        "admin.html",
+        {
+            "active": "admin",
+            "flash": flash,
+            "flash_error": err,
+            "drives": drives,
+            "campuses": campuses,
+            "backups": list_backups(),
+        },
+    )
+
+
+@app.post("/admin/backup")
+def admin_backup():
+    name = create_backup(label="manual")
+    return flash_redirect("/admin", f"Backup created: {name}")
+
+
+@app.post("/admin/restore")
+def admin_restore(filename: str = Form(...)):
+    try:
+        restore_backup(filename)
+    except ValueError as e:
+        return flash_redirect("/admin", str(e), error=True)
+    return flash_redirect("/admin", f"Restored from {filename}. The pre-restore state was also saved as a backup.")
+
+
+@app.post("/admin/cleanup")
+def admin_cleanup(
+    scope: str = Form(...),
+    campus: str = Form(""),
+    drive_id: str = Form(""),
+    confirm_text: str = Form(""),
+    clear_banks: str = Form(""),
+):
+    if confirm_text.strip().upper() != "DELETE":
+        return flash_redirect("/admin", "Type DELETE in the confirmation box to proceed.", error=True)
+
+    session = SessionLocal()
+    if scope == "all":
+        drive_ids = [d_id for (d_id,) in session.query(Drive.id)]
+        label = "everything"
+    elif scope == "campus":
+        if not campus.strip():
+            return flash_redirect("/admin", "Pick a campus.", error=True)
+        drive_ids = [d_id for (d_id,) in session.query(Drive.id).filter(Drive.campus == campus)]
+        label = f'campus "{campus}"'
+    elif scope == "drive":
+        if not drive_id.strip():
+            return flash_redirect("/admin", "Pick a drive.", error=True)
+        drive_ids = [int(drive_id)]
+        label = "the selected drive"
+    else:
+        return flash_redirect("/admin", "Unknown cleanup scope.", error=True)
+
+    also_clear_banks = scope == "all" and clear_banks.strip() == "true"
+
+    if not drive_ids and not also_clear_banks:
+        return flash_redirect("/admin", f"Nothing to clean up for {label}.", error=True)
+
+    backup_name = create_backup(label="pre-cleanup")
+    counts = wipe_scope(session, drive_ids)
+    message = (
+        f"Cleaned up {label}: {counts['drives']} drive(s), {counts['rounds']} round(s), "
+        f"{counts['candidates']} candidate(s), {counts['attempts']} attempt(s) deleted."
+    )
+    if also_clear_banks:
+        bank_counts = wipe_question_banks(session)
+        message += (
+            f" Also cleared question banks: {bank_counts['mcq_questions']} MCQ, "
+            f"{bank_counts['coding_questions']} coding, {bank_counts['interview_questions']} interview question(s)."
+        )
+    session.commit()
+    message += f" Backup saved as {backup_name} before cleanup."
+    return flash_redirect("/admin", message)
 
 
 if __name__ == "__main__":

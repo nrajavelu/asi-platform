@@ -6,16 +6,24 @@
 <div class="card">
   <form action="/results" method="get" class="inline-form">
     <div class="field">
-      <label>Round</label>
-      <select name="round_id" onchange="this.form.submit()">
-        <option value="">— choose a round —</option>
-        {% for r in rounds %}
-        <option value="{{ r.id }}" {{ 'selected' if round_ and r.id == round_.id else '' }}>#{{ r.id }} - {{ r.drive.name }} ({{ r.round_type }})</option>
+      <label>Drive</label>
+      <select name="drive_id" onchange="this.form.submit()">
+        <option value="">— choose a drive —</option>
+        {% for d in drives %}
+        <option value="{{ d.id }}" {{ 'selected' if drive_ and d.id == drive_.id else '' }}>{{ d.campus }} - {{ d.name }}</option>
         {% endfor %}
       </select>
     </div>
   </form>
 </div>
+
+{% if drive_ %}
+<div class="filter-tabs" style="margin-top:16px;">
+  {% for r in rounds %}
+  <a href="/results?drive_id={{ drive_.id }}&round_id={{ r.id }}" class="{{ 'active' if round_ and r.id == round_.id else '' }}">{{ r.round_type.replace('_', ' ')|title }}</a>
+  {% endfor %}
+</div>
+{% endif %}
 
 {% if round_ %}
 
@@ -30,6 +38,7 @@
   <div class="section-title">Process results</div>
   <p class="hint">Pulls responses from the Google Form, matches them to candidates by email, and scores every completed attempt.</p>
   <form action="/results/process" method="post">
+    <input type="hidden" name="drive_id" value="{{ drive_.id }}">
     <input type="hidden" name="round_id" value="{{ round_.id }}">
     <button type="submit">Pull &amp; score responses</button>
   </form>
@@ -64,10 +73,10 @@
 <div class="card">
   <div class="section-title">Candidates</div>
   <div class="filter-tabs" style="margin-top:12px;">
-    <a href="/results?round_id={{ round_.id }}" class="{{ 'active' if not status_filter else '' }}">All ({{ kpis.invited }})</a>
-    <a href="/results?round_id={{ round_.id }}&status=invited" class="{{ 'active' if status_filter == 'invited' else '' }}">Invited</a>
-    <a href="/results?round_id={{ round_.id }}&status=started" class="{{ 'active' if status_filter == 'started' else '' }}">Started</a>
-    <a href="/results?round_id={{ round_.id }}&status=submitted" class="{{ 'active' if status_filter == 'submitted' else '' }}">Submitted</a>
+    <a href="/results?drive_id={{ drive_.id }}&round_id={{ round_.id }}" class="{{ 'active' if not status_filter else '' }}">All ({{ kpis.invited }})</a>
+    <a href="/results?drive_id={{ drive_.id }}&round_id={{ round_.id }}&status=invited" class="{{ 'active' if status_filter == 'invited' else '' }}">Invited</a>
+    <a href="/results?drive_id={{ drive_.id }}&round_id={{ round_.id }}&status=started" class="{{ 'active' if status_filter == 'started' else '' }}">Started</a>
+    <a href="/results?drive_id={{ drive_.id }}&round_id={{ round_.id }}&status=submitted" class="{{ 'active' if status_filter == 'submitted' else '' }}">Submitted</a>
   </div>
   {% if attempts %}
   <table>
@@ -97,6 +106,7 @@
   <div class="section-title">Shortlist</div>
   <p class="hint">Bands every submitted attempt by score. Defaults to this round's saved cutoffs.</p>
   <form action="/results/shortlist" method="post" class="inline-form">
+    <input type="hidden" name="drive_id" value="{{ drive_.id }}">
     <input type="hidden" name="round_id" value="{{ round_.id }}">
     <div class="field">
       <label>Shortlist bench (%)</label>
@@ -130,6 +140,7 @@
 <div class="card">
   <div class="section-title">Top N</div>
   <form action="/results/top-n" method="post" class="inline-form">
+    <input type="hidden" name="drive_id" value="{{ drive_.id }}">
     <input type="hidden" name="round_id" value="{{ round_.id }}">
     <div class="field">
       <label>Show top</label>

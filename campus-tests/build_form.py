@@ -42,13 +42,29 @@ def get_or_create_drive(session, name: str, campus: str) -> Drive:
     return drive
 
 
+def resolve_drive(session, drive_id: int | None, campus: str | None, drive_name: str | None) -> Drive:
+    """Either attaches to an existing drive (drive_id) or creates/reuses one
+    by (campus, drive_name) - the two ways every round-builder now offers
+    picking a drive. Campus+Drive is unique at the DB level, so a typo'd
+    'new' drive name that actually matches an existing one just reuses it
+    rather than erroring, same as get_or_create_drive always did."""
+    if drive_id is not None:
+        drive = session.get(Drive, drive_id)
+        if drive is None:
+            raise ValueError(f"No drive with id {drive_id}")
+        return drive
+    if not campus or not drive_name:
+        raise ValueError("Either drive_id or both campus and drive_name are required.")
+    return get_or_create_drive(session, drive_name, campus)
+
+
 def pick_questions(session, round_type: str, count: int, topics: list[str] | None):
     query = session.query(Question).filter(Question.round_type == round_type)
     if topics:
         query = query.filter(Question.topic.in_(topics))
     pool = query.all()
     if len(pool) < count:
-        raise SystemExit(
+        raise ValueError(
             f"Only {len(pool)} '{round_type}' questions available "
             f"(topics={topics or 'all'}); requested {count}."
         )
@@ -62,8 +78,16 @@ def build_batch_requests(questions: list[Question], round_type: str) -> list[dic
     requests = [
         {
             "updateSettings": {
-                "settings": {"quizSettings": {"isQuiz": True}},
-                "updateMask": "quizSettings.isQuiz",
+                # emailCollectionType=VERIFIED attaches the respondent's real,
+                # signed-in Google Account email automatically - not a typed
+                # field, so a candidate can't submit under someone else's
+                # email (RESPONDER_INPUT allowed exactly that: a free-text
+                # box anyone could fill with any address). Without email
+                # collection at all, responses come back with
+                # respondentEmail=None and results.ingest_results() has
+                # nothing to match candidates by.
+                "settings": {"quizSettings": {"isQuiz": True}, "emailCollectionType": "VERIFIED"},
+                "updateMask": "quizSettings.isQuiz,emailCollectionType",
             }
         },
         {
@@ -131,15 +155,16 @@ def build_batch_requests(questions: list[Question], round_type: str) -> list[dic
 def build_round(
     session,
     service,
-    campus: str,
-    drive_name: str,
+    campus: str | None,
+    drive_name: str | None,
     round_type: str,
     count: int,
     title: str,
     topics: list[str] | None = None,
     duration_minutes: int = 45,
+    drive_id: int | None = None,
 ) -> Round:
-    drive = get_or_create_drive(session, drive_name, campus)
+    drive = resolve_drive(session, drive_id, campus, drive_name)
     questions = pick_questions(session, round_type, count, topics)
 
     form = service.forms().create(body={"info": {"title": title}}).execute()
@@ -190,11 +215,12 @@ def _suggested_minutes_for_topic(session, topic: str) -> float:
 
 def build_coding_round(
     session,
-    campus: str,
-    drive_name: str,
+    campus: str | None,
+    drive_name: str | None,
     count: int,
     duration_minutes: int | None = 45,
     section_plan: list[tuple[str, int]] | None = None,
+    drive_id: int | None = None,
 ) -> Round:
     """Coding rounds don't use Google Forms at all - the candidate UI is
     served directly by app.py (Monaco + Judge0). This just registers the
@@ -210,14 +236,14 @@ def build_coding_round(
     included question's suggested_minutes (per-topic average, weighted by
     how many questions from that topic will be assigned) - pass an
     explicit int to override with your own duration instead."""
-    drive = get_or_create_drive(session, drive_name, campus)
+    drive = resolve_drive(session, drive_id, campus, drive_name)
 
     if section_plan:
         total_count = sum(c for _, c in section_plan)
         for topic, topic_count in section_plan:
             available = session.query(CodingQuestion).filter_by(topic=topic).count()
             if available < topic_count:
-                raise SystemExit(
+                raise ValueError(
                     f"Only {available} coding question(s) loaded for topic '{topic}'; requested {topic_count}."
                 )
         if duration_minutes is None:
@@ -228,7 +254,7 @@ def build_coding_round(
         total_count = count
         available = session.query(CodingQuestion).count()
         if available < count:
-            raise SystemExit(
+            raise ValueError(
                 f"Only {available} coding question(s) loaded (load_coding_questions.py); requested {count}."
             )
         if duration_minutes is None:
@@ -265,11 +291,11 @@ def build_technical_discussion_round(
     promote from - a real, repeated point of confusion."""
     drive = session.get(Drive, drive_id)
     if drive is None:
-        raise SystemExit(f"No drive with id {drive_id}")
+        raise ValueError(f"No drive with id {drive_id}")
 
     available = session.query(InterviewQuestion).count()
     if available < count:
-        raise SystemExit(
+        raise ValueError(
             f"Only {available} interview question(s) loaded (load_interview_questions.py); requested {count}."
         )
 
@@ -366,10 +392,13 @@ def main() -> None:
     init_db()
     session = SessionLocal()
     service = forms_service()
-    round_ = build_round(
-        session, service, args.campus, args.drive_name, args.round_type, args.count, args.title, topics,
-        duration_minutes=args.duration_minutes,
-    )
+    try:
+        round_ = build_round(
+            session, service, args.campus, args.drive_name, args.round_type, args.count, args.title, topics,
+            duration_minutes=args.duration_minutes,
+        )
+    except ValueError as e:
+        raise SystemExit(str(e))
     print_round_summary(round_)
 
 

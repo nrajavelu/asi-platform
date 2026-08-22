@@ -1,0 +1,35 @@
+{
+  "id": "API-E8",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Reshape Active Users",
+  "statement": "You receive a mock API response on stdin: a JSON array of user records, each like {\"id\": 1, \"active\": true}. Print the number of active users on the first line, then on the second line print their ids in the order they appear, comma-separated (print an empty second line if there are none).",
+  "starter_code": "import json\nrecords = json.loads(input())\n# TODO: print the count of active users, then their ids comma-separated on the next line\n",
+  "language_id": 71,
+  "hints": [
+    "Loop over the records and collect the id of each one where record['active'] is true",
+    "','.join(str(i) for i in ids) builds the comma-separated line"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "[{\"id\": 1, \"active\": true}, {\"id\": 2, \"active\": false}, {\"id\": 3, \"active\": true}]",
+      "expected_output": "2\n1,3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "[{\"id\": 10, \"active\": false}, {\"id\": 11, \"active\": false}]",
+      "expected_output": "0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "[{\"id\": 7, \"active\": true}]",
+      "expected_output": "1\n7",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -3,12 +3,13 @@
   "topic": "sql_basics",
   "difficulty": "medium",
   "title": "Customers With Total Orders",
-  "statement": "Write a query joining `customers` and `orders` to return `name, SUM(amount) as total` per customer, ordered by total descending.",
-  "starter_code": "SELECT c.name, SUM(o.amount) as total\nFROM customers c JOIN orders o ON -- TODO\nGROUP BY -- TODO\nORDER BY -- TODO\n;\n",
+  "statement": "Write a query joining `customers` and `orders` to return `name, SUM(amount) as total` per customer, ordered by total descending, with ties broken by name ascending.",
+  "starter_code": "SELECT c.name, SUM(o.amount) as total\nFROM customers c JOIN orders o ON -- TODO\nGROUP BY -- TODO\nORDER BY total DESC, -- TODO (tiebreak)\n;\n",
   "question_type": "sql",
   "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL);\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), amount INT NOT NULL);\nINSERT INTO customers (id, name) VALUES (1, 'Aman'), (2, 'Bala'), (3, 'Chitra');\nINSERT INTO orders (id, customer_id, amount) VALUES (1, 1, 500), (2, 1, 300), (3, 2, 700), (4, 3, 200), (5, 2, 100);\n",
   "hints": [
-    "JOIN on customer_id = id, then GROUP BY customer name and SUM the amounts"
+    "JOIN on customer_id = id, then GROUP BY customer name and SUM the amounts",
+    "Aman and Bala tie on total (800 each) - break the tie with a secondary ORDER BY on name ascending"
   ],
   "points": 10,
   "test_cases": [

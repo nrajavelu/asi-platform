@@ -1,0 +1,30 @@
+{
+  "id": "API-M10",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Rate Limiter Bookkeeping",
+  "statement": "Read n, then n space-separated integers giving the timestamps (in seconds, non-decreasing) of a sequence of incoming API requests. Simulate a rate limiter that allows at most 3 requests within any rolling 10-second window (a window covers [t-10, t), i.e. a prior timestamp counts against the limit only while its age is strictly less than 10 seconds). Process requests in order, keeping a sliding window of only the ACCEPTED timestamps (throttled requests never count against the limit). For each request print '<timestamp>: ALLOWED' or '<timestamp>: THROTTLED' on its own line, then after all requests print the total number allowed.",
+  "starter_code": "n = int(input())\ntimestamps = list(map(int, input().split()))\n\n# TODO: maintain a list `window` of accepted timestamps. For each new\n# timestamp t, first drop entries from the front of `window` that are 10\n# or more seconds old (t - window[0] >= 10). If fewer than 3 entries\n# remain in the window, accept t (append it, print ALLOWED); otherwise\n# print THROTTLED. Finally print the total number of accepted requests.\n",
+  "language_id": 71,
+  "hints": [
+    "A list used as a small queue works fine here: pop(0) from the front while the oldest entry is too old",
+    "Only accepted timestamps ever get pushed into the window - throttled ones are just skipped",
+    "The window size limit (3) is checked BEFORE deciding whether to accept the current request"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n0 1 2 3 11",
+      "expected_output": "0: ALLOWED\n1: ALLOWED\n2: ALLOWED\n3: THROTTLED\n11: ALLOWED\n4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\n5 5 5 5 20",
+      "expected_output": "5: ALLOWED\n5: ALLOWED\n5: ALLOWED\n5: THROTTLED\n20: ALLOWED\n4",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

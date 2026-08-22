@@ -5,7 +5,31 @@ best-effort invite-bounce detection.
 
 import base64
 
-from models import Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, FormAnswer, Round
+from models import Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Drive, FormAnswer, Round
+
+ROUND_TYPE_ABBREV = {
+    "aptitude": "Apt",
+    "programming": "Prog",
+    "coding": "Code",
+    "technical_discussion": "Technical Discussion",
+}
+
+
+def round_label(round_: Round) -> str:
+    """The naming convention every round-selector dropdown displays:
+    <campus> - <drive name> - <round type>, e.g. 'XYZ College - Aug 2026 -
+    Prog'. Computed on the fly (not stored) so it's always correct even if
+    a drive gets renamed later."""
+    abbrev = ROUND_TYPE_ABBREV.get(round_.round_type, round_.round_type)
+    return f"{round_.drive.campus} - {round_.drive.name} - {abbrev}"
+
+
+def list_drives(session) -> list[Drive]:
+    return session.query(Drive).order_by(Drive.campus, Drive.name).all()
+
+
+def rounds_for_drive(session, drive_id: int) -> list[Round]:
+    return session.query(Round).filter_by(drive_id=drive_id).order_by(Round.id).all()
 
 
 def kpi_summary(session, round_: Round) -> dict:
@@ -72,11 +96,31 @@ def ingest_results(session, round_: Round, service) -> dict:
             by_email[email.strip().lower()] = r
 
     attempts = session.query(Attempt).filter_by(round_id=round_.id).all()
+    # Invites sent without a base_url skip the /start/{token} gate entirely
+    # (direct link straight to the shared Form, "no started-tracking" mode -
+    # see invite.py) - started_at never gets set for anyone in that case, so
+    # there's no started/not-started signal to cross-check against. Only
+    # enforce the check when at least one attempt in this round shows the
+    # gate is actually in use, so untracked rounds keep today's email-only
+    # matching instead of every legitimate submission getting flagged.
+    tracking_active = any(a.started_at is not None for a in attempts)
+
     matched = 0
+    flagged = 0
     for attempt in attempts:
         candidate = session.get(Candidate, attempt.candidate_id)
         r = by_email.get(candidate.email.strip().lower())
         if r is None:
+            continue
+        if tracking_active and attempt.status not in ("started", "submitted"):
+            # A response exists under this candidate's email, but their own
+            # /start/{token} link was never opened - the shared Forms link
+            # gives every candidate in a round the same URL, so this can be
+            # someone else typing/attaching this candidate's email rather
+            # than the candidate themselves. Don't silently credit it as a
+            # real completion - leave the attempt untouched for the admin
+            # to investigate instead.
+            flagged += 1
             continue
         score = r.get("totalScore", 0)
         percent = round(100 * score / max_score) if max_score else 0
@@ -106,6 +150,7 @@ def ingest_results(session, round_: Round, service) -> dict:
     return {
         "form_responses": len(all_responses),
         "matched_to_roster": matched,
+        "flagged_unstarted": flagged,
         "total_attempts": len(attempts),
         "max_score": max_score,
     }

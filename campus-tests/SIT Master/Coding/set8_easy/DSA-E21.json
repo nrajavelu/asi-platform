@@ -1,0 +1,36 @@
+{
+  "id": "DSA-E21",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Fix the Split-and-Sum",
+  "statement": "The program below is meant to do the following: read an integer n, then a line with n integers (possibly negative). Split the list into a first half (the first n // 2 elements) and a second half (the rest). Print two numbers on one line: the sum of the non-negative values (>= 0) in the first half, and the sum of the non-negative values in the second half. The code below has 3 bugs. Fix them so it passes all test cases.",
+  "starter_code": "n = int(input())\nnums = list(map(int, input().split()))\nhalf = n // 2\nfirst = nums[0:half - 1]\nsecond = nums[half:n]\ntotal = 0\nfor x in first:\n    if x > 0:\n        total += x\nfirst_total = total\nfor x in second:\n    if x >= 0:\n        total += x\nsecond_total = total\nprint(first_total, second_total)\n",
+  "language_id": 71,
+  "hints": [
+    "Check the slice bound used to build 'first' - does it include every element of the first half?",
+    "The spec says non-negative (>= 0), but one of the two loops uses a strict > 0 check",
+    "'total' is never reset before the second loop, so second_total ends up including first_total too"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "6\n3 -1 4 0 -2 5",
+      "expected_output": "7 5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\n-1 -2 -3 -4 -5",
+      "expected_output": "0 0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "4\n1 2 3 4",
+      "expected_output": "3 7",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

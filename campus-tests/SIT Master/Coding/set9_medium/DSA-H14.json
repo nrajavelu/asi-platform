@@ -1,0 +1,48 @@
+{
+  "id": "DSA-H14",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Valid Parenthesization With Wildcards",
+  "statement": "Read a string made only of the characters '(', ')' and '*', where each '*' may be treated as either '(', ')', or the empty string. Print 'true' if there is some way to interpret every '*' so that the whole string becomes a validly balanced parenthesization, otherwise print 'false'.",
+  "starter_code": "s = input().strip()\n\n# TODO: determine whether `s` can be validly parenthesized when each '*'\n# is freely treated as '(', ')' or empty. Track the range [lo, hi] of\n# possible open-paren counts as you scan left to right: '(' increases\n# both bounds, ')' decreases both, '*' decreases lo and increases hi.\n# Clamp lo at 0 (can't go negative), and bail out to \"false\" early if hi\n# ever goes negative. At the end it's valid iff lo can be exactly 0.\n# Print \"true\" or \"false\".\n",
+  "language_id": 71,
+  "hints": [
+    "Track the minimum and maximum possible count of unmatched open parens as [lo, hi] while scanning left to right",
+    "'(' does lo+=1, hi+=1; ')' does lo-=1, hi-=1; '*' does lo-=1, hi+=1",
+    "Clamp lo to 0 after each step (never let it go negative), and stop early with false if hi < 0"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "()",
+      "expected_output": "true",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "(*))",
+      "expected_output": "true",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": ")(",
+      "expected_output": "false",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "***",
+      "expected_output": "true",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "(((*",
+      "expected_output": "false",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

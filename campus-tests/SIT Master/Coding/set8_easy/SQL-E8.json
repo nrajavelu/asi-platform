@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E8",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Employees and Departments",
+  "statement": "The `employees` table has columns id, name, dept_id. The `departments` table has columns id, name. Write a query that returns `employee_name, department_name` for every employee, joining employees to departments on dept_id = departments.id, ordered by employee id.",
+  "starter_code": "SELECT e.name, d.name\nFROM employees e\nINNER JOIN departments d ON -- TODO\nORDER BY e.id;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE departments (id INT PRIMARY KEY, name TEXT NOT NULL);\nINSERT INTO departments (id, name) VALUES\n  (1, 'Engineering'), (2, 'Sales'), (3, 'HR');\nCREATE TABLE employees (id INT PRIMARY KEY, name TEXT NOT NULL, dept_id INT NOT NULL);\nINSERT INTO employees (id, name, dept_id) VALUES\n  (1, 'Alice', 1), (2, 'Bob', 2), (3, 'Carol', 1), (4, 'Dave', 3), (5, 'Eve', 2);\n",
+  "hints": [
+    "Use INNER JOIN on e.dept_id = d.id"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Alice\", \"Engineering\"], [\"Bob\", \"Sales\"], [\"Carol\", \"Engineering\"], [\"Dave\", \"HR\"], [\"Eve\", \"Sales\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

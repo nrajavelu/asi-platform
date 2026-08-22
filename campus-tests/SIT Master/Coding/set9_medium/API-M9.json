@@ -1,0 +1,36 @@
+{
+  "id": "API-M9",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Reconcile Two Service Responses",
+  "statement": "Two JSON objects arrive describing the same customer from different backend services: `profile` (first line) and `contacts` (second line). Merge `contacts` into `profile` using these rules: (1) start with every field from `profile`; (2) for each field in `contacts` that doesn't exist yet in the merged record, add it as-is; (3) if a field is a list in both records, merge them by concatenating profile's list then any new contacts items not already present, preserving order (no duplicates); (4) otherwise, if the contacts value is not null, it overwrites the existing value; if it IS null, keep the existing profile value. Print the merged JSON object with keys sorted alphabetically and compact separators, e.g. json.dumps(merged, sort_keys=True, separators=(',', ':')).",
+  "starter_code": "import json\n\nprofile = json.loads(input())\ncontacts = json.loads(input())\n\n# TODO: merge `contacts` into `profile` following the rules above, then\n# print json.dumps(merged, sort_keys=True, separators=(\",\", \":\")).\n",
+  "language_id": 71,
+  "hints": [
+    "Start with merged = dict(profile), then loop over contacts.items()",
+    "Use isinstance(value, list) checks on both sides before deciding to concatenate instead of overwrite",
+    "A None value in contacts means 'no update' - keep whatever profile already had for that key"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"name\": \"Alice\", \"tags\": [\"vip\"], \"phone\": \"111\"}\n{\"phone\": \"222\", \"tags\": [\"premium\"], \"email\": \"a@x.com\"}",
+      "expected_output": "{\"email\":\"a@x.com\",\"name\":\"Alice\",\"phone\":\"222\",\"tags\":[\"vip\",\"premium\"]}",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"name\": \"Bob\", \"phone\": \"555\"}\n{\"phone\": null, \"city\": \"NYC\"}",
+      "expected_output": "{\"city\":\"NYC\",\"name\":\"Bob\",\"phone\":\"555\"}",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"id\": 1}\n{\"id\": 2}",
+      "expected_output": "{\"id\":2}",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

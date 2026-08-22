@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, create_engine, text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, UniqueConstraint, create_engine, text
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 Base = declarative_base()
@@ -24,6 +24,7 @@ class Question(Base):
 
 class Drive(Base):
     __tablename__ = "drives"
+    __table_args__ = (UniqueConstraint("name", "campus", name="uq_drive_name_campus"),)
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -216,3 +217,10 @@ def init_db() -> None:
         _add_column_if_missing(conn, "attempts", "decision_at", "VARCHAR", "NULL")
         _add_column_if_missing(conn, "rounds", "section_plan", "TEXT", "NULL")
         _add_column_if_missing(conn, "coding_questions", "suggested_minutes", "INTEGER", "5")
+
+        # SQLite can't ALTER TABLE to add a constraint on an existing table -
+        # a unique index enforces the same guarantee. Campus+Drive name must
+        # be unique so rounds reliably chain together for the same drive
+        # (Aptitude -> Programming -> Coding -> Technical Discussion) instead
+        # of silently fragmenting into near-duplicate drives on a typo.
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_drive_name_campus ON drives (name, campus)"))

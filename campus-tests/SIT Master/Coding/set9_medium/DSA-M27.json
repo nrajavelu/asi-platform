@@ -1,0 +1,42 @@
+{
+  "id": "DSA-M27",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Fix the Domino Tiling Count",
+  "statement": "Read n. The program below is supposed to compute, using recursion with memoization, the number of ways to fully tile a 2xn board using 1x2 dominoes (a board of width 0 has exactly 1 way: place nothing). It has 3 bugs. Fix them so it passes all test cases.",
+  "starter_code": "import sys\nsys.setrecursionlimit(10000)\n\ndef count_ways(n, memo):\n    if n == 0:\n        return 0\n    if n == 1:\n        return 1\n    if n in memo:\n        return memo.get(n - 1, 0)\n    memo[n] = count_ways(n - 1, memo) + count_ways(n - 1, memo)\n    return memo[n]\n\nn = int(input())\nprint(count_ways(n, {}))\n",
+  "language_id": 71,
+  "hints": [
+    "How many ways are there to tile a board of width 0? Check the n == 0 base case against that.",
+    "The recurrence for tiling a 2xn board should combine the counts for two DIFFERENT smaller widths, not the same width twice",
+    "When you've already cached a result for this exact `n`, make sure you look it up by that same `n`, not by a different key"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "0",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "4",
+      "expected_output": "5",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "6",
+      "expected_output": "13",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

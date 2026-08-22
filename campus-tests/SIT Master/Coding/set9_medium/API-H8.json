@@ -1,0 +1,31 @@
+{
+  "id": "API-H8",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Fix the Response Aggregator",
+  "statement": "Read a single line of JSON shaped like {\"results\": [{\"status\": \"ok\"|\"error\"|\"pending\", \"user\": {\"id\": ..., \"score\": <stale cached score>, \"profile\": {\"score\": <current score>}}}, ...]}. The program below is supposed to walk every entry in `results`, and for entries whose status is exactly \"ok\" sum up the user's CURRENT score (the one nested under `profile`), counting everything else (including \"pending\") as an error. It should then print 'ok=<count> error=<count> avg=<average current score of the ok entries, 2 decimal places, or 0.00 if there are no ok entries>'. It has 4 bugs. Fix them so it passes all test cases.",
+  "starter_code": "import json\n\ndata = json.loads(input())\nresults = data[\"results\"]\n\ntotal_score = 0\nok_count = 0\nerror_count = 0\nfor entry in results[1:]:\n    if entry[\"status\"] == \"ok\" or entry[\"status\"] == \"pending\":\n        total_score += entry[\"user\"][\"score\"]\n        ok_count += 1\n    else:\n        error_count += 1\n\navg = total_score // ok_count if ok_count > 0 else 0\nprint(f\"ok={ok_count} error={error_count} avg={avg:.2f}\")\n",
+  "language_id": 71,
+  "hints": [
+    "results[1:] silently drops the very first entry from the whole response - is that intended?",
+    "\"pending\" is explicitly called out as NOT ok in the statement - check which statuses the condition actually accepts",
+    "Look at the two score fields on `user`: which one is described as the current, authoritative score?",
+    "Averaging with // instead of / throws away the decimal part before it's even formatted"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"results\": [{\"status\": \"ok\", \"user\": {\"id\": 1, \"score\": 999, \"profile\": {\"score\": 40}}}, {\"status\": \"ok\", \"user\": {\"id\": 2, \"score\": 999, \"profile\": {\"score\": 30}}}, {\"status\": \"error\", \"user\": {\"id\": 3, \"score\": 999, \"profile\": {\"score\": 0}}}, {\"status\": \"pending\", \"user\": {\"id\": 4, \"score\": 999, \"profile\": {\"score\": 25}}}, {\"status\": \"ok\", \"user\": {\"id\": 5, \"score\": 999, \"profile\": {\"score\": 15}}}]}",
+      "expected_output": "ok=3 error=2 avg=28.33",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"results\": [{\"status\": \"ok\", \"user\": {\"id\": 10, \"score\": 1, \"profile\": {\"score\": 50}}}, {\"status\": \"error\", \"user\": {\"id\": 11, \"score\": 1, \"profile\": {\"score\": 5}}}, {\"status\": \"ok\", \"user\": {\"id\": 12, \"score\": 1, \"profile\": {\"score\": 20}}}, {\"status\": \"ok\", \"user\": {\"id\": 13, \"score\": 1, \"profile\": {\"score\": 10}}}]}",
+      "expected_output": "ok=3 error=1 avg=26.67",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

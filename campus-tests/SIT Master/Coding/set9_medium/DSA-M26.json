@@ -1,0 +1,36 @@
+{
+  "id": "DSA-M26",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Fix the Sorted-List Merge",
+  "statement": "Read n, then n sorted integers (list A), then m, then m sorted integers (list B). The program below is supposed to merge A and B into a single sorted list using the classic two-pointer merge step, and print the result space-separated. It has 3 bugs. Fix them so it passes all test cases.",
+  "starter_code": "n = int(input())\na = list(map(int, input().split()))\nm = int(input())\nb = list(map(int, input().split()))\n\ni, j = 0, 0\nmerged = []\nwhile i < n and j < m:\n    if a[i] >= b[j]:\n        merged.append(a[i])\n        i += 1\n    else:\n        merged.append(b[j])\n        i += 1\nmerged.extend(a[i+1:])\nmerged.extend(b[j:])\nprint(' '.join(map(str, merged)))\n",
+  "language_id": 71,
+  "hints": [
+    "Walk through a small example by hand: which element should be picked first when a[i] and b[j] are equal, and which pointer should move each time?",
+    "Whichever list you didn't just take an element from is still at its original position - check every increment goes with the right pointer",
+    "Once the loop ends, the leftover slice of each list should start exactly at its current pointer, not one past it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n1 3 5 7 9\n4\n2 4 6 8",
+      "expected_output": "1 2 3 4 5 6 7 8 9",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "4\n1 2 3 4\n3\n0 5 10",
+      "expected_output": "0 1 2 3 4 5 10",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\n2 4 6\n3\n1 3 5",
+      "expected_output": "1 2 3 4 5 6",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}
