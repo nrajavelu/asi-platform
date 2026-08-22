@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M05",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Balanced Brackets",
+  "statement": "Read a string of only ( and ) characters. Print 'yes' if the brackets are balanced (every open has a matching close, properly nested), else 'no'.",
+  "starter_code": "s = input().strip()\n# TODO: print 'yes' or 'no'\n",
+  "language_id": 71,
+  "hints": [
+    "Track a running balance: +1 for (, -1 for ). It must never go negative and must end at 0"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "(())",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "(()",
+      "expected_output": "no",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "()()()",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": ")(",
+      "expected_output": "no",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

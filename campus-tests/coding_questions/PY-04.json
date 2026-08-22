@@ -1,0 +1,20 @@
+{
+  "id": "PY-04",
+  "topic": "python",
+  "difficulty": "medium",
+  "title": "Count Vowels",
+  "statement": "Read a line of text from stdin and print the count of vowels (a, e, i, o, u), case-insensitive.",
+  "starter_code": "s = input()\n# TODO: count and print the number of vowels in s\n",
+  "language_id": 71,
+  "hints": [
+    "Convert the string to lowercase first with .lower()",
+    "Check membership against the string 'aeiou'"
+  ],
+  "points": 10,
+  "test_cases": [
+    {"stdin": "Hello World", "expected_output": "3", "is_sample": true, "weight": 1},
+    {"stdin": "AEIOU", "expected_output": "5", "is_sample": true, "weight": 1},
+    {"stdin": "xyz", "expected_output": "0", "is_sample": false, "weight": 1},
+    {"stdin": "Programming", "expected_output": "3", "is_sample": false, "weight": 1}
+  ]
+}

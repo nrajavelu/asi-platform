@@ -1,0 +1,20 @@
+{
+  "id": "PY-02",
+  "topic": "python",
+  "difficulty": "easy",
+  "title": "Reverse a String",
+  "statement": "Read a single line of text from stdin and print it reversed.",
+  "starter_code": "s = input()\n# TODO: print s reversed\n",
+  "language_id": 71,
+  "hints": [
+    "Python slicing supports a step argument",
+    "s[::-1] reverses a sequence"
+  ],
+  "points": 10,
+  "test_cases": [
+    {"stdin": "hello", "expected_output": "olleh", "is_sample": true, "weight": 1},
+    {"stdin": "world", "expected_output": "dlrow", "is_sample": true, "weight": 1},
+    {"stdin": "a", "expected_output": "a", "is_sample": false, "weight": 1},
+    {"stdin": "racecar", "expected_output": "racecar", "is_sample": false, "weight": 1}
+  ]
+}

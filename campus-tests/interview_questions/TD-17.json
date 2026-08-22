@@ -1,0 +1,7 @@
+{
+  "id": "TD-17",
+  "area": "vibe_coding",
+  "question": "Show me a prompt you've actually used with a coding assistant that you're proud of. What made it effective?",
+  "rubric_guide": "Strong: produces something concrete and specific, ideally traceable to their GitHub/portfolio; explains WHY it worked (context provided, constraints stated, examples given).\nWeak: can't produce a real example, or gives a generic non-answer.",
+  "max_score": 5
+}

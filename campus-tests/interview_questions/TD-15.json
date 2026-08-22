@@ -1,0 +1,7 @@
+{
+  "id": "TD-15",
+  "area": "vibe_coding",
+  "question": "Tell me about a time an AI coding assistant gave you code that looked right but wasn't. How did you catch it?",
+  "rubric_guide": "Strong: specific example; mentions actually running/testing the code, not just eyeballing it; balanced skepticism, not paranoid-rewrite-everything or blind-trust-everything.\nWeak: \"it's always been right for me\" - likely hasn't used it seriously, or hasn't checked carefully.",
+  "max_score": 5
+}

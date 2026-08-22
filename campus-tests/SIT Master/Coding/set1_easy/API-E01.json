@@ -1,0 +1,34 @@
+{
+  "id": "API-E01",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Extract Answer Field",
+  "statement": "You receive a mock LLM API response as a single JSON line on stdin, e.g. {\"answer\": \"42\"}. Print the value of the 'answer' field.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print data['answer']\n",
+  "language_id": 71,
+  "hints": [
+    "json.loads() parses a JSON string into a Python dict"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"answer\": \"42\"}",
+      "expected_output": "42",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"answer\": \"hello world\"}",
+      "expected_output": "hello world",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"answer\": \"yes\"}",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

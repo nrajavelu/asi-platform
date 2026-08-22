@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E05",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Customer Names Only",
+  "statement": "Write a query returning all customer names from the `customers` table, ordered by id.",
+  "starter_code": "SELECT name FROM customers\nORDER BY -- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL);\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), amount INT NOT NULL);\nINSERT INTO customers (id, name) VALUES (1, 'Aman'), (2, 'Bala'), (3, 'Chitra');\nINSERT INTO orders (id, customer_id, amount) VALUES (1, 1, 500), (2, 1, 300), (3, 2, 700), (4, 3, 200), (5, 2, 100);\n",
+  "hints": [
+    "A plain SELECT with ORDER BY id"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Aman\"], [\"Bala\"], [\"Chitra\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

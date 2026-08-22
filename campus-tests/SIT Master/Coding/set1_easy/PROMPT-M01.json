@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M01",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Build Prompt With Context",
+  "statement": "Read a query on one line, then an integer n, then n lines of context. Print: 'Context:' followed by each context line prefixed with '- ', then a blank line, then 'Question: <query>'.",
+  "starter_code": "query = input()\nn = int(input())\ncontext = [input() for _ in range(n)]\n# TODO: assemble and print the full prompt\n",
+  "language_id": 71,
+  "hints": [
+    "Build it piece by piece: header, then each context line, then a blank line, then the question"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "What is the refund policy?\n2\nRefunds within 30 days.\nOriginal receipt required.",
+      "expected_output": "Context:\n- Refunds within 30 days.\n- Original receipt required.\n\nQuestion: What is the refund policy?",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

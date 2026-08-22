@@ -1,0 +1,7 @@
+{
+  "id": "TD-14",
+  "area": "vibe_coding",
+  "question": "LIVE EXERCISE: build something small (a simple function or short script) using an AI coding assistant of their choice, screen-shared, thinking out loud.",
+  "rubric_guide": "Strong: writes a clear, specific initial instruction, not vague \"build me X\"; reviews generated code before accepting, doesn't click through blindly; catches at least one real issue in the output; iterates with a good follow-up refinement.\nWeak: accepts everything without reading it, or can't get anywhere without heavy prompting help.",
+  "max_score": 5
+}

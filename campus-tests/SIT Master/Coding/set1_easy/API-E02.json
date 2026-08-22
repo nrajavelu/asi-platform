@@ -1,0 +1,34 @@
+{
+  "id": "API-E02",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Check Success Flag",
+  "statement": "Read a mock API response JSON with a boolean 'success' field. Print 'OK' if true, 'FAILED' if false.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print OK or FAILED based on data['success']\n",
+  "language_id": 71,
+  "hints": [
+    "JSON true/false map directly to Python True/False after json.loads"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"success\": true}",
+      "expected_output": "OK",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"success\": false}",
+      "expected_output": "FAILED",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"success\": true}",
+      "expected_output": "OK",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

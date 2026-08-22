@@ -1,0 +1,34 @@
+{
+  "id": "DSA-E10",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "List Contains",
+  "statement": "Read a line of space-separated words, then a target word on the next line. Print 'yes' if the target is in the list, else 'no'.",
+  "starter_code": "words = input().split()\ntarget = input().strip()\n# TODO: print 'yes' or 'no'\n",
+  "language_id": 71,
+  "hints": [
+    "The 'in' operator checks list membership directly"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "apple banana cherry\nbanana",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "red green blue\nyellow",
+      "expected_output": "no",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "a b c\nc",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

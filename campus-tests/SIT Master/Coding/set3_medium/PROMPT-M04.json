@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M04",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Add Output Format Constraint",
+  "statement": "Read a base instruction, then a required format spec (e.g. 'a single word'). Print the instruction followed by ' Respond with <spec>.' appended on the same line.",
+  "starter_code": "instruction = input()\nfmt = input()\n# TODO: print instruction + ' Respond with ' + fmt + '.'\n",
+  "language_id": 71,
+  "hints": [
+    "A single f-string combining both inputs with the fixed connecting text"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "Classify the sentiment of this review.\na single word: positive, negative, or neutral",
+      "expected_output": "Classify the sentiment of this review. Respond with a single word: positive, negative, or neutral.",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

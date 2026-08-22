@@ -1,0 +1,20 @@
+{
+  "id": "PY-03",
+  "topic": "python",
+  "difficulty": "medium",
+  "title": "FizzBuzz Single Value",
+  "statement": "Read an integer N from stdin. Print 'FizzBuzz' if N is divisible by both 3 and 5, 'Fizz' if divisible by 3 only, 'Buzz' if divisible by 5 only, otherwise print N itself.",
+  "starter_code": "n = int(input())\n# TODO: implement the FizzBuzz logic\n",
+  "language_id": 71,
+  "hints": [
+    "Check divisibility by 15 first, before checking 3 or 5 separately",
+    "Use the modulo operator %"
+  ],
+  "points": 10,
+  "test_cases": [
+    {"stdin": "15", "expected_output": "FizzBuzz", "is_sample": true, "weight": 1},
+    {"stdin": "9", "expected_output": "Fizz", "is_sample": true, "weight": 1},
+    {"stdin": "10", "expected_output": "Buzz", "is_sample": false, "weight": 1},
+    {"stdin": "7", "expected_output": "7", "is_sample": false, "weight": 1}
+  ]
+}

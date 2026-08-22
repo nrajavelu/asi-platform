@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-M03",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Truncate Long Context",
+  "statement": "Read an integer max_len, then a context string. If the context is longer than max_len characters, print only the first max_len characters followed by '...'. Otherwise print it unchanged.",
+  "starter_code": "max_len = int(input())\ncontext = input()\n# TODO: print the (possibly truncated) context\n",
+  "language_id": 71,
+  "hints": [
+    "Compare len(context) to max_len before deciding whether to slice and append '...'"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "10\nThis is a very long piece of context text",
+      "expected_output": "This is a ...",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "50\nShort text",
+      "expected_output": "Short text",
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

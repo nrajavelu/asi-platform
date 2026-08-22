@@ -1,0 +1,22 @@
+{
+  "id": "SQL-H03",
+  "topic": "vector_basics",
+  "difficulty": "hard",
+  "title": "Similarity Search Within a Category",
+  "statement": "Write a query returning `id, subject` for the single 'billing' category ticket closest to the vector [0,1,0].",
+  "starter_code": "SELECT id, subject FROM tickets\nWHERE -- TODO\nORDER BY -- TODO\nLIMIT 1;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE tickets (id INT PRIMARY KEY, subject TEXT NOT NULL, category TEXT NOT NULL, embedding vector(3));\nINSERT INTO tickets (id, subject, category, embedding) VALUES\n  (1, 'Cannot login', 'account', '[1,0,0]'), (2, 'Password reset broken', 'account', '[0.9,0.1,0]'),\n  (3, 'Payment failed', 'billing', '[0,1,0]'), (4, 'Refund request', 'billing', '[0.1,0.9,0]'),\n  (5, 'App crashes on start', 'bug', '[0,0,1]');\n",
+  "hints": [
+    "Combine a normal WHERE filter with vector ORDER BY - filters and vector search can coexist"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[3, \"Payment failed\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

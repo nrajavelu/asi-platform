@@ -1,0 +1,41 @@
+{
+  "id": "DSA-E01",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Sum of Digits",
+  "statement": "Read a positive integer and print the sum of its digits.",
+  "starter_code": "n = input().strip()\n# TODO: print the sum of its digits\n",
+  "language_id": 71,
+  "hints": [
+    "Iterate over the string form of the number",
+    "int(c) converts each character digit to an int"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1234",
+      "expected_output": "10",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "500",
+      "expected_output": "5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "9",
+      "expected_output": "9",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "111111",
+      "expected_output": "6",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

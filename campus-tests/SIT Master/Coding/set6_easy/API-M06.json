@@ -1,0 +1,28 @@
+{
+  "id": "API-M06",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Merge Paginated Results",
+  "statement": "Read n, then n lines each a JSON array of integers (pages of results). Print the total count of items across all pages combined.",
+  "starter_code": "n = int(input())\nimport json\ntotal = 0\nfor _ in range(n):\n    page = json.loads(input())\n    total += len(page)\nprint(total)\n",
+  "language_id": 71,
+  "hints": [
+    "This one's fully written already - study how each page is parsed and its length added to the running total"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\n[1, 2, 3]\n[4, 5]\n[6]",
+      "expected_output": "6",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "2\n[1]\n[]",
+      "expected_output": "1",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

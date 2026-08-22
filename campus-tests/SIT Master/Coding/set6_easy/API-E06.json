@@ -1,0 +1,28 @@
+{
+  "id": "API-E06",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "List Response Errors",
+  "statement": "Read a mock response JSON with an 'errors' list field (list of strings). Print how many errors it contains.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print len(data['errors'])\n",
+  "language_id": 71,
+  "hints": [
+    "len() on the parsed list gives the error count"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"errors\": [\"timeout\", \"invalid_key\"]}",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"errors\": []}",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

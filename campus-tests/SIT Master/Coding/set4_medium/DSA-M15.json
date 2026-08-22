@@ -1,0 +1,34 @@
+{
+  "id": "DSA-M15",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Max Subarray Sum",
+  "statement": "Read a line of space-separated integers (may include negatives). Print the maximum sum of any contiguous subarray.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the maximum contiguous subarray sum\n",
+  "language_id": 71,
+  "hints": [
+    "This is Kadane's algorithm - track the best running sum, resetting when it drops below the current value"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "-2 1 -3 4 -1 2 1 -5 4",
+      "expected_output": "6",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1 2 3 4",
+      "expected_output": "10",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "-5 -1 -8",
+      "expected_output": "-1",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

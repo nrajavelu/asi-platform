@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Final Conclusion</h1>
+<p class="subtitle">Every candidate marked "Selected" after their Technical Discussion.</p>
+
+<div class="card">
+  <form action="/final-conclusion" method="get" class="inline-form">
+    <div class="field">
+      <label>Round</label>
+      <select name="round_id" onchange="this.form.submit()">
+        <option value="">— choose a round —</option>
+        {% for r in rounds %}
+        <option value="{{ r.id }}" {{ 'selected' if round_ and r.id == round_.id else '' }}>#{{ r.id }} - {{ r.drive.name }} ({{ r.drive.campus }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+{% if round_ %}
+<div class="card">
+  <div class="section-title">Selected ({{ selected|length }})</div>
+  {% if selected %}
+  <div style="margin-bottom:16px;">
+    <a class="link" href="/final-conclusion/pdf?round_id={{ round_.id }}">Download as PDF</a>
+  </div>
+  <table>
+    <tr><th>Name</th><th>Email</th><th>Score</th><th>Decided</th></tr>
+    {% for row in selected %}
+    <tr>
+      <td>{{ row.candidate.name }}</td>
+      <td>{{ row.candidate.email }}</td>
+      <td>{% if row.attempt.percent is not none %}{{ row.attempt.score }}/{{ row.attempt.max_score }} ({{ row.attempt.percent }}%){% else %}—{% endif %}</td>
+      <td>{{ row.attempt.decision_at.split('T')[0] if row.attempt.decision_at else '—' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No candidates marked Selected for this round yet.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{
+  "id": "API-H03",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Extract First Valid Response",
+  "statement": "Read n, then n lines each a JSON object that may or may not have a 'result' key with a non-null value. Print the first non-null 'result' value found, or 'NONE_FOUND' if none exist.",
+  "starter_code": "n = int(input())\nimport json\nresponses = [json.loads(input()) for _ in range(n)]\n# TODO: print the first non-null result, or NONE_FOUND\n",
+  "language_id": 71,
+  "hints": [
+    "dict.get('result') returns None if missing - check that against `is not None`"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\n{\"result\": null}\n{\"result\": \"found\"}\n{\"result\": null}",
+      "expected_output": "found",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "2\n{\"result\": null}\n{\"other\": 1}",
+      "expected_output": "NONE_FOUND",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

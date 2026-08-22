@@ -1,0 +1,34 @@
+{
+  "id": "DSA-M18",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Count Vowel-Starting Words",
+  "statement": "Read a line of space-separated words. Print how many of them start with a vowel (a, e, i, o, u, case-insensitive).",
+  "starter_code": "words = input().split()\n# TODO: print the count of words starting with a vowel\n",
+  "language_id": 71,
+  "hints": [
+    "Check word[0].lower() against the set of vowels"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "apple banana orange grape",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "umbrella igloo tree",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "sky moon star",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

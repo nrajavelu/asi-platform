@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E04",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Top Paid Employee",
+  "statement": "Write a query returning `name, salary` for the single highest-paid employee.",
+  "starter_code": "SELECT name, salary FROM employees\nORDER BY -- TODO\nLIMIT -- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE employees (id INT PRIMARY KEY, name TEXT NOT NULL, dept TEXT NOT NULL, salary INT NOT NULL);\nINSERT INTO employees (id, name, dept, salary) VALUES\n  (1, 'Asha', 'engineering', 90000), (2, 'Ravi', 'engineering', 85000), (3, 'Meena', 'sales', 60000),\n  (4, 'Karthik', 'sales', 65000), (5, 'Divya', 'engineering', 95000);\n",
+  "hints": [
+    "ORDER BY salary DESC, then LIMIT 1"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Divya\", 95000]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

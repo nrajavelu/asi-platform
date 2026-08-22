@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-E02",
+  "topic": "prompt_assembly",
+  "difficulty": "easy",
+  "title": "Wrap Query in Delimiters",
+  "statement": "Read a user query. Print it wrapped in triple backticks on their own lines: ``` on one line, the query, then ``` again.",
+  "starter_code": "query = input()\n# TODO: print the query wrapped in triple-backtick lines\n",
+  "language_id": 71,
+  "hints": [
+    "Three separate print() calls: opening fence, content, closing fence"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "print('hello')",
+      "expected_output": "```\nprint('hello')\n```",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "SELECT * FROM users",
+      "expected_output": "```\nSELECT * FROM users\n```",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

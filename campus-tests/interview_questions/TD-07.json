@@ -1,0 +1,7 @@
+{
+  "id": "TD-07",
+  "area": "prompt_quality",
+  "question": "Show a real, slightly-broken system prompt giving inconsistent results. What's wrong with it, and how would you fix it?",
+  "rubric_guide": "Strong: identifies ambiguity/conflicting instructions; proposes concrete tightening (examples, format constraints, explicit negative instructions).\nWeak: vague \"add more detail\" with no concrete mechanism.",
+  "max_score": 5
+}

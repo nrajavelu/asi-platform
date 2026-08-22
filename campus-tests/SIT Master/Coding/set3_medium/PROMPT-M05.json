@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M05",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Numbered Instruction List",
+  "statement": "Read n, then n instruction lines. Print them as a numbered list: '1. <instruction>', '2. <instruction>', etc.",
+  "starter_code": "n = int(input())\nsteps = [input() for _ in range(n)]\n# TODO: print each step numbered starting from 1\n",
+  "language_id": 71,
+  "hints": [
+    "enumerate(steps, start=1) gives you the 1-based number alongside each step"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\nRead the input\nProcess it\nPrint the result",
+      "expected_output": "1. Read the input\n2. Process it\n3. Print the result",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

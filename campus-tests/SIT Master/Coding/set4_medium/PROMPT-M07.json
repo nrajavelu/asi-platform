@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M07",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Role Persona Prefix",
+  "statement": "Read a role/persona description and a task. Print 'You are <persona>. Your task: <task>' on one line.",
+  "starter_code": "persona = input()\ntask = input()\n# TODO: print the combined persona + task line\n",
+  "language_id": 71,
+  "hints": [
+    "One f-string combining both inputs with the fixed connecting phrase"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "a senior code reviewer\nfind bugs in the following function",
+      "expected_output": "You are a senior code reviewer. Your task: find bugs in the following function",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "API-H02",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Rate Limit Backoff Schedule",
+  "statement": "Read the number of retries n. Print the exponential backoff delay (in seconds) for each retry attempt 1..n, where delay = 2^(attempt-1), space-separated.",
+  "starter_code": "n = int(input())\n# TODO: print delays 2^0, 2^1, ... 2^(n-1) space-separated\n",
+  "language_id": 71,
+  "hints": [
+    "The delay for attempt i (1-based) is 2 raised to the power (i-1)"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "4",
+      "expected_output": "1 2 4 8",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "6",
+      "expected_output": "1 2 4 8 16 32",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

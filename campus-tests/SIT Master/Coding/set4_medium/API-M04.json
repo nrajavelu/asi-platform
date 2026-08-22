@@ -1,0 +1,28 @@
+{
+  "id": "API-M04",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Sum Token Usage",
+  "statement": "Read a mock API response JSON with a 'usage' object containing 'prompt_tokens' and 'completion_tokens'. Print the total tokens used.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print prompt_tokens + completion_tokens\n",
+  "language_id": 71,
+  "hints": [
+    "Access the nested 'usage' dict, then add its two token count fields"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"usage\": {\"prompt_tokens\": 50, \"completion_tokens\": 20}}",
+      "expected_output": "70",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"usage\": {\"prompt_tokens\": 100, \"completion_tokens\": 5}}",
+      "expected_output": "105",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

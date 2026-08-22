@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-E01",
+  "topic": "prompt_assembly",
+  "difficulty": "easy",
+  "title": "Basic System+User Prompt",
+  "statement": "Read a user query on one line. Print a two-line prompt: line 1 'System: You are a helpful assistant.', line 2 'User: <query>'.",
+  "starter_code": "query = input()\n# TODO: print the two-line prompt\n",
+  "language_id": 71,
+  "hints": [
+    "Print the fixed system line first, then an f-string with the query"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "What is the capital of France?",
+      "expected_output": "System: You are a helpful assistant.\nUser: What is the capital of France?",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "Summarize this article",
+      "expected_output": "System: You are a helpful assistant.\nUser: Summarize this article",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "id": "TD-12",
+  "area": "git_workflow",
+  "question": "Two people changed the same file and you've got a merge conflict. Walk me through resolving it.",
+  "rubric_guide": "Strong: concrete mechanical steps (open the file, read conflict markers, decide on intent, test after resolving); doesn't blindly accept \"ours\"/\"theirs\".\nWeak: only a definitional answer (\"well, you resolve the conflict\") with no real steps.",
+  "max_score": 5
+}

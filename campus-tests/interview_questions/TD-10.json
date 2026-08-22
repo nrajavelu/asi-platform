@@ -1,0 +1,7 @@
+{
+  "id": "TD-10",
+  "area": "git_workflow",
+  "question": "Walk me through your actual Git workflow on a recent project - from picking up a task to it being merged.",
+  "rubric_guide": "Strong: branch-per-feature; meaningful commit messages; opens a PR, doesn't push straight to main; mentions review/CI if applicable.\nRed flag: \"I just work on main\" or can't describe a coherent flow at all.",
+  "max_score": 5
+}

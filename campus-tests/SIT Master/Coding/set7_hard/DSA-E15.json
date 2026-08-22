@@ -1,0 +1,34 @@
+{
+  "id": "DSA-E15",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Remove Whitespace",
+  "statement": "Read a line of text and print it with all spaces removed.",
+  "starter_code": "s = input()\n# TODO: print the string with spaces removed\n",
+  "language_id": 71,
+  "hints": [
+    "str.replace(' ', '') removes all spaces"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "hello world",
+      "expected_output": "helloworld",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "a b c d",
+      "expected_output": "abcd",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "no spaces here at all",
+      "expected_output": "nospaceshereatall",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

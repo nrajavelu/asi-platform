@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E13",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "First Non-Repeating Character",
+  "statement": "Read a lowercase word. Print the first character that appears exactly once, or 'none' if every character repeats.",
+  "starter_code": "s = input().strip()\n# TODO: print the first non-repeating character, or 'none'\n",
+  "language_id": 71,
+  "hints": [
+    "Count all characters first, then scan left to right for the first count-1 one"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "swiss",
+      "expected_output": "w",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "aabbcc",
+      "expected_output": "none",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hello",
+      "expected_output": "h",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "x",
+      "expected_output": "x",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

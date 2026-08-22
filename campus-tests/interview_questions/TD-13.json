@@ -1,0 +1,7 @@
+{
+  "id": "TD-13",
+  "area": "git_workflow",
+  "question": "When would you use rebase vs. merge, and why does it matter?",
+  "rubric_guide": "Strong: rebase = linear/rewritten history, fine for personal pre-PR branches; merge = preserves real history, right for shared/main branches; knows NOT to rebase a branch others already rely on.\nWeak: can't articulate a difference, or gets the shared-branch risk backwards.",
+  "max_score": 5
+}

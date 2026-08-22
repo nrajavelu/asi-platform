@@ -1,0 +1,9 @@
+round_type,topic,difficulty,text,option_a,option_b,option_c,option_d,correct_option,points
+aptitude,quant,easy,"A train travels 60 km in 45 minutes. What is its speed in km/h?",60,80,75,90,C,1
+aptitude,quant,medium,"If 20% of a number is 50, what is the number?",100,200,250,300,C,1
+aptitude,logical,easy,"Which number continues the series: 2, 4, 8, 16, ?",20,24,32,36,C,1
+aptitude,verbal,easy,"Choose the word most opposite in meaning to 'Abundant'.",Plentiful,Scarce,Ample,Copious,B,1
+programming,dsa,easy,"What is the time complexity of binary search on a sorted array?",O(n),O(log n),O(n^2),O(1),B,1
+programming,dsa,medium,"Which data structure uses LIFO order?",Queue,Stack,Array,Linked List,B,1
+programming,dbms,easy,"Which SQL clause is used to filter rows after grouping?",WHERE,HAVING,GROUP BY,ORDER BY,B,1
+programming,oops,easy,"Which OOP concept allows a subclass to provide its own implementation of a method?",Encapsulation,Abstraction,Polymorphism,Inheritance,C,1

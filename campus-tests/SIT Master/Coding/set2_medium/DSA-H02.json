@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H02",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Word Frequency Rank",
+  "statement": "Read a line of lowercase words. Print the top 2 most frequent words, most frequent first, space-separated (ties broken alphabetically).",
+  "starter_code": "words = input().split()\n# TODO: print the top 2 most frequent words\n",
+  "language_id": 71,
+  "hints": [
+    "Sort by (-count, word) to get most-frequent-first with alphabetical tiebreak"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "the cat sat on the mat the cat ran",
+      "expected_output": "the cat",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "a b c a b a",
+      "expected_output": "a b",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "x y z",
+      "expected_output": "x y",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

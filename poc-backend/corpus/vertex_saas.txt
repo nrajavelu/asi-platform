@@ -1,0 +1,31 @@
+Vertex SaaS — Enterprise Expansion Case (illustrative sample corpus, not a real filing)
+
+Vertex SaaS reported net revenue retention (NRR) of 96% for the most recent
+fiscal year, below its stated target of 110%. The 10-K attributes the shortfall
+to "elongated renewal cycles as enterprise customers apply increased scrutiny to
+software spend amid tighter IT budgets," without quantifying how much of the gap
+is due to delayed renewals versus outright non-renewals.
+
+The company's AI-assisted workflow automation module, released one quarter ago,
+is now active on 41% of accounts by seat count, according to the Q2 product usage
+report. The report notes this is the fastest feature adoption curve in the
+company's five-year product history, measured by percentage of accounts adopting
+within one quarter of general availability.
+
+An internal feasibility memo prepared for the board estimates that expanding into
+the European Union would require GDPR-compliant regional data residency,
+adding approximately $2.1 million in incremental annual infrastructure cost. The
+memo's stated scope is limited to "data residency and processing infrastructure
+for EU customer data" and does not address costs or requirements for any other
+regulated market.
+
+The memo includes one paragraph noting that "the infrastructure investment may
+have applications beyond the EU expansion," without naming specific markets,
+providing a cost-sharing estimate, or citing a regulatory basis for reuse in any
+other jurisdiction.
+
+Sales leadership's quarterly business review states that accounts using the
+AI-assisted workflow module renew at a materially higher rate than accounts that
+have not adopted it, based on an internal cohort comparison covering two
+renewal cycles. The review does not disclose the size of the two cohorts being
+compared.

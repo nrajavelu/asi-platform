@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E14",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Sum of Squares",
+  "statement": "Read an integer n and print the sum of squares from 1 to n (1^2 + 2^2 + ... + n^2).",
+  "starter_code": "n = int(input())\n# TODO: print the sum of squares from 1 to n\n",
+  "language_id": 71,
+  "hints": [
+    "A generator expression with i*i inside sum() works well here"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3",
+      "expected_output": "14",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5",
+      "expected_output": "55",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1",
+      "expected_output": "1",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "10",
+      "expected_output": "385",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

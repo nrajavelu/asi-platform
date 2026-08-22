@@ -1,0 +1,28 @@
+{
+  "id": "API-H04",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Circuit Breaker Trip Check",
+  "statement": "Read n (window size) and a threshold percentage, then n space-separated 0/1 results (0=fail). Print 'TRIP' if the failure rate in the window is >= threshold, else 'OK'.",
+  "starter_code": "n = int(input())\nthreshold = float(input())\nresults = list(map(int, input().split()))\n# TODO: print TRIP or OK based on failure rate vs threshold\n",
+  "language_id": 71,
+  "hints": [
+    "Count zeros for failures, compute the percentage, compare to the threshold"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n50\n0 0 0 1 1",
+      "expected_output": "TRIP",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5\n50\n1 1 1 1 0",
+      "expected_output": "OK",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

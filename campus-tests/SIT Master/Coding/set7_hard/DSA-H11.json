@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H11",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Count Inversions",
+  "statement": "Read a line of space-separated integers. Print the number of inversions - pairs (i, j) with i < j where nums[i] > nums[j].",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the number of inversions\n",
+  "language_id": 71,
+  "hints": [
+    "An inversion is any earlier element bigger than a later one - check every pair"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "2 4 1 3 5",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1 2 3",
+      "expected_output": "0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5 4 3 2 1",
+      "expected_output": "10",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

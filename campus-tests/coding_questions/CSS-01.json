@@ -1,0 +1,27 @@
+{
+  "id": "CSS-01",
+  "topic": "css",
+  "difficulty": "easy",
+  "title": "Flexbox Price Card",
+  "statement": "The `.card` element contains a `.label` and a `.value` span. Style `.card` using Flexbox so the two sit side by side in a row, with space between them.",
+  "starter_code": "/* Style .card below */\n.card {\n\n}\n",
+  "question_type": "css",
+  "harness_fixture": "<!doctype html>\n<html>\n<head><style>{{CSS}}</style></head>\n<body>\n  <div class=\"card\">\n    <span class=\"label\">Price</span>\n    <span class=\"value\">$42</span>\n  </div>\n</body>\n</html>\n",
+  "hints": [
+    "display: flex turns .card into a flex container",
+    "justify-content: space-between pushes the two children apart"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "assertion_script": "const display = await page.$eval('.card', el => getComputedStyle(el).display);\nassert.strictEqual(display, 'flex');\nconst justify = await page.$eval('.card', el => getComputedStyle(el).justifyContent);\nassert.strictEqual(justify, 'space-between');\n",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "assertion_script": "const box = await page.$eval('.card', el => { const r = el.getBoundingClientRect(); const label = el.querySelector('.label').getBoundingClientRect(); const value = el.querySelector('.value').getBoundingClientRect(); return { sameRow: Math.abs(label.top - value.top) < 2, labelBeforeValue: label.left < value.left }; });\nassert.ok(box.sameRow, '.label and .value should be on the same row');\nassert.ok(box.labelBeforeValue, '.label should be left of .value');\n",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

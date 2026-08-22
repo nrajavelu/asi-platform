@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Send Invites</h1>
+<p class="subtitle">Emails every "invited" candidate on the round their test access link.</p>
+
+<div class="card">
+  <form action="/invites/send" method="post">
+    <label>Round</label>
+    <select name="round_id" required>
+      {% for r in rounds %}
+      <option value="{{ r.id }}">#{{ r.id }} - {{ r.drive.name }} ({{ r.round_type }})</option>
+      {% endfor %}
+    </select>
+
+    <label>Start-gate URL (optional, from app.py)</label>
+    <input type="text" name="base_url" placeholder="e.g. http://192.168.1.42:8788 (blank = direct form link, no started-tracking)">
+    <div class="hint">Run <code>python app.py</code> first and paste the LAN URL it prints, to get real "started" tracking. <strong>Required for Coding rounds</strong> — they're served entirely by app.py, and this also triggers a Judge0 pre-flight check before any email is sent.</div>
+
+    <label>Mode</label>
+    <div class="radio-row">
+      <label><input type="radio" name="mode" value="dry-run" checked> Dry run (preview only)</label>
+      <label><input type="radio" name="mode" value="send"> Send for real</label>
+    </div>
+
+    <label>SEB template path (optional)</label>
+    <input type="text" name="seb_template" placeholder="e.g. seb_templates/aptitude.seb (blank = no proctoring)">
+
+    <button type="submit">Run</button>
+  </form>
+</div>
+
+{% if results is not none %}
+<div class="card">
+  {% if results %}
+  <table>
+    <tr><th>Email</th><th>Status</th></tr>
+    {% for r in results %}
+    <tr><td>{{ r.email }}</td><td><span class="badge {{ r.status }}">{{ r.status }}</span></td></tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No candidates in "invited" status for this round.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="section-title">Check for delivery failures</div>
+  <p class="hint">Best-effort scan of the admin inbox for bounce notifications - bounces can take a few minutes to arrive, so check again if a candidate reports not receiving their email. Requires the gmail.readonly scope (re-run generate_refresh_token.py once if this errors).</p>
+  <form action="/invites/check-bounces" method="post">
+    <select name="round_id" required>
+      {% for r in rounds %}
+      <option value="{{ r.id }}">#{{ r.id }} - {{ r.drive.name }} ({{ r.round_type }})</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Check now</button>
+  </form>
+</div>
+
+{% if bounced is not none %}
+  {% if bounced %}
+  <div class="warning-banner">
+    <strong>{{ bounced|length }} invite(s) likely failed to deliver</strong>
+    {% for email in bounced %}{{ email }}{% if not loop.last %}, {% endif %}{% endfor %}
+    <div class="hint" style="margin-top:8px;">Double-check these addresses for typos and re-send once fixed.</div>
+  </div>
+  {% else %}
+  <div class="flash ok">No delivery failures found for this round (best-effort check).</div>
+  {% endif %}
+{% endif %}
+{% endblock %}

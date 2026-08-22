@@ -1,0 +1,28 @@
+{
+  "id": "API-M03",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Parse Nested Response",
+  "statement": "Read a mock API response JSON shaped like {\"data\": {\"user\": {\"name\": \"...\"}}}. Print the nested user's name.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print the nested name field\n",
+  "language_id": 71,
+  "hints": [
+    "Chain dictionary access for nested JSON: data['data']['user']['name']"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"data\": {\"user\": {\"name\": \"Alice\"}}}",
+      "expected_output": "Alice",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"data\": {\"user\": {\"name\": \"Bob\"}}}",
+      "expected_output": "Bob",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

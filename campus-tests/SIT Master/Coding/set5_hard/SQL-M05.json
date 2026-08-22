@@ -1,0 +1,22 @@
+{
+  "id": "SQL-M05",
+  "topic": "sql_basics",
+  "difficulty": "medium",
+  "title": "Price Range Filter with Category",
+  "statement": "Write a query returning `name, price` for electronics priced between 1000 and 60000 inclusive, ordered by price ascending.",
+  "starter_code": "SELECT name, price FROM products\nWHERE -- TODO\nORDER BY price;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE products (id INT PRIMARY KEY, name TEXT NOT NULL, price INT NOT NULL, category TEXT NOT NULL);\nINSERT INTO products (id, name, price, category) VALUES\n  (1, 'Laptop', 55000, 'electronics'), (2, 'Mouse', 500, 'electronics'),\n  (3, 'Desk', 8000, 'furniture'), (4, 'Chair', 3500, 'furniture'), (5, 'Monitor', 12000, 'electronics');\n",
+  "hints": [
+    "BETWEEN is inclusive on both ends; combine with the category filter using AND"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Monitor\", 12000], [\"Laptop\", 55000]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

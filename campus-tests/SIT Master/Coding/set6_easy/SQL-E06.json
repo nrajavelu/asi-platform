@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E06",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Furniture Products",
+  "statement": "Write a query returning `id, name, price` for products in the 'furniture' category, ordered by price descending.",
+  "starter_code": "SELECT id, name, price FROM products\nWHERE -- TODO\nORDER BY -- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE products (id INT PRIMARY KEY, name TEXT NOT NULL, price INT NOT NULL, category TEXT NOT NULL);\nINSERT INTO products (id, name, price, category) VALUES\n  (1, 'Laptop', 55000, 'electronics'), (2, 'Mouse', 500, 'electronics'),\n  (3, 'Desk', 8000, 'furniture'), (4, 'Chair', 3500, 'furniture'), (5, 'Monitor', 12000, 'electronics');\n",
+  "hints": [
+    "Filter on category, then order by price descending"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[3, \"Desk\", 8000], [4, \"Chair\", 3500]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

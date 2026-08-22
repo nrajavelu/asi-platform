@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M02",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Few-Shot Example Block",
+  "statement": "Read n, then n pairs of lines (input, output) representing examples, then a final query. Print each example as 'Input: X' / 'Output: Y', then 'Input: <query>' / 'Output:' (left blank for the model to fill in).",
+  "starter_code": "n = int(input())\nexamples = [(input(), input()) for _ in range(n)]\nquery = input()\n# TODO: print the few-shot formatted block\n",
+  "language_id": 71,
+  "hints": [
+    "Loop through the examples printing both lines for each, then the final unanswered pair"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "2\nhappy\npositive\nsad\nnegative\nexcited",
+      "expected_output": "Input: happy\nOutput: positive\nInput: sad\nOutput: negative\nInput: excited\nOutput:",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

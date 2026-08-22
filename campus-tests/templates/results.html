@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Results</h1>
+<p class="subtitle">Started/Completed only — Google Forms can't report "opened but not submitted" without the /start gate running.</p>
+
+<div class="card">
+  <form action="/results" method="get" class="inline-form">
+    <div class="field">
+      <label>Round</label>
+      <select name="round_id" onchange="this.form.submit()">
+        <option value="">— choose a round —</option>
+        {% for r in rounds %}
+        <option value="{{ r.id }}" {{ 'selected' if round_ and r.id == round_.id else '' }}>#{{ r.id }} - {{ r.drive.name }} ({{ r.round_type }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+{% if round_ %}
+
+<div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-value">{{ kpis.invited }}</div><div class="kpi-label">Invited</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ kpis.started }}</div><div class="kpi-label">Started</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ kpis.completed }}</div><div class="kpi-label">Completed</div></div>
+  <div class="kpi-card"><div class="kpi-value">{{ kpis.not_completed }}</div><div class="kpi-label">Not completed</div></div>
+</div>
+
+<div class="card">
+  <div class="section-title">Process results</div>
+  <p class="hint">Pulls responses from the Google Form, matches them to candidates by email, and scores every completed attempt.</p>
+  <form action="/results/process" method="post">
+    <input type="hidden" name="round_id" value="{{ round_.id }}">
+    <button type="submit">Pull &amp; score responses</button>
+  </form>
+</div>
+
+{% if coding_analytics is not none %}
+<div class="card">
+  <div class="section-title">Per-Question Analytics</div>
+  <p class="hint">Sorted hardest-first (lowest pass rate). "Attempted" means they ran code but never submitted.</p>
+  {% if coding_analytics %}
+  <table>
+    <tr><th>Question</th><th>Assigned</th><th>Passed</th><th>Partial</th><th>Failed</th><th>Attempted only</th><th>Not attempted</th><th>Pass rate</th></tr>
+    {% for q in coding_analytics %}
+    <tr>
+      <td>{{ q.title }}</td>
+      <td>{{ q.assigned_count }}</td>
+      <td>{{ q.passed }}</td>
+      <td>{{ q.partial }}</td>
+      <td>{{ q.failed }}</td>
+      <td>{{ q.attempted_only }}</td>
+      <td>{{ q.not_attempted }}</td>
+      <td>{{ q.pass_rate }}%</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No candidates have started this coding round yet.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="section-title">Candidates</div>
+  <div class="filter-tabs" style="margin-top:12px;">
+    <a href="/results?round_id={{ round_.id }}" class="{{ 'active' if not status_filter else '' }}">All ({{ kpis.invited }})</a>
+    <a href="/results?round_id={{ round_.id }}&status=invited" class="{{ 'active' if status_filter == 'invited' else '' }}">Invited</a>
+    <a href="/results?round_id={{ round_.id }}&status=started" class="{{ 'active' if status_filter == 'started' else '' }}">Started</a>
+    <a href="/results?round_id={{ round_.id }}&status=submitted" class="{{ 'active' if status_filter == 'submitted' else '' }}">Submitted</a>
+  </div>
+  {% if attempts %}
+  <table>
+    <tr><th>Name</th><th>Email</th><th>Status</th><th>Score</th><th>%</th><th>Band</th></tr>
+    {% for a in attempts %}
+    <tr>
+      <td>{{ a.candidate.name }}</td>
+      <td>{{ a.candidate.email }}</td>
+      <td><span class="status-pill {{ a.status }}">{{ a.status }}</span></td>
+      <td>{{ a.score if a.score is not none else '—' }}{{ '/' ~ a.max_score if a.max_score else '' }}</td>
+      <td>{{ (a.percent ~ '%') if a.percent is not none else '—' }}</td>
+      <td>{% if a.band %}<span class="band-pill {{ a.band }}">{{ a.band }}</span>{% else %}—{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No candidates match this filter.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-title">Shortlist</div>
+  <p class="hint">Bands every submitted attempt by score. Defaults to this round's saved cutoffs.</p>
+  <form action="/results/shortlist" method="post" class="inline-form">
+    <input type="hidden" name="round_id" value="{{ round_.id }}">
+    <div class="field">
+      <label>Shortlist bench (%)</label>
+      <input type="number" name="bench_pct" min="0" max="100" value="{{ bench_pct or round_.cutoff_high }}">
+    </div>
+    <div class="field">
+      <label>Borderline floor (%)</label>
+      <input type="number" name="borderline_pct" min="0" max="100" value="{{ borderline_pct or round_.cutoff_low }}">
+    </div>
+    <button type="submit">Compute shortlist</button>
+  </form>
+
+  {% if shortlist_bands %}
+  {% for band_name in ['shortlisted', 'borderline', 'rejected'] %}
+  <div style="margin-top:20px;">
+    <span class="band-pill {{ band_name }}">{{ band_name }}</span>
+    <span class="muted"> — {{ shortlist_bands[band_name]|length }} candidate(s)</span>
+    {% if shortlist_bands[band_name] %}
+    <table>
+      <tr><th>Name</th><th>Email</th><th>Score</th><th>%</th></tr>
+      {% for a in shortlist_bands[band_name] %}
+      <tr><td>{{ a.candidate.name }}</td><td>{{ a.candidate.email }}</td><td>{{ a.score }}/{{ a.max_score }}</td><td>{{ a.percent }}%</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="section-title">Top N</div>
+  <form action="/results/top-n" method="post" class="inline-form">
+    <input type="hidden" name="round_id" value="{{ round_.id }}">
+    <div class="field">
+      <label>Show top</label>
+      <input type="number" name="n" min="1" value="{{ top_n_value or 10 }}">
+    </div>
+    <button type="submit">Show ranking</button>
+  </form>
+
+  {% if top_n_results is not none %}
+  <table>
+    <tr><th>Rank</th><th>Name</th><th>Email</th><th>Score</th><th>%</th></tr>
+    {% for a in top_n_results %}
+    <tr><td>{{ loop.index }}</td><td>{{ a.candidate.name }}</td><td>{{ a.candidate.email }}</td><td>{{ a.score }}/{{ a.max_score }}</td><td>{{ a.percent }}%</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

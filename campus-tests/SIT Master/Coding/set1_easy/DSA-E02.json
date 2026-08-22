@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E02",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Count Words",
+  "statement": "Read a line of text and print the number of whitespace-separated words in it.",
+  "starter_code": "s = input()\n# TODO: print the word count\n",
+  "language_id": 71,
+  "hints": [
+    "str.split() with no arguments splits on any whitespace"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "the quick brown fox",
+      "expected_output": "4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hello",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "  a  b   c  ",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "one two three four five",
+      "expected_output": "5",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

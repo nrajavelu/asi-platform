@@ -1,0 +1,20 @@
+{
+  "id": "PY-01",
+  "topic": "python",
+  "difficulty": "easy",
+  "title": "Sum of Two Numbers",
+  "statement": "Read two space-separated integers from stdin and print their sum.",
+  "starter_code": "a, b = map(int, input().split())\n# TODO: print the sum\n",
+  "language_id": 71,
+  "hints": [
+    "input().split() gives you two strings",
+    "Convert each to int before adding"
+  ],
+  "points": 10,
+  "test_cases": [
+    {"stdin": "3 4", "expected_output": "7", "is_sample": true, "weight": 1},
+    {"stdin": "10 20", "expected_output": "30", "is_sample": true, "weight": 1},
+    {"stdin": "-5 5", "expected_output": "0", "is_sample": false, "weight": 1},
+    {"stdin": "100 200", "expected_output": "300", "is_sample": false, "weight": 1}
+  ]
+}

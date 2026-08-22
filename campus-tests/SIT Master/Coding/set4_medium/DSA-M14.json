@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M14",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Count Set Bits",
+  "statement": "Read an integer n and print the number of 1-bits in its binary representation.",
+  "starter_code": "n = int(input())\n# TODO: print the number of set bits\n",
+  "language_id": 71,
+  "hints": [
+    "bin(n) gives a string like '0b101' - count the '1' characters in it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "7",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "8",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "255",
+      "expected_output": "8",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "0",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H13",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Max Product of Two Numbers",
+  "statement": "Read a line of space-separated integers (may include negatives). Print the maximum product obtainable from any two distinct elements.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the maximum product of any two elements\n",
+  "language_id": 71,
+  "hints": [
+    "The max product might come from two large positives OR two large-magnitude negatives - check every pair to be safe"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1 5 3 9 2",
+      "expected_output": "45",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "-10 -20 1 2",
+      "expected_output": "200",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "-5 -1 -8",
+      "expected_output": "40",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

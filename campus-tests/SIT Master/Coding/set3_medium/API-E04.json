@@ -1,0 +1,28 @@
+{
+  "id": "API-E04",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Extract Model Name",
+  "statement": "Read a mock API response JSON with a 'model' field. Print its value.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print data['model']\n",
+  "language_id": 71,
+  "hints": [
+    "Direct dictionary key access after parsing"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"model\": \"gpt-4\"}",
+      "expected_output": "gpt-4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"model\": \"claude-3\"}",
+      "expected_output": "claude-3",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

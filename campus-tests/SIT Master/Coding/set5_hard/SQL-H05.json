@@ -1,0 +1,22 @@
+{
+  "id": "SQL-H05",
+  "topic": "vector_basics",
+  "difficulty": "hard",
+  "title": "Farthest Document",
+  "statement": "Write a query returning `id, title` for the single document FARTHEST (least similar) from the vector [1,0,0].",
+  "starter_code": "SELECT id, title FROM documents\nORDER BY -- TODO\nLIMIT 1;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE documents (id INT PRIMARY KEY, title TEXT NOT NULL, embedding vector(3));\nINSERT INTO documents (id, title, embedding) VALUES\n  (1, 'Intro to Python', '[1,0,0]'), (2, 'Advanced Python', '[0.9,0.2,0]'),\n  (3, 'Gardening Basics', '[0,1,0]'), (4, 'Cooking 101', '[0,0.9,0.1]'), (5, 'Python for Data Science', '[0.8,0.3,0.1]');\n",
+  "hints": [
+    "Adding DESC to the distance ordering finds the farthest instead of the nearest"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[3, \"Gardening Basics\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

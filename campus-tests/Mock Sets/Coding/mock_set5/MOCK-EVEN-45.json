@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-EVEN-45",
+  "topic": "mock_basic",
+  "difficulty": "easy",
+  "title": "Even or Odd",
+  "statement": "Read an integer and print 'even' or 'odd'.",
+  "starter_code": "n = int(input())\n# TODO: print even or odd\n",
+  "language_id": 71,
+  "hints": [
+    "Check n % 2 == 0"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "45",
+      "expected_output": "odd",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "46",
+      "expected_output": "even",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "90",
+      "expected_output": "even",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

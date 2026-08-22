@@ -1,0 +1,34 @@
+{
+  "id": "API-M01",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Handle Missing Field Gracefully",
+  "statement": "Read a mock API response JSON that may or may not have an 'answer' field. Print the answer if present, else print 'NO_ANSWER'.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print data['answer'] if present, else 'NO_ANSWER'\n",
+  "language_id": 71,
+  "hints": [
+    "dict.get(key, default) avoids a KeyError when the key might be missing"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"answer\": \"yes\"}",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"other\": \"field\"}",
+      "expected_output": "NO_ANSWER",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{}",
+      "expected_output": "NO_ANSWER",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

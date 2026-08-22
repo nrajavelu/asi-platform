@@ -1,0 +1,7 @@
+{
+  "id": "TD-06",
+  "area": "prompt_quality",
+  "question": "LIVE EXERCISE: \"Get the model to summarize a support ticket into 3 bullet points, consistently formatted, without hallucinating details.\" Have them write the system prompt out loud, then push a follow-up edge case.",
+  "rubric_guide": "Strong: structures the prompt (role, task, constraints, format); explicitly guards against hallucination (\"only use information present in the ticket\"); precise output format, not \"make it good\"; genuinely iterates when pushed with the edge case.\nWeak: static, vague instructions, no format constraint, doesn't adapt when challenged.",
+  "max_score": 5
+}

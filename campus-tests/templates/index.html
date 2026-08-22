@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Campus Test Console</h1>
+<p class="subtitle">Local admin console — nothing here is reachable outside this machine.</p>
+
+<div class="card">
+  <div class="kv"><strong>Questions in bank</strong> {{ question_count }}</div>
+  <div class="kv"><strong>Drives</strong> {{ drive_count }}</div>
+  <div class="kv"><strong>Rounds</strong> {{ round_count }}</div>
+  <div class="kv"><strong>Candidates</strong> {{ candidate_count }}</div>
+</div>
+
+<div class="card">
+  <strong>Rounds</strong>
+  {% if rounds %}
+  <table>
+    <tr><th>ID</th><th>Drive</th><th>Type</th><th>Form</th><th>Candidates</th></tr>
+    {% for r in rounds %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td>{{ r.drive.name }} ({{ r.drive.campus }})</td>
+      <td>{{ r.round_type }}</td>
+      <td>{{ "ready" if r.form_id else "not built" }}</td>
+      <td>{{ r.attempt_count }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No rounds yet — start with Question Bank, then Build Round.</p>
+  {% endif %}
+</div>
+{% endblock %}

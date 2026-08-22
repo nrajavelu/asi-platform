@@ -1,0 +1,7 @@
+{
+  "id": "TD-16",
+  "area": "vibe_coding",
+  "question": "How do you decide what to hand off to an AI assistant vs. write yourself?",
+  "rubric_guide": "Strong: articulates a real heuristic (boilerplate/scaffolding to AI; core business logic/security-sensitive code with more manual review; unfamiliar domain as an AI-generated starting draft, not final).\nRed flag: \"it does everything\" or \"I barely use it\" - both suggest no real judgment being exercised.",
+  "max_score": 5
+}

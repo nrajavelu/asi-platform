@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}Aizentify Campus Console{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue-400: #1ea7e8; --blue-500: #1a7ee8; --blue-600: #1450e8;
+    --cyan-300: #7fe3f7; --cyan-400: #3dd1f2;
+    --gradient-brand: linear-gradient(120deg, var(--cyan-400) 0%, var(--blue-500) 55%, var(--blue-600) 100%);
+    --ink-300: #9ea3a9; --ink-500: #6c7077; --ink-700: #3d4045; --ink-900: #17181b;
+    --line: #dfe6f0;
+    --paper-0: #ffffff; --paper-50: #f6f9fc; --paper-100: #eef3f9; --paper-200: #e2e9f2;
+    --radius-lg: 24px; --radius-md: 16px; --radius-sm: 10px;
+    --shadow-sm: 0 2px 10px rgba(11, 30, 61, 0.06);
+    --shadow-md: 0 12px 30px rgba(11, 30, 61, 0.10);
+    --shadow-lg: 0 24px 60px rgba(11, 30, 61, 0.16);
+    --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-head: "Sora", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background: var(--paper-50);
+    color: var(--ink-900);
+  }
+  header.topbar {
+    background: var(--paper-0);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  header.topbar img { height: 32px; }
+  header.topbar .app-name {
+    font-family: var(--font-head);
+    font-weight: 600;
+    color: var(--ink-700);
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 32px;
+    background: var(--paper-0);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.tabs a {
+    display: inline-block;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--ink-500);
+    font-weight: 500;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+  }
+  nav.tabs a.active {
+    color: var(--blue-600);
+    border-bottom-color: var(--blue-500);
+  }
+  main {
+    max-width: 920px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 20px;
+  }
+  .kpi-card .kpi-value {
+    font-family: var(--font-head);
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--ink-900);
+  }
+  .kpi-card .kpi-label {
+    font-size: 12.5px;
+    color: var(--ink-500);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-tabs a {
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--paper-100);
+    color: var(--ink-700);
+  }
+  .filter-tabs a.active { background: var(--blue-500); color: white; }
+  .status-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; text-transform: uppercase; }
+  .status-pill.invited { background: var(--paper-200); color: var(--ink-700); }
+  .status-pill.started { background: #fff4de; color: #9a6700; }
+  .status-pill.submitted { background: #eafaf1; color: #146c43; }
+  .band-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; }
+  .band-pill.shortlisted { background: #eafaf1; color: #146c43; }
+  .band-pill.borderline { background: #fff4de; color: #9a6700; }
+  .band-pill.rejected { background: #fdecec; color: #b3261e; }
+  .band-pill.selected { background: #eafaf1; color: #146c43; }
+  .band-pill.hold { background: #fff4de; color: #9a6700; }
+  .rubric-card { border: 1px solid var(--paper-200); border-radius: 10px; padding: 16px; margin-bottom: 16px; background: var(--paper-50); }
+  .rubric-guide { font-size: 13px; color: var(--ink-500); white-space: pre-line; background: var(--paper-0); border-left: 3px solid var(--blue-400); padding: 10px 12px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+  .score-row { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+  .score-row select { width: 80px; }
+  .prev-scores { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 20px; }
+  .prev-score-chip { background: var(--paper-0); border: 1px solid var(--paper-200); border-radius: 10px; padding: 8px 14px; font-size: 13px; }
+  .prev-score-chip strong { display: block; font-size: 15px; color: var(--ink-700); }
+  .warning-banner {
+    background: #fff4de;
+    border: 1px solid #f5d896;
+    color: #7a5200;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .warning-banner strong { display: block; margin-bottom: 6px; font-size: 14px; }
+  .section-title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0 0 4px;
+  }
+  .inline-form { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .inline-form .field { flex: 1; min-width: 120px; }
+  .inline-form label { margin: 0 0 6px; }
+  .inline-form button { margin-top: 0; }
+  h1 {
+    font-family: var(--font-head);
+    font-size: 26px;
+    margin: 0 0 6px;
+    color: var(--ink-900);
+  }
+  p.subtitle { color: var(--ink-500); margin: 0 0 28px; font-size: 14.5px; }
+  .card {
+    background: var(--paper-0);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-700);
+    margin: 16px 0 6px;
+  }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=number], input[type=file], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: var(--font-body);
+    color: var(--ink-900);
+    background: var(--paper-50);
+  }
+  input:focus, select:focus { outline: 2px solid var(--blue-400); outline-offset: 1px; }
+  .hint { color: var(--ink-300); font-size: 12.5px; margin-top: 4px; }
+  .radio-row { display: flex; gap: 20px; margin-top: 4px; }
+  .radio-row label { display: flex; align-items: center; gap: 6px; margin: 0; font-weight: 500; }
+  button {
+    margin-top: 24px;
+    background: var(--gradient-brand);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  button:hover { box-shadow: var(--shadow-md); }
+  .flash {
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .flash.ok { background: #eafaf1; color: #146c43; border: 1px solid #b8ecd0; }
+  .flash.err { background: #fdecec; color: #b3261e; border: 1px solid #f6c7c4; }
+  .kv { font-size: 14px; margin: 6px 0; }
+  .kv strong { color: var(--ink-700); display: inline-block; min-width: 120px; }
+  a.link { color: var(--blue-600); word-break: break-all; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--ink-500); font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .badge.sent { background: #eafaf1; color: #146c43; }
+  .badge.dry-run { background: var(--paper-200); color: var(--ink-700); }
+  .muted { color: var(--ink-300); font-size: 13.5px; }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  button:disabled { opacity: 0.75; cursor: wait; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <img src="/static/brand-logo-header.png" alt="Aizentify">
+  <span class="app-name">Campus Test Console</span>
+</header>
+<nav class="tabs">
+  <a href="/" class="{{ 'active' if active == 'home' else '' }}">Home</a>
+  <a href="/bank" class="{{ 'active' if active == 'bank' else '' }}">Question Bank</a>
+  <a href="/rounds/new" class="{{ 'active' if active == 'build' else '' }}">Build Round</a>
+  <a href="/candidates" class="{{ 'active' if active == 'candidates' else '' }}">Candidates</a>
+  <a href="/invites" class="{{ 'active' if active == 'invites' else '' }}">Invites</a>
+  <a href="/results" class="{{ 'active' if active == 'results' else '' }}">Results</a>
+  <a href="/technical-discussion" class="{{ 'active' if active == 'technical_discussion' else '' }}">Technical Discussion</a>
+  <a href="/final-conclusion" class="{{ 'active' if active == 'final_conclusion' else '' }}">Final Conclusion</a>
+</nav>
+<main>
+{% if flash %}
+  <div class="flash {{ 'err' if flash_error else 'ok' }}">{{ flash }}</div>
+{% endif %}
+{% block content %}{% endblock %}
+</main>
+<script>
+  // Every POST form: disable its submit button and show a loading state on
+  // submit, so a slow request (form creation, invite send, scoring) can't be
+  // double-clicked into running twice. The page always fully reloads next
+  // (success or error), so there's nothing to re-enable manually.
+  document.querySelectorAll('form').forEach(function (form) {
+    if ((form.method || 'get').toLowerCase() !== 'post') return;
+    form.addEventListener('submit', function () {
+      const btn = form.querySelector('button[type=submit], button:not([type])');
+      if (!btn || btn.disabled) return;
+      btn.disabled = true;
+      btn.dataset.originalText = btn.textContent;
+      btn.innerHTML = '<span class="spinner"></span>Working…';
+    });
+  });
+</script>
+</body>
+</html>

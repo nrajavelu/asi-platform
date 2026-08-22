@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-REV-quick",
+  "topic": "mock_basic",
+  "difficulty": "medium",
+  "title": "Reverse a Word",
+  "statement": "Read a word and print it reversed.",
+  "starter_code": "s = input().strip()\n# TODO: print the reversed word\n",
+  "language_id": 71,
+  "hints": [
+    "s[::-1] reverses a string"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "quick",
+      "expected_output": "kciuq",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "kciuq",
+      "expected_output": "quick",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "quick",
+      "expected_output": "kciuq",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

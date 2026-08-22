@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E04",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Second Largest",
+  "statement": "Read a line of space-separated integers (at least 2, all distinct) and print the second largest.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the second largest\n",
+  "language_id": 71,
+  "hints": [
+    "Sort the numbers and look at the second-from-last"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3 7 2 9 4",
+      "expected_output": "7",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "10 20",
+      "expected_output": "10",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1 5 3 5 5 2",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "100 50 75 25",
+      "expected_output": "75",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

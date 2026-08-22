@@ -1,0 +1,22 @@
+{
+  "id": "SQL-M04",
+  "topic": "sql_basics",
+  "difficulty": "medium",
+  "title": "Customers With No Orders Missing",
+  "statement": "Write a query returning customer `name` and their order count (0 if none), using a LEFT JOIN, ordered by name.",
+  "starter_code": "SELECT c.name, COUNT(o.id) as order_count\nFROM customers c LEFT JOIN orders o ON -- TODO\nGROUP BY -- TODO\nORDER BY c.name;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL);\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), amount INT NOT NULL);\nINSERT INTO customers (id, name) VALUES (1, 'Aman'), (2, 'Bala'), (3, 'Chitra');\nINSERT INTO orders (id, customer_id, amount) VALUES (1, 1, 500), (2, 1, 300), (3, 2, 700), (4, 3, 200), (5, 2, 100);\n",
+  "hints": [
+    "LEFT JOIN preserves customers even with zero matching orders; COUNT(o.id) correctly counts 0 for them"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"Aman\", 2], [\"Bala\", 2], [\"Chitra\", 1]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

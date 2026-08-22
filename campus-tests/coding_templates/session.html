@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AICodeStudio</title>
+<style>
+  :root {
+    --blue-500: #1a7ee8; --blue-600: #1450e8; --cyan-400: #3dd1f2;
+    --ink-900: #17181b; --ink-700: #3d4045; --ink-500: #6c7077; --ink-300: #9ea3a9;
+    --paper-0: #ffffff; --paper-50: #f6f9fc; --paper-100: #eef3f9; --line: #dfe6f0;
+    --ok: #146c43; --ok-bg: #eafaf1; --warn: #ffb020; --danger: #ff4d4d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: -apple-system, "Segoe UI", sans-serif; color: var(--ink-900); background: var(--paper-50); }
+  body { display: flex; flex-direction: column; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; background: var(--paper-0); border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .brand { display: flex; flex-direction: column; line-height: 1.15; }
+  .brand .name {
+    font-weight: 800; font-size: 17px;
+    background: linear-gradient(120deg, var(--cyan-400), var(--blue-600));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .brand .powered { font-size: 10.5px; color: var(--ink-300); letter-spacing: 0.02em; }
+
+  .timer-block { display: flex; align-items: center; gap: 16px; }
+  #clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 22px; color: var(--blue-600); }
+  #clock.warn { color: var(--warn); }
+  #clock.danger { color: var(--danger); }
+  #finishBtn {
+    background: var(--ink-900); color: white; border: none; padding: 8px 16px;
+    border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+
+  .body-row { flex: 1; display: flex; min-height: 0; }
+
+  #sidebar { width: 220px; flex-shrink: 0; background: var(--paper-0); border-right: 1px solid var(--line); overflow-y: auto; }
+  .q-section-header { padding: 10px 16px 4px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-500); background: var(--paper-50); }
+  .q-item { padding: 12px 16px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 13.5px; }
+  .q-item.active { background: var(--paper-100); }
+  .q-item .badge { display: inline-block; margin-top: 4px; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .badge.not_attempted { background: var(--paper-100); color: var(--ink-500); }
+  .badge.attempted, .badge.failed { background: #fdecec; color: #b3261e; }
+  .badge.partial { background: #fff4e0; color: #a15c00; }
+  .badge.passed { background: var(--ok-bg); color: var(--ok); }
+
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #statement { padding: 16px 20px; background: var(--paper-0); border-bottom: 1px solid var(--line); overflow-y: auto; max-height: 32%; }
+  #statement h2 { margin: 0 0 8px; font-size: 16px; }
+  #statement p { font-size: 13.5px; line-height: 1.55; color: var(--ink-700); white-space: pre-wrap; }
+  #hints { margin-top: 8px; font-size: 12.5px; color: var(--ink-500); }
+
+  #editor { flex: 1; min-height: 0; }
+
+  .action-row { display: flex; gap: 10px; padding: 10px 20px; background: var(--paper-0); border-top: 1px solid var(--line); }
+  .action-row button {
+    padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; border: none;
+  }
+  #runBtn { background: var(--paper-100); color: var(--ink-700); }
+  #submitBtn { background: linear-gradient(120deg, var(--cyan-400), var(--blue-600)); color: white; }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  #results { max-height: 26%; overflow-y: auto; padding: 10px 20px; background: var(--paper-50); border-top: 1px solid var(--line); font-size: 12.5px; }
+  .result-row { padding: 6px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; }
+  .result-row.pass { color: var(--ok); }
+  .result-row.fail { color: #b3261e; }
+
+  #timesup {
+    display: none; position: fixed; inset: 0; background: rgba(15,17,20,0.92); color: white;
+    align-items: center; justify-content: center; flex-direction: column; gap: 14px; z-index: 999;
+  }
+  #timesup.show { display: flex; }
+  #timesup h1 { font-size: 30px; margin: 0; }
+</style>
+</head>
+<body data-token="{{ token }}">
+<header>
+  <div class="brand">
+    <span class="name">AICodeStudio</span>
+    <span class="powered">powered by Aizentify LLP</span>
+  </div>
+  <div class="timer-block">
+    <div id="clock">--:--</div>
+    <button id="finishBtn">Finish &amp; Submit</button>
+  </div>
+</header>
+
+<div class="body-row">
+  <div id="sidebar"></div>
+  <main>
+    <div id="statement">
+      <h2 id="q-title"></h2>
+      <p id="q-text"></p>
+      <div id="hints"></div>
+      <div id="css-scaffold" style="display:none;">
+        <strong>HTML you're styling (read-only):</strong>
+        <pre id="css-scaffold-code"></pre>
+      </div>
+    </div>
+    <div id="editor"></div>
+    <div class="action-row">
+      <button id="runBtn">Run (sample tests)</button>
+      <button id="submitBtn">Submit</button>
+    </div>
+    <div id="results"></div>
+  </main>
+</div>
+
+<div id="timesup">
+  <h1>Time's up</h1>
+  <p>Your session has ended and your best submissions have been recorded.</p>
+</div>
+
+<script src="/coding-assets/vs/loader.js"></script>
+<script>
+const TOKEN = document.body.dataset.token;
+const LANG_MAP = {71: "python", 63: "javascript", 74: "typescript", 62: "java", 54: "cpp", 50: "c"};
+const TYPE_LANG_MAP = {sql: "sql", react: "javascript", css: "css"};
+
+function editorLanguageFor(q) {
+  return TYPE_LANG_MAP[q.question_type] || LANG_MAP[q.language_id] || "plaintext";
+}
+
+let editor = null;
+let questions = [];
+let currentIndex = 0;
+const codeByQuestion = {};
+
+function post(url, params) {
+  const body = new URLSearchParams(params);
+  return fetch(url, { method: "POST", body }).then(r => r.json().then(data => ({ ok: r.ok, data })));
+}
+
+function renderSidebar() {
+  const el = document.getElementById("sidebar");
+  el.innerHTML = "";
+  let lastTopic = null;
+  questions.forEach((q, i) => {
+    if (q.topic && q.topic !== lastTopic) {
+      const header = document.createElement("div");
+      header.className = "q-section-header";
+      header.textContent = q.topic.replace(/_/g, " ");
+      el.appendChild(header);
+      lastTopic = q.topic;
+    }
+    const div = document.createElement("div");
+    div.className = "q-item" + (i === currentIndex ? " active" : "");
+    div.innerHTML = `${i + 1}. ${q.title}<br><span class="badge ${q.status}">${q.status.replace('_', ' ')}</span>`;
+    div.addEventListener("click", () => switchQuestion(i));
+    el.appendChild(div);
+  });
+}
+
+function switchQuestion(i) {
+  if (editor) codeByQuestion[questions[currentIndex].question_id] = editor.getValue();
+  currentIndex = i;
+  const q = questions[i];
+  document.getElementById("q-title").textContent = q.title;
+  document.getElementById("q-text").textContent = q.statement;
+  document.getElementById("hints").innerHTML = q.hints.length
+    ? "<strong>Hints:</strong><ul>" + q.hints.map(h => `<li>${h}</li>`).join("") + "</ul>"
+    : "";
+  const scaffoldEl = document.getElementById("css-scaffold");
+  if (q.question_type === "css" && q.harness_fixture) {
+    document.getElementById("css-scaffold-code").textContent = q.harness_fixture.replace("{{CSS}}", "/* your CSS renders here */");
+    scaffoldEl.style.display = "block";
+  } else {
+    scaffoldEl.style.display = "none";
+  }
+  document.getElementById("results").innerHTML = "";
+  const code = codeByQuestion[q.question_id] !== undefined ? codeByQuestion[q.question_id] : q.starter_code;
+  if (editor) {
+    monaco.editor.setModelLanguage(editor.getModel(), editorLanguageFor(q));
+    editor.setValue(code);
+  }
+  renderSidebar();
+}
+
+function renderResults(results, label) {
+  const el = document.getElementById("results");
+  el.innerHTML = `<div style="margin-bottom:6px;"><strong>${label}</strong></div>`;
+  results.forEach((r, i) => {
+    const row = document.createElement("div");
+    row.className = "result-row " + (r.passed ? "pass" : "fail");
+    row.innerHTML = `<span>Test ${i + 1}</span><span>${r.passed ? "Passed" : "Failed"} (${r.status})</span>`;
+    el.appendChild(row);
+  });
+}
+
+async function runCode() {
+  const q = questions[currentIndex];
+  const { data } = await post(`/coding/${TOKEN}/api/run`, { question_id: q.question_id, code: editor.getValue() });
+  renderResults(data.results, "Sample test results");
+}
+
+async function submitCode() {
+  const q = questions[currentIndex];
+  const { data } = await post(`/coding/${TOKEN}/api/submit`, { question_id: q.question_id, code: editor.getValue() });
+  renderResults(data.results, `Submitted - score ${data.score}/${q.points}`);
+  q.status = data.status;
+  renderSidebar();
+}
+
+async function finishSession() {
+  if (!confirm("Finish and submit the whole session? You won't be able to make further changes.")) return;
+  await post(`/coding/${TOKEN}/api/finish`, {});
+  showTimesUp();
+}
+
+function showTimesUp() {
+  document.getElementById("timesup").classList.add("show");
+  document.getElementById("runBtn").disabled = true;
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("finishBtn").disabled = true;
+}
+
+function formatClock(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2, "0");
+  const s = Math.floor(secs % 60).toString().padStart(2, "0");
+  return m + ":" + s;
+}
+
+async function tick() {
+  const resp = await fetch(`/coding/${TOKEN}/api/session`);
+  const data = await resp.json();
+  const clock = document.getElementById("clock");
+  clock.textContent = formatClock(data.remaining_seconds);
+  clock.className = data.remaining_seconds <= 60 ? "danger" : data.remaining_seconds <= 300 ? "warn" : "";
+  if (data.attempt_status === "submitted" || data.remaining_seconds <= 0) {
+    showTimesUp();
+    return;
+  }
+  setTimeout(tick, 5000);
+}
+
+async function initSession() {
+  const resp = await fetch(`/coding/${TOKEN}/api/session`);
+  const data = await resp.json();
+  questions = data.questions;
+  if (data.attempt_status === "submitted" || data.remaining_seconds <= 0) {
+    showTimesUp();
+    return;
+  }
+  switchQuestion(0);
+  document.getElementById("runBtn").addEventListener("click", runCode);
+  document.getElementById("submitBtn").addEventListener("click", submitCode);
+  document.getElementById("finishBtn").addEventListener("click", finishSession);
+  tick();
+}
+
+require.config({ paths: { vs: "/coding-assets/vs" } });
+require(["vs/editor/editor.main"], function () {
+  editor = monaco.editor.create(document.getElementById("editor"), {
+    value: "", language: "python", theme: "vs-dark", automaticLayout: true, fontSize: 14, minimap: { enabled: false },
+  });
+  initSession();
+});
+</script>
+</body>
+</html>

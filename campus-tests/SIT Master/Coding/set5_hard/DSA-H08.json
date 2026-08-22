@@ -1,0 +1,40 @@
+{
+  "id": "DSA-H08",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Longest Palindromic Substring Length",
+  "statement": "Read a lowercase string. Print the length of the longest substring that is a palindrome.",
+  "starter_code": "s = input().strip()\n# TODO: print the length of the longest palindromic substring\n",
+  "language_id": 71,
+  "hints": [
+    "Check every substring; a substring is a palindrome if it equals its own reverse"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "babad",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "cbbd",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "a",
+      "expected_output": "1",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "racecarxyz",
+      "expected_output": "7",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

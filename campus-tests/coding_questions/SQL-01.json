@@ -1,0 +1,23 @@
+{
+  "id": "SQL-01",
+  "topic": "sql",
+  "difficulty": "medium",
+  "title": "Nearest Products by Embedding",
+  "statement": "The `products` table (columns: id INT, name TEXT, embedding vector(3)) is pre-seeded with 4 rows. Using pgvector's `<->` (L2 distance) operator, write a query that returns `id` and `name` for ALL products, ordered from closest to farthest from the vector [1,0,0].",
+  "starter_code": "-- Write your query below\nSELECT id, name FROM products\n-- ORDER BY ...\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "CREATE TABLE products (\n  id INT PRIMARY KEY,\n  name TEXT NOT NULL,\n  embedding vector(3)\n);\nINSERT INTO products (id, name, embedding) VALUES\n  (1, 'Apple',  '[1,0,0]'),\n  (2, 'Banana', '[0,1,0]'),\n  (3, 'Cherry', '[0,0,1.2]'),\n  (4, 'Date',   '[0.9,0.1,0]');\n",
+  "hints": [
+    "The <-> operator computes L2 (Euclidean) distance between two vectors",
+    "ORDER BY embedding <-> '[1,0,0]' sorts rows by distance to that vector"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, \"Apple\"], [4, \"Date\"], [2, \"Banana\"], [3, \"Cherry\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

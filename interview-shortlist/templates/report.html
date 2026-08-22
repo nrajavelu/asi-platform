@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ meta.original_filename }} · Interview Shortlist{% endblock %}
+{% block content %}
+
+<header class="page-header">
+  <p class="eyebrow">Aizentify · Hiring Pipeline</p>
+  <h1>{{ meta.original_filename }}</h1>
+  <p class="subtitle">Uploaded {{ meta.uploaded_at.replace("T", " ") }} · ranked by AI/Claude-relevant signal, filtered to candidates willing to relocate to Chennai.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><span class="n">{{ meta.total_submissions }}</span><span class="l">Total submissions</span></div>
+  <div class="stat accent"><span class="n">{{ meta.relocate_yes }}</span><span class="l">Relocate to Chennai: Yes</span></div>
+  <div class="stat"><span class="n">{{ meta.relocate_no }}</span><span class="l">Not relocating</span></div>
+  <div class="stat"><span class="n">{{ meta.intern_total }}</span><span class="l">Intern-track (relocating)</span></div>
+  <div class="stat"><span class="n">{{ meta.experienced_total }}</span><span class="l">Experienced-track (relocating)</span></div>
+  <div class="stat"><span class="n">{{ summary.claude_total }}</span><span class="l">Mention Claude / Anthropic</span></div>
+</div>
+
+<section class="picks">
+  <div class="picks-head">
+    <h2>Top Profiles</h2>
+    <span class="tier-badge intern">INTERN TRACK</span>
+  </div>
+  <p class="picks-sub">Top {{ [summary.intern|length, 8]|min }} of {{ summary.intern_total }} relocating applicants</p>
+  <div class="pick-grid">
+    {% for p in summary.intern[:8] %}
+    <article class="pick-card">
+      <div class="pick-rank">{{ "%02d"|format(loop.index) }}</div>
+      <div class="pick-body">
+        <h3 class="pick-name">{{ p.name }}</h3>
+        <p class="pick-role">{{ p.role }}</p>
+        <div class="pick-chips">
+          <span class="chip chip-score">AI signal {{ p.ai_score }}</span>
+          {% if p.claude_mentioned %}<span class="chip chip-claude">Claude/Anthropic mentioned</span>{% endif %}
+        </div>
+        <dl class="pick-meta">
+          <div><dt>Contact</dt><dd>{{ p.mobile or "—" }}</dd></div>
+          <div><dt>Email</dt><dd>{{ p.email or "—" }}</dd></div>
+          <div><dt>City / State</dt><dd>{{ p.city }} · {{ p.state }}</dd></div>
+        </dl>
+      </div>
+      <a class="resume-btn" href="{{ p.resume }}" target="_blank" rel="noopener noreferrer">View resume ↗</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="picks">
+  <div class="picks-head">
+    <h2>Top Profiles</h2>
+    <span class="tier-badge exp">EXPERIENCED TRACK</span>
+  </div>
+  <p class="picks-sub">Top {{ [summary.experienced|length, 8]|min }} of {{ summary.experienced_total }} relocating applicants</p>
+  <div class="pick-grid">
+    {% for p in summary.experienced[:8] %}
+    <article class="pick-card">
+      <div class="pick-rank">{{ "%02d"|format(loop.index) }}</div>
+      <div class="pick-body">
+        <h3 class="pick-name">{{ p.name }}</h3>
+        <p class="pick-role">{{ p.role }}</p>
+        <div class="pick-chips">
+          <span class="chip chip-score">AI signal {{ p.ai_score }}</span>
+          <span class="chip">{{ p.exp_years }}y experience</span>
+          {% if p.claude_mentioned %}<span class="chip chip-claude">Claude/Anthropic mentioned</span>{% endif %}
+        </div>
+        <dl class="pick-meta">
+          <div><dt>Contact</dt><dd>{{ p.mobile or "—" }}</dd></div>
+          <div><dt>Email</dt><dd>{{ p.email or "—" }}</dd></div>
+          <div><dt>City / State</dt><dd>{{ p.city }} · {{ p.state }}</dd></div>
+        </dl>
+      </div>
+      <a class="resume-btn" href="{{ p.resume }}" target="_blank" rel="noopener noreferrer">View resume ↗</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="roster">
+  <div class="roster-head">
+    <h2>All Relocating Applicants</h2>
+    <div class="roster-controls">
+      <button class="filter-btn active" data-tier="all">All ({{ meta.relocate_yes }})</button>
+      <button class="filter-btn" data-tier="Intern">Intern ({{ meta.intern_total }})</button>
+      <button class="filter-btn" data-tier="Experienced">Experienced ({{ meta.experienced_total }})</button>
+      {% if meta.other_total %}<button class="filter-btn" data-tier="Other">Other ({{ meta.other_total }})</button>{% endif %}
+      <button class="filter-btn" id="round1-toggle" data-round="round1">Round 1 shortlisted</button>
+      <button class="filter-btn" id="round2-toggle" data-round="round2">Round 2 shortlisted</button>
+      <select class="state-select" id="state-filter">
+        <option value="all">All states</option>
+        {% for s in summary.states %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+      </select>
+      <input class="search-input" id="search" type="search" placeholder="Search name, email, city, employer…">
+    </div>
+  </div>
+  <p class="save-status" id="save-status"></p>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th data-key="name">Name</th>
+          <th data-key="mobile">Contact</th>
+          <th data-key="email">Email</th>
+          <th data-key="city">Current city</th>
+          <th data-key="state">State</th>
+          <th data-key="role">Role applied</th>
+          <th data-key="exp_years" class="num">Experience</th>
+          <th data-key="final_score" class="num sorted">AI signal</th>
+          <th data-key="rating" class="num">Rating</th>
+          <th>Round 1</th>
+          <th>Round 2</th>
+          <th>Resume</th>
+        </tr>
+      </thead>
+      <tbody id="roster-body"></tbody>
+    </table>
+    <div class="empty-state" id="empty-state" style="display:none;">No applicants match this search.</div>
+  </div>
+</section>
+
+<footer>
+  AI signal score derived from certification/background text matched against AI, Claude/Anthropic, GenAI, ML, RAG and related keywords, weighted with years of professional experience for the Experienced track. Ratings and Round 1 / Round 2 marks save automatically to this report's candidates.csv.
+</footer>
+
+<script>
+  window.REPORT_ID = {{ meta.id|tojson }};
+  window.CANDIDATES = {{ candidates_json|safe }};
+</script>
+<script src="/static/report.js"></script>
+{% endblock %}

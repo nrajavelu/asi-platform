@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E03",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Count Employees per Department",
+  "statement": "Write a query returning `dept, COUNT(*) as cnt` grouped by department, ordered by dept alphabetically.",
+  "starter_code": "SELECT dept, COUNT(*) as cnt FROM employees\n-- TODO: GROUP BY and ORDER BY\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE employees (id INT PRIMARY KEY, name TEXT NOT NULL, dept TEXT NOT NULL, salary INT NOT NULL);\nINSERT INTO employees (id, name, dept, salary) VALUES\n  (1, 'Asha', 'engineering', 90000), (2, 'Ravi', 'engineering', 85000), (3, 'Meena', 'sales', 60000),\n  (4, 'Karthik', 'sales', 65000), (5, 'Divya', 'engineering', 95000);\n",
+  "hints": [
+    "GROUP BY dept, then COUNT(*) per group"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"engineering\", 3], [\"sales\", 2]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

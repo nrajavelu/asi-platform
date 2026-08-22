@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Build a Round</h1>
+<p class="subtitle">Aptitude/Programming create a live Google Form quiz under aizentifycampus@gmail.com. Coding creates a self-hosted assessment (Monaco editor + Judge0) served by app.py — no Google Form involved.</p>
+
+<div class="card">
+  <form action="/rounds/new" method="post" id="round-form">
+    <label>Campus name</label>
+    <input type="text" name="campus" required>
+
+    <label>Drive name</label>
+    <input type="text" name="drive_name" required>
+
+    <label>Round type</label>
+    <select name="round_type" id="round_type" onchange="toggleRoundFields()">
+      <option value="aptitude">Aptitude</option>
+      <option value="programming">Programming</option>
+      <option value="coding">Coding</option>
+      <option value="technical_discussion">Technical Discussion</option>
+    </select>
+
+    <label id="count-label">Number of questions</label>
+    <input type="number" name="count" value="25" min="1" required>
+    <div class="hint" id="count-hint-coding" style="display:none;">
+      How many coding questions each candidate gets, randomly picked from the coding question bank
+      (<a href="/bank">upload questions here</a> first). Assigned once per candidate on first access, then pinned.
+      Ignored if you fill in a section plan below.
+    </div>
+    <div class="hint" id="count-hint-interview" style="display:none;">
+      How many interview questions get randomly assigned per candidate's Technical Discussion, drawn from the
+      interview question bank (<code>interview_questions/</code>, loaded via <code>load_interview_questions.py</code>).
+    </div>
+
+    <div id="section-plan-field" style="display:none;">
+      <label>Section plan (optional)</label>
+      <textarea name="section_plan" rows="4" placeholder="One 'topic:count' per line, in the order candidates should see them, e.g.&#10;dsa:7&#10;sql:3&#10;prompt_assembly:2&#10;api_handling:3"></textarea>
+      <div class="hint">
+        Groups and orders the candidate's sidebar by topic instead of one flat random shuffle - each line draws that
+        many random questions from that topic, sections appear in the order listed. Leave blank for the simple flat
+        random draw above. Topic names must match what's in the coding question bank (see <a href="/bank">Question Bank</a>).
+      </div>
+    </div>
+
+    <div id="forms-only-fields">
+      <label>Form title</label>
+      <input type="text" name="title" placeholder="Defaults to '<Campus> - <Round Type> Test'">
+
+      <label>Topics filter (optional)</label>
+      <input type="text" name="topics" placeholder="e.g. quant,logical (blank = all topics)">
+    </div>
+
+    <div id="duration-field">
+      <label>Duration (minutes)</label>
+      <input type="number" name="duration_minutes" id="duration_minutes" value="45" min="1">
+      <div class="hint" id="duration-hint-forms">Google Forms has no native timer — this generates a standalone countdown page to display on a projector/shared screen instead.</div>
+      <div class="hint" id="duration-hint-coding" style="display:none;">Enforced server-side: the session auto-finishes for each candidate this many minutes after they open it. Leave blank to auto-compute a suggested duration from the included questions' <code>suggested_minutes</code>.</div>
+    </div>
+
+    <button type="submit" id="submit-btn">Create Form</button>
+  </form>
+</div>
+
+<script>
+function toggleRoundFields() {
+  const type = document.getElementById('round_type').value;
+  const isCoding = type === 'coding';
+  const isInterview = type === 'technical_discussion';
+  document.getElementById('forms-only-fields').style.display = (isCoding || isInterview) ? 'none' : 'block';
+  document.getElementById('section-plan-field').style.display = isCoding ? 'block' : 'none';
+  document.getElementById('duration-field').style.display = isInterview ? 'none' : 'block';
+  document.getElementById('duration-hint-forms').style.display = isCoding ? 'none' : 'block';
+  document.getElementById('duration-hint-coding').style.display = isCoding ? 'block' : 'none';
+  document.getElementById('count-hint-coding').style.display = isCoding ? 'block' : 'none';
+  document.getElementById('count-hint-interview').style.display = isInterview ? 'block' : 'none';
+  document.getElementById('count-label').textContent =
+    isCoding ? 'Questions per candidate (flat mode)' : isInterview ? 'Questions per interview' : 'Number of questions';
+  document.getElementById('duration_minutes').value = isCoding ? '' : '45';
+  document.getElementById('duration_minutes').placeholder = isCoding ? 'auto' : '';
+  document.getElementById('submit-btn').textContent =
+    isCoding ? 'Create Coding Round' : isInterview ? 'Create Technical Discussion Round' : 'Create Form';
+}
+toggleRoundFields();
+</script>
+
+{% if result %}
+{% if result.kind == "coding" %}
+<div class="card">
+  <div class="section-title">Coding round #{{ result.id }} created</div>
+  <div class="kv"><strong>Questions per candidate</strong> {{ result.coding_question_count }}</div>
+  <div class="kv"><strong>Duration</strong> {{ result.duration_minutes }} minutes {% if result.duration_was_auto %}<span class="muted">(auto-computed from suggested_minutes)</span>{% endif %}</div>
+  {% if result.section_plan %}
+  <div class="kv"><strong>Section order</strong></div>
+  <ol style="margin:4px 0 0; padding-left:20px;">
+    {% for topic, n in result.section_plan %}
+    <li>{{ topic }} — {{ n }} question{{ 's' if n != 1 else '' }}</li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <div class="kv"><strong>Order</strong> flat random draw (no section plan set)</div>
+  {% endif %}
+</div>
+
+<div class="warning-banner">
+  <strong>Next steps</strong>
+  <ol style="margin:0; padding-left:20px;">
+    <li>Upload candidates to this round on the <a href="/candidates">Candidates</a> page.</li>
+    <li>Start <code>app.py</code> so it's reachable on your LAN: <code>python app.py</code> (binds 0.0.0.0:8788 — only run it during the live test window).</li>
+    <li>On the <a href="/invites">Invites</a> page, send invites for this round with the LAN base URL set to app.py's address, e.g. <code>http://&lt;your-laptop-ip&gt;:8788</code>. This runs a Judge0 pre-flight check before any email goes out.</li>
+  </ol>
+</div>
+{% elif result.kind == "technical_discussion" %}
+<div class="card">
+  <div class="section-title">Technical Discussion round #{{ result.id }} created</div>
+  <div class="kv"><strong>Questions per interview</strong> {{ result.interview_question_count }}</div>
+</div>
+
+<div class="warning-banner">
+  <strong>Next steps</strong>
+  <ol style="margin:0; padding-left:20px;">
+    <li>Shortlist candidates on the <a href="/results">Results</a> page for the source round first (Aptitude/Programming/Coding).</li>
+    <li>Go to <a href="/technical-discussion">Technical Discussion</a>, pick this round, and promote the shortlisted candidates in.</li>
+    <li>Open each candidate's interview link during their session to record rubric scores and a final decision.</li>
+  </ol>
+</div>
+{% else %}
+<div class="card">
+  <div class="section-title">Round #{{ result.id }} created — check before sending invites</div>
+  <div class="kv"><strong>Edit URL</strong> <a class="link" href="{{ result.edit_url }}" target="_blank">{{ result.edit_url }}</a></div>
+  <div class="kv"><strong>Responder URL</strong> <a class="link" href="{{ result.responder_uri }}" target="_blank">{{ result.responder_uri }}</a></div>
+  <div class="kv"><strong>Timer page</strong> {{ result.timer_path }}</div>
+</div>
+
+<div class="warning-banner">
+  <strong>3 manual steps required in the Editor before any real candidate uses this form</strong>
+  <p style="margin:0 0 8px;">These aren't exposed via the Forms API — verified directly against the live API schema, they genuinely don't exist there. Open the Edit URL above and set all three:</p>
+  <ol style="margin:0; padding-left:20px;">
+    <li><strong>Settings &gt; Responses &gt; Collect email addresses</strong> → Verified. Matches responses to candidates. A response submitted before this is on can never be matched retroactively — that candidate must submit again.</li>
+    <li><strong>Settings &gt; Responses &gt; Limit to 1 response.</strong> Blocks a second submission per Google account.</li>
+    <li><strong>Settings &gt; Quizzes &gt; Release grade</strong> → Later, after manual review. Hides both the score and correct answers from the candidate right after they submit.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <p class="hint">Timer: open the timer page above in a browser and display it on the room's projector/shared screen — click Start when the session begins. Google Forms has no native timer.</p>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

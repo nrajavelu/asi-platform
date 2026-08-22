@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H06",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Longest Common Prefix",
+  "statement": "Read n, then n words on the next line, space-separated. Print the longest common prefix shared by all of them (empty line if none).",
+  "starter_code": "n = int(input())\nwords = input().split()\n# TODO: print the longest common prefix\n",
+  "language_id": 71,
+  "hints": [
+    "Start with the first word as a candidate prefix, shrink it until every word starts with it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\nflower flow flight",
+      "expected_output": "fl",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "2\ndog racecar",
+      "expected_output": "",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\ninterview internet interval",
+      "expected_output": "inter",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

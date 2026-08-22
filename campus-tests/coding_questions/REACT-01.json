@@ -1,0 +1,26 @@
+{
+  "id": "REACT-01",
+  "topic": "react",
+  "difficulty": "easy",
+  "title": "Greeting Component",
+  "statement": "Define a component named `Component` that accepts a `name` prop and renders a single `<div className=\"greeting\">` containing the text `Hello, <name>!`.",
+  "starter_code": "function Component({ name }) {\n  // TODO: return a <div className=\"greeting\">Hello, {name}!</div>\n}\n",
+  "question_type": "react",
+  "hints": [
+    "JSX is supported - you can write `<div>...</div>` directly",
+    "Template: `Hello, ${name}!` inside the div's text content"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "assertion_script": "const container = document.createElement('div');\ndocument.body.appendChild(container);\nReactDOM.render(React.createElement(Component, { name: 'World' }), container);\nconst el = container.querySelector('.greeting');\nassert.ok(el, 'No element with class \"greeting\" was rendered');\nassert.strictEqual(el.textContent, 'Hello, World!');\n",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "assertion_script": "const container = document.createElement('div');\ndocument.body.appendChild(container);\nReactDOM.render(React.createElement(Component, { name: 'Aizentify' }), container);\nconst el = container.querySelector('.greeting');\nassert.ok(el, 'No element with class \"greeting\" was rendered');\nassert.strictEqual(el.textContent, 'Hello, Aizentify!');\n",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "DSA-H03",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Valid API Retry Budget",
+  "statement": "Read n (max retries) and a line of n space-separated 0/1 values (0=failure, 1=success) representing sequential API call attempts. Print 'SUCCESS' if any attempt succeeded, otherwise print 'EXHAUSTED'.",
+  "starter_code": "n = int(input())\nresults = list(map(int, input().split()))\n# TODO: print SUCCESS or EXHAUSTED\n",
+  "language_id": 71,
+  "hints": [
+    "Python's any() short-circuits and checks if at least one value is truthy"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\n0 0 1",
+      "expected_output": "SUCCESS",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\n0 0 0",
+      "expected_output": "EXHAUSTED",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1\n1",
+      "expected_output": "SUCCESS",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "5\n0 0 0 0 1",
+      "expected_output": "SUCCESS",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

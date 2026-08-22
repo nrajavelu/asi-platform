@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M10",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Token Budget Trim List",
+  "statement": "Read a max item count k, then n items (one per line, n given first). Print only the first k items, one per line, and if n > k, print a final line '(and N more)' where N is the number omitted.",
+  "starter_code": "n = int(input())\nk = int(input())\nitems = [input() for _ in range(n)]\n# TODO: print the first k items, plus a summary line if any were omitted\n",
+  "language_id": 71,
+  "hints": [
+    "Slice items[:k] for the printed items, compare n and k to decide on the summary line"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n2\napple\nbanana\ncherry\ndate\nelderberry",
+      "expected_output": "apple\nbanana\n(and 3 more)",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

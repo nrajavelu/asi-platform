@@ -1,0 +1,31 @@
+Meridian Health — Regulatory & Market Entry Case (illustrative sample corpus, not a real filing)
+
+Meridian Health's remote cardiac monitoring platform received FDA breakthrough-device
+designation eighteen months ago. The designation grants an expedited review pathway
+for the device and priority engagement with FDA staff during the clearance process,
+but it does not by itself set or guarantee any specific reimbursement rate.
+
+A proposed CMS rule, published in the Federal Register, would reduce reimbursement
+for standard telehealth office visits (billing codes 99213 through 99215) by 12%
+starting next fiscal year. The proposed rule text describes the reduction as
+applying to "telehealth office visits billed under the standard evaluation and
+management code set" and does not, in the sections reviewed for this case, contain
+a separate rate schedule for remote monitoring devices with breakthrough-device
+status.
+
+Meridian's investor update for the most recent quarter discloses a patient
+retention rate of 68%, compared to a sector average of 79% reported by the same
+industry benchmarking service Meridian cites elsewhere in the same document.
+
+Company leadership stated on the earnings call that they are "confident the
+breakthrough designation will support favorable payer conversations," but the
+call transcript does not reference any completed or pending negotiation with CMS
+regarding a device-specific reimbursement code separate from the standard
+telehealth visit codes affected by the proposed rule.
+
+An industry newsletter cited in Meridian's investor relations materials notes that
+some breakthrough-designated devices have historically qualified for separate
+Medicare billing codes months or years after designation, following a distinct
+administrative process from the standard telehealth rulemaking described above.
+The newsletter does not state whether Meridian's device is currently in that
+process.

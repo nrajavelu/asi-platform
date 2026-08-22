@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E03",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Is Palindrome",
+  "statement": "Read a word and print 'yes' if it reads the same forwards and backwards, else 'no'. Case-sensitive.",
+  "starter_code": "s = input().strip()\n# TODO: print 'yes' or 'no'\n",
+  "language_id": 71,
+  "hints": [
+    "s[::-1] reverses a string"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "level",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hello",
+      "expected_output": "no",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "racecar",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "Noon",
+      "expected_output": "no",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

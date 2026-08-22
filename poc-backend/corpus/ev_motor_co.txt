@@ -1,0 +1,30 @@
+EV Motor Co. — Q2 Strategy Case (illustrative sample corpus, not a real filing)
+
+EV Motor Co. faces a 15% tariff increase on lithium imports due to new trade policies
+enacted in the second quarter. Management disclosed the schedule takes effect at the
+start of the third fiscal quarter and applies to lithium carbonate and lithium
+hydroxide imports sourced from its two primary overseas suppliers.
+
+The company's internal battery manufacturing yield is 82%, below the 91% industry
+benchmark cited in its most recent investor update. Yield is defined as the share of
+battery cells produced that pass final quality inspection without rework. Management
+attributes the gap to a legacy production line that has not yet been retrofitted with
+the newer thermal-calibration equipment used on the company's second and third lines.
+
+However, EV Motor Co. holds 42 proprietary patents in solid-state battery technology,
+concentrated in electrolyte stability and thermal management. Twelve of the forty-two
+patents were granted in the last eighteen months. Two peer manufacturers have
+publicly disclosed licensing inquiries into adjacent patent families, though no
+agreements have been signed as of this filing.
+
+Separately, the company's direct-to-consumer order backlog grew 18% quarter over
+quarter, which management attributes to broader consumer sentiment toward electric
+vehicles rather than any specific product change. A regional sales director noted in
+the earnings call that lead times on the entry-level trim have extended from six to
+nine weeks as a result.
+
+The trade policy brief accompanying the tariff announcement notes that a narrow
+exemption exists for imports used exclusively in domestic solid-state battery
+research and pilot-line production, subject to an annual volume cap the company has
+not yet requested. Whether EV Motor Co.'s pilot line qualifies under that exemption
+has not been confirmed by counsel as of this case's writing.

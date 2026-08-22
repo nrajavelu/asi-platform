@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Interview Shortlist{% endblock %}
+{% block content %}
+
+<header class="page-header">
+  <p class="eyebrow">Aizentify · Hiring Pipeline</p>
+  <h1>Interview Shortlist Reports</h1>
+  <p class="subtitle">Upload an applications export to get a ranked, relocate-filtered shortlist. Each upload becomes its own dated report.</p>
+</header>
+
+{% if request.query_params.get("error") %}
+<p class="banner banner-error">{{ request.query_params.get("error") }}</p>
+{% endif %}
+
+<section class="upload-card">
+  <h2>New Interview List</h2>
+  <p class="muted">Upload the applications export (.csv or .xlsx, same template as before). State and AI-relevance ranking are computed automatically.</p>
+  <form action="/reports/upload" method="post" enctype="multipart/form-data" class="upload-form">
+    <input type="file" name="file" accept=".csv,.xlsx,.xlsm" required>
+    <button type="submit" class="btn-primary">Upload &amp; build report</button>
+  </form>
+</section>
+
+<section class="reports-section">
+  <h2>Past Reports</h2>
+  {% if reports %}
+  <div class="report-grid">
+    {% for r in reports %}
+    <a class="report-card" href="/reports/{{ r.id }}">
+      <p class="report-name">{{ r.original_filename }}</p>
+      <p class="report-date">Uploaded {{ r.uploaded_at.replace("T", " ") }}</p>
+      <div class="report-stats">
+        <span>{{ r.relocate_yes }} relocating</span>
+        <span>{{ r.intern_total }} intern</span>
+        <span>{{ r.experienced_total }} experienced</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-state">No reports yet — upload a file above to create the first one.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

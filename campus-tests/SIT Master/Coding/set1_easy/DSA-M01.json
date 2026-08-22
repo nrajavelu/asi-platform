@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M01",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "FizzBuzz Range",
+  "statement": "Read two integers a and b on one line. For each number from a to b inclusive, print 'Fizz' if divisible by 3, 'Buzz' if by 5, 'FizzBuzz' if both, else the number itself - one per line.",
+  "starter_code": "a, b = map(int, input().split())\n# TODO: print the FizzBuzz sequence, one value per line\n",
+  "language_id": 71,
+  "hints": [
+    "Check divisibility by 15 first since it covers both 3 and 5"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1 15",
+      "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "10 20",
+      "expected_output": "Buzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3 3",
+      "expected_output": "Fizz",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "28 33",
+      "expected_output": "28\n29\nFizzBuzz\n31\n32\nFizz",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "DSA-E16",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Digit Count",
+  "statement": "Read a positive integer and print how many digits it has.",
+  "starter_code": "n = input().strip()\n# TODO: print the number of digits\n",
+  "language_id": 71,
+  "hints": [
+    "Reading it as a string makes counting digits just a length check"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "12345",
+      "expected_output": "5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "7",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1000000",
+      "expected_output": "7",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

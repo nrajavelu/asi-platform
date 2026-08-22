@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-M09",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Conditional Instruction Block",
+  "statement": "Read a boolean-like string 'true' or 'false' indicating whether verbose mode is on, then a base instruction. If verbose, print the instruction followed by ' Explain your reasoning step by step.' on the same line; otherwise print the instruction unchanged.",
+  "starter_code": "verbose = input().strip() == 'true'\ninstruction = input()\n# TODO: print instruction, with the extra sentence appended only if verbose\n",
+  "language_id": 71,
+  "hints": [
+    "Compare the input string to 'true' to get a real boolean, then branch on it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "true\nWhat is 15% of 200?",
+      "expected_output": "What is 15% of 200? Explain your reasoning step by step.",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "false\nWhat is 15% of 200?",
+      "expected_output": "What is 15% of 200?",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

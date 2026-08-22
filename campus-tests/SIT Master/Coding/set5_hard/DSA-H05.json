@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H05",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Group Anagrams Count",
+  "statement": "Read n, then n lowercase words on the next line, space-separated. Print the number of distinct anagram groups.",
+  "starter_code": "n = int(input())\nwords = input().split()\n# TODO: print the number of anagram groups\n",
+  "language_id": 71,
+  "hints": [
+    "Sorting each word's letters gives a canonical key for grouping anagrams"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "6\neat tea tan ate nat bat",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\nabc bca cab",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "4\nfoo bar baz oof",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "DSA-M19",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Find Peak Element Index",
+  "statement": "Read a line of space-separated integers where the values strictly increase then strictly decrease (a single peak). Print the index (0-based) of the peak.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the index of the peak element\n",
+  "language_id": 71,
+  "hints": [
+    "The peak is simply the maximum value - find its index"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1 3 5 4 2",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1 2 3 10 5",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5 4 3",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

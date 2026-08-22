@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-M06",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Negative Constraint Injection",
+  "statement": "Read a base prompt, then a thing NOT to do. Print the base prompt, then a new line: 'Do not <thing>.'",
+  "starter_code": "base = input()\nforbidden = input()\n# TODO: print base, then a line 'Do not <forbidden>.'\n",
+  "language_id": 71,
+  "hints": [
+    "Two print statements: the base as-is, then the constraint formatted with an f-string"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "Summarize this document in 3 sentences.\ninclude any personal opinions",
+      "expected_output": "Summarize this document in 3 sentences.\nDo not include any personal opinions.",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

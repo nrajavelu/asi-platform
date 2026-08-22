@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E12",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Count Uppercase Letters",
+  "statement": "Read a line of text and print how many uppercase letters it contains.",
+  "starter_code": "s = input()\n# TODO: print the uppercase letter count\n",
+  "language_id": 71,
+  "hints": [
+    "str.isupper() checks a single character"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "Hello World",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "ALLCAPS",
+      "expected_output": "7",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "no caps here",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "MiXeD CaSe",
+      "expected_output": "5",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

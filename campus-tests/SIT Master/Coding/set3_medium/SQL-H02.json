@@ -1,0 +1,22 @@
+{
+  "id": "SQL-H02",
+  "topic": "vector_basics",
+  "difficulty": "hard",
+  "title": "Top-3 Similar Support Tickets",
+  "statement": "The `tickets` table has an `embedding vector(3)` column. Write a query returning `id, subject` for the 3 tickets most similar to the vector [1,0,0], nearest first.",
+  "starter_code": "SELECT id, subject FROM tickets\nORDER BY -- TODO\nLIMIT 3;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE tickets (id INT PRIMARY KEY, subject TEXT NOT NULL, category TEXT NOT NULL, embedding vector(3));\nINSERT INTO tickets (id, subject, category, embedding) VALUES\n  (1, 'Cannot login', 'account', '[1,0,0]'), (2, 'Password reset broken', 'account', '[0.9,0.1,0]'),\n  (3, 'Payment failed', 'billing', '[0,1,0]'), (4, 'Refund request', 'billing', '[0.1,0.9,0]'),\n  (5, 'App crashes on start', 'bug', '[0,0,1]');\n",
+  "hints": [
+    "Same <-> distance ordering as nearest-neighbor, just with LIMIT 3 instead of 1"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, \"Cannot login\"], [2, \"Password reset broken\"], [4, \"Refund request\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

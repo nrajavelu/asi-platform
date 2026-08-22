@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-M08",
+  "topic": "prompt_assembly",
+  "difficulty": "medium",
+  "title": "Escape Delimiter Collision",
+  "statement": "Read a block of user content that might itself contain the delimiter '```'. Print the content wrapped in a delimiter that's guaranteed not to collide: use '~~~~' instead of '```' if the content contains '```', otherwise use '```' as normal.",
+  "starter_code": "content = input()\n# TODO: pick '~~~~' if '```' is in content, else '```', and wrap the content in it\n",
+  "language_id": 71,
+  "hints": [
+    "Check membership of the triple-backtick substring first to choose a safe delimiter"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "print('hello')",
+      "expected_output": "```\nprint('hello')\n```",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "some code with ``` inside it",
+      "expected_output": "~~~~\nsome code with ``` inside it\n~~~~",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E07",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Orders Above Amount",
+  "statement": "Write a query returning `id, amount` from `orders` where amount is greater than 300, ordered by id.",
+  "starter_code": "SELECT id, amount FROM orders\nWHERE -- TODO\nORDER BY id;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE customers (id INT PRIMARY KEY, name TEXT NOT NULL);\nCREATE TABLE orders (id INT PRIMARY KEY, customer_id INT NOT NULL REFERENCES customers(id), amount INT NOT NULL);\nINSERT INTO customers (id, name) VALUES (1, 'Aman'), (2, 'Bala'), (3, 'Chitra');\nINSERT INTO orders (id, customer_id, amount) VALUES (1, 1, 500), (2, 1, 300), (3, 2, 700), (4, 3, 200), (5, 2, 100);\n",
+  "hints": [
+    "A simple numeric WHERE filter"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, 500], [3, 700]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

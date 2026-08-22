@@ -1,0 +1,20 @@
+{
+  "id": "JS-01",
+  "topic": "javascript",
+  "difficulty": "easy",
+  "title": "Maximum of Three Numbers",
+  "statement": "Read three space-separated integers from stdin and print the largest of the three.",
+  "starter_code": "const input = require('fs').readFileSync(0, 'utf-8').trim();\nconst nums = input.split(' ').map(Number);\n// TODO: print the maximum of the three numbers\n",
+  "language_id": 63,
+  "hints": [
+    "require('fs').readFileSync(0, 'utf-8') reads all of stdin synchronously",
+    "Math.max(...nums) gives you the largest value in an array"
+  ],
+  "points": 10,
+  "test_cases": [
+    {"stdin": "3 7 5", "expected_output": "7", "is_sample": true, "weight": 1},
+    {"stdin": "10 2 8", "expected_output": "10", "is_sample": true, "weight": 1},
+    {"stdin": "-5 -1 -10", "expected_output": "-1", "is_sample": false, "weight": 1},
+    {"stdin": "100 100 99", "expected_output": "100", "is_sample": false, "weight": 1}
+  ]
+}

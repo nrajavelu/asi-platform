@@ -1,0 +1,34 @@
+{
+  "id": "DSA-M13",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Reverse Words Order",
+  "statement": "Read a line of space-separated words. Print them in reverse order, still space-separated.",
+  "starter_code": "words = input().split()\n# TODO: print the words in reverse order\n",
+  "language_id": 71,
+  "hints": [
+    "reversed() works on any list, and ' '.join() reassembles the words"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "the sky is blue",
+      "expected_output": "blue is sky the",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "one two three",
+      "expected_output": "three two one",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hello",
+      "expected_output": "hello",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

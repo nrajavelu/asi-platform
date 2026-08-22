@@ -1,0 +1,32 @@
+Northwind Retail — Supply Chain Resilience Case (illustrative sample corpus, not a real filing)
+
+Northwind Retail's e-commerce channel now drives 38% of total revenue, up from 22%
+two years ago. Management attributes the shift to the buildout of a proprietary
+same-day fulfillment network, which now covers 64% of US households -- a capability
+the company's three closest competitors have not replicated, according to the most
+recent logistics report.
+
+A new state minimum-wage law raises distribution-center and warehouse labor costs
+by 9%, effective the start of the third fiscal quarter. The law applies uniformly
+to all employers operating distribution facilities in the state and was enacted
+by the state legislature independent of any action Northwind has taken.
+
+Separately, the Q2 operations review disclosed that in-store inventory accuracy
+sits at 71%, below the company's internal target of 90%. The review attributes
+the gap to a legacy point-of-sale reconciliation process that has not been updated
+since the current warehouse management system was installed. Store teams report
+that stockouts during peak e-commerce demand spikes are the most common customer
+complaint in the affected regions.
+
+Management's investor letter frames the labor law as "a headwind consistent with
+broader retail wage trends" without separating its effect from the inventory
+accuracy issue in the same section, describing both under a single heading titled
+"Operational Cost Pressures." No breakout is provided showing how much of the
+quarter's margin compression is attributable to the wage law versus internal
+execution issues.
+
+The same-day fulfillment network requires a minimum in-stock threshold to
+guarantee delivery windows; the logistics report notes that stores with inventory
+accuracy below 80% saw a measurably higher rate of same-day delivery promise
+failures during the review period, though the report does not quantify the
+relationship precisely.

@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M16",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Validate Simple Email Shape",
+  "statement": "Read a string. Print 'valid' if it contains exactly one '@' and at least one '.' after the '@', else 'invalid'. (Simplified check, not full RFC validation.)",
+  "starter_code": "s = input().strip()\n# TODO: print 'valid' or 'invalid'\n",
+  "language_id": 71,
+  "hints": [
+    "Split on '@' once it's confirmed there's exactly one, then check the domain part for a dot"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "user@example.com",
+      "expected_output": "valid",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "invalid-email",
+      "expected_output": "invalid",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "a@b.co",
+      "expected_output": "valid",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "two@@signs.com",
+      "expected_output": "invalid",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

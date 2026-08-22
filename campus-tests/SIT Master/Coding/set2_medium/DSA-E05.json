@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E05",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Vowel Count",
+  "statement": "Read a line of text and print how many vowels (a, e, i, o, u, case-insensitive) it contains.",
+  "starter_code": "s = input()\n# TODO: print the vowel count\n",
+  "language_id": 71,
+  "hints": [
+    "Lowercase the string first to handle both cases uniformly"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "hello world",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "AEIOU",
+      "expected_output": "5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "xyz",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "Programming is fun",
+      "expected_output": "5",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

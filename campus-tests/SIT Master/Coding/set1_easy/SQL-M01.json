@@ -1,0 +1,22 @@
+{
+  "id": "SQL-M01",
+  "topic": "sql_basics",
+  "difficulty": "medium",
+  "title": "Average Salary by Department",
+  "statement": "Write a query returning `dept, ROUND(AVG(salary)) as avg_salary` grouped by department, ordered by avg_salary descending.",
+  "starter_code": "SELECT dept, ROUND(AVG(salary)) as avg_salary FROM employees\n-- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE employees (id INT PRIMARY KEY, name TEXT NOT NULL, dept TEXT NOT NULL, salary INT NOT NULL);\nINSERT INTO employees (id, name, dept, salary) VALUES\n  (1, 'Asha', 'engineering', 90000), (2, 'Ravi', 'engineering', 85000), (3, 'Meena', 'sales', 60000),\n  (4, 'Karthik', 'sales', 65000), (5, 'Divya', 'engineering', 95000);\n",
+  "hints": [
+    "AVG() aggregate with GROUP BY, ROUND() to simplify the output"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[\"engineering\", 90000], [\"sales\", 62500]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

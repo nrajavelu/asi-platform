@@ -1,0 +1,7 @@
+{
+  "id": "TD-01",
+  "area": "llm_api_experience",
+  "question": "Walk me through a time you integrated a third-party API into a project. What broke, and how did you find out?",
+  "rubric_guide": "Strong: names a specific real project; describes an actual failure mode (auth, rate limit, malformed response, timeout); explains HOW they diagnosed it (logs, isolating the request), not just \"I fixed it\"; shows iteration.\nWeak: generic/rehearsed, no specifics, can't describe a real failure.",
+  "max_score": 5
+}

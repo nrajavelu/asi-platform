@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M02",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Anagram Check",
+  "statement": "Read two words on separate lines. Print 'yes' if they are anagrams of each other (same letters, same counts, case-insensitive), else 'no'.",
+  "starter_code": "a = input().strip()\nb = input().strip()\n# TODO: print 'yes' or 'no'\n",
+  "language_id": 71,
+  "hints": [
+    "Sorting the letters of both words gives you a comparable canonical form"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "listen\nsilent",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hello\nworld",
+      "expected_output": "no",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "Dormitory\nDirtyroom",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "abc\ncba",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

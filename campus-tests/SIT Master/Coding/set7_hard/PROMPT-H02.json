@@ -1,0 +1,22 @@
+{
+  "id": "PROMPT-H02",
+  "topic": "prompt_assembly",
+  "difficulty": "hard",
+  "title": "Multi-Turn History Assembly",
+  "statement": "Read n, then n pairs of lines (role, message) representing prior conversation turns, then a final new user message. Print each turn as 'ROLE: message' (role uppercased), then the new turn as 'USER: <new message>'.",
+  "starter_code": "n = int(input())\nturns = [(input(), input()) for _ in range(n)]\nnew_msg = input()\n# TODO: print the full formatted conversation history plus the new turn\n",
+  "language_id": 71,
+  "hints": [
+    "role.upper() uppercases the role name before formatting each line"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "2\nuser\nHi there\nassistant\nHello! How can I help?\nWhat's the weather today?",
+      "expected_output": "USER: Hi there\nASSISTANT: Hello! How can I help?\nUSER: What's the weather today?",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

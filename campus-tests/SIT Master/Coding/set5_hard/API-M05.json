@@ -1,0 +1,28 @@
+{
+  "id": "API-M05",
+  "topic": "api_handling",
+  "difficulty": "medium",
+  "title": "Filter Failed Requests",
+  "statement": "Read n, then n mock status codes (space-separated integers) representing API call results. Print how many were in the 200-299 success range.",
+  "starter_code": "n = int(input())\ncodes = list(map(int, input().split()))\n# TODO: print the count of codes in [200, 299]\n",
+  "language_id": 71,
+  "hints": [
+    "Check each code against the range 200 to 299 inclusive"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n200 404 201 500 299",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "3\n200 200 200",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

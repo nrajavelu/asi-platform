@@ -1,0 +1,22 @@
+{
+  "id": "SQL-E01",
+  "topic": "sql_basics",
+  "difficulty": "easy",
+  "title": "Filter by Category",
+  "statement": "The `products` table has columns id, name, price, category. Write a query returning `id, name` for all products in the 'electronics' category, ordered by id.",
+  "starter_code": "SELECT id, name FROM products\nWHERE -- TODO\nORDER BY id;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE products (id INT PRIMARY KEY, name TEXT NOT NULL, price INT NOT NULL, category TEXT NOT NULL);\nINSERT INTO products (id, name, price, category) VALUES\n  (1, 'Laptop', 55000, 'electronics'), (2, 'Mouse', 500, 'electronics'),\n  (3, 'Desk', 8000, 'furniture'), (4, 'Chair', 3500, 'furniture'), (5, 'Monitor', 12000, 'electronics');\n",
+  "hints": [
+    "Use a simple WHERE clause on the category column"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, \"Laptop\"], [2, \"Mouse\"], [5, \"Monitor\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

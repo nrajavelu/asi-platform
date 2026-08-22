@@ -1,0 +1,28 @@
+{
+  "id": "PROMPT-H01",
+  "topic": "prompt_assembly",
+  "difficulty": "hard",
+  "title": "JSON-Constrained Output Instruction",
+  "statement": "Read a list of n required field names (space-separated). Print an instruction telling the model to respond ONLY with a JSON object containing exactly those keys, formatted as: 'Respond only with JSON containing exactly these keys: key1, key2, ...'",
+  "starter_code": "fields = input().split()\n# TODO: print the formatted instruction listing the fields, comma-separated\n",
+  "language_id": 71,
+  "hints": [
+    "', '.join(fields) creates the comma-separated list to insert into the sentence"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "name age email",
+      "expected_output": "Respond only with JSON containing exactly these keys: name, age, email",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "id status",
+      "expected_output": "Respond only with JSON containing exactly these keys: id, status",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

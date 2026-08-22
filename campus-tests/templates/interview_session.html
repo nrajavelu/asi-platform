@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Technical Discussion — {{ candidate.name }}</h1>
+<p class="subtitle">{{ candidate.email }} &middot; {{ round_.drive.name }} ({{ round_.drive.campus }})</p>
+
+<div class="card">
+  <div class="section-title">Previous round scores</div>
+  <p class="hint">For your reference while conducting this discussion — not shown to the candidate.</p>
+  {% if previous_scores %}
+  <div class="prev-scores">
+    {% for p in previous_scores %}
+    <div class="prev-score-chip">
+      {{ p.round_type }}<br>
+      <strong>{% if p.percent is not none %}{{ p.percent }}%{% else %}{{ p.status }}{% endif %}</strong>
+      {% if p.score is not none %}{{ p.score }}/{{ p.max_score }}{% endif %}
+      {% if p.band %}<span class="band-pill {{ p.band }}" style="margin-left:6px;">{{ p.band }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No prior round attempts found for this candidate in this drive.</p>
+  {% endif %}
+</div>
+
+<form action="/interview/{{ token }}/submit" method="post">
+  <div class="card">
+    <div class="section-title">Discussion questions ({{ questions|length }})</div>
+    {% for q in questions %}
+    <div class="rubric-card">
+      <div class="muted" style="text-transform:uppercase; font-size:11px; letter-spacing:0.05em; margin-bottom:6px;">{{ q.area.replace('_', ' ') }}</div>
+      <div style="font-weight:600; font-size:15px;">{{ loop.index }}. {{ q.question }}</div>
+      <div class="rubric-guide">{{ q.rubric_guide }}</div>
+      <div class="score-row">
+        <label style="margin:0;">Score</label>
+        <select name="score_{{ q.attempt_question_id }}">
+          <option value="">—</option>
+          {% for n in range(1, q.max_score + 1) %}
+          <option value="{{ n }}" {{ 'selected' if q.score == n else '' }}>{{ n }} / {{ q.max_score }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" name="notes_{{ q.attempt_question_id }}" placeholder="Optional notes/observations" value="{{ q.notes }}" style="flex:1;">
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <div class="section-title">Final decision</div>
+    <div class="inline-form">
+      <div class="field">
+        <label>Interviewer name</label>
+        <input type="text" name="interviewer_name" value="{{ interviewer_name }}" required>
+      </div>
+      <div class="field">
+        <label>Decision</label>
+        <select name="decision" required>
+          <option value="selected" {{ 'selected' if decision == 'selected' else '' }}>Selected</option>
+          <option value="hold" {{ 'selected' if decision == 'hold' or not decision else '' }}>Hold</option>
+          <option value="rejected" {{ 'selected' if decision == 'rejected' else '' }}>Rejected</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit">Submit Technical Discussion</button>
+    <p class="hint">The status set here can still be changed later by an admin from the Technical Discussion candidate list.</p>
+  </div>
+</form>
+{% endblock %}

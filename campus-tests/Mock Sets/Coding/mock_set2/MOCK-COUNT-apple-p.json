@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-COUNT-apple-p",
+  "topic": "mock_basic",
+  "difficulty": "medium",
+  "title": "Count a Character",
+  "statement": "Read a word and print how many times the letter 'p' appears in it.",
+  "starter_code": "s = input().strip()\n# TODO: print the count of 'p' in s\n",
+  "language_id": 71,
+  "hints": [
+    "str.count(char) counts occurrences directly"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "apple",
+      "expected_output": "2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "appleapple",
+      "expected_output": "4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "APPLE",
+      "expected_output": "0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

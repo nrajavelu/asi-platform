@@ -1,0 +1,22 @@
+{
+  "id": "SQL-H04",
+  "topic": "vector_basics",
+  "difficulty": "hard",
+  "title": "Similar Items Under a Budget",
+  "statement": "The `items` table has price and an `embedding vector(3)` column. Write a query returning `id, name` for items priced under 4000, ordered by similarity to [1,0,0] (nearest first).",
+  "starter_code": "SELECT id, name FROM items\nWHERE -- TODO\nORDER BY -- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE items (id INT PRIMARY KEY, name TEXT NOT NULL, price INT NOT NULL, embedding vector(3));\nINSERT INTO items (id, name, price, embedding) VALUES\n  (1, 'Running Shoes', 3000, '[1,0,0]'), (2, 'Hiking Boots', 4500, '[0.85,0.2,0]'),\n  (3, 'Formal Shoes', 5000, '[0.7,0,0.3]'), (4, 'Umbrella', 800, '[0,1,0]'), (5, 'Backpack', 2500, '[0.2,0.1,0.9]');\n",
+  "hints": [
+    "Filter by price first with WHERE, then order the remaining rows by vector distance"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[1, \"Running Shoes\"], [5, \"Backpack\"], [4, \"Umbrella\"]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

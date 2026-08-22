@@ -1,0 +1,40 @@
+{
+  "id": "DSA-H07",
+  "topic": "dsa",
+  "difficulty": "hard",
+  "title": "Valid Parentheses Multi-type",
+  "statement": "Read a string containing only (){}[]. Print 'yes' if every bracket type is properly matched and nested, else 'no'.",
+  "starter_code": "s = input().strip()\n# TODO: print 'yes' or 'no'\n",
+  "language_id": 71,
+  "hints": [
+    "Use a stack: push opens, pop and check on closes"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "({[]})",
+      "expected_output": "yes",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "([)]",
+      "expected_output": "no",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{[()]}",
+      "expected_output": "yes",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "(((",
+      "expected_output": "no",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

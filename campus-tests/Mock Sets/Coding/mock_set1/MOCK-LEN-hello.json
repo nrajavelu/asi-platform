@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-LEN-hello",
+  "topic": "mock_basic",
+  "difficulty": "easy",
+  "title": "String Length",
+  "statement": "Read a word and print its length.",
+  "starter_code": "s = input().strip()\n# TODO: print len(s)\n",
+  "language_id": 71,
+  "hints": [
+    "len() gives the length of a string"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "hello",
+      "expected_output": "5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "hellohello",
+      "expected_output": "10",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "he",
+      "expected_output": "2",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

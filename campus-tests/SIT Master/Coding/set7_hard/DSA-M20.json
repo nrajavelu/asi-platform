@@ -1,0 +1,34 @@
+{
+  "id": "DSA-M20",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Compress Consecutive Characters",
+  "statement": "Read a string. Print a run-length-encoded version: each run of consecutive identical characters becomes the character followed by its count (e.g. 'aaabb' -> 'a3b2').",
+  "starter_code": "s = input().strip()\n# TODO: print the run-length-encoded string\n",
+  "language_id": 71,
+  "hints": [
+    "Walk through the string tracking runs of the same character and their lengths"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "aaabb",
+      "expected_output": "a3b2",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "abc",
+      "expected_output": "a1b1c1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "aabbbccca",
+      "expected_output": "a2b3c3a1",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

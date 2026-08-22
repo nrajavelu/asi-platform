@@ -1,0 +1,28 @@
+{
+  "id": "API-H05",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Deep Merge Two Configs",
+  "statement": "Read two JSON objects (flat, one key-value per top-level key) on two lines. Print the merged object as JSON where the second object's values override the first's for matching keys, with keys sorted alphabetically. Format: key1=val1,key2=val2 (comma-separated, no spaces).",
+  "starter_code": "import json\na = json.loads(input())\nb = json.loads(input())\n# TODO: merge b into a (b wins on conflicts), print sorted key=value pairs\n",
+  "language_id": 71,
+  "hints": [
+    "{**a, **b} merges two dicts with b's keys taking priority on conflicts"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"x\": 1, \"y\": 2}\n{\"y\": 3, \"z\": 4}",
+      "expected_output": "x=1,y=3,z=4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"a\": 1}\n{\"b\": 2}",
+      "expected_output": "a=1,b=2",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

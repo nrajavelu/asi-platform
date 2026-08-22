@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-ADD-30-40",
+  "topic": "mock_basic",
+  "difficulty": "easy",
+  "title": "Add Two Numbers",
+  "statement": "Read two integers on one line, space-separated. Print their sum.",
+  "starter_code": "a, b = map(int, input().split())\n# TODO: print the sum\n",
+  "language_id": 71,
+  "hints": [
+    "Split the line and convert both parts to int before adding"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "30 40",
+      "expected_output": "70",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "31 41",
+      "expected_output": "72",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "60 80",
+      "expected_output": "140",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

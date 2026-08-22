@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Technical Discussion</h1>
+<p class="subtitle">Interviewer-scored session against a shortlisted candidate — questions drawn randomly with a rubric guide, ending in a Selected / Hold / Rejected decision.</p>
+
+<div class="card">
+  <form action="/technical-discussion" method="get" class="inline-form">
+    <div class="field">
+      <label>Round</label>
+      <select name="round_id" onchange="this.form.submit()">
+        <option value="">— choose a round —</option>
+        {% for r in rounds %}
+        <option value="{{ r.id }}" {{ 'selected' if round_ and r.id == round_.id else '' }}>#{{ r.id }} - {{ r.drive.name }} ({{ r.drive.campus }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+{% if round_ %}
+
+<div class="card">
+  <div class="section-title">Promote shortlisted candidates into this round</div>
+  <p class="hint">Pulls every candidate banded "shortlisted" (or another band, if you pick one) from a source round in the same drive, and gives each a fresh Technical Discussion link. Safe to re-run — already-promoted candidates are skipped, not duplicated.</p>
+  <form action="/technical-discussion/promote" method="post" class="inline-form">
+    <input type="hidden" name="target_round_id" value="{{ round_.id }}">
+    <div class="field">
+      <label>Source round</label>
+      <select name="source_round_id" required>
+        {% for r in source_rounds %}
+        <option value="{{ r.id }}">#{{ r.id }} - {{ r.round_type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Band</label>
+      <select name="band">
+        <option value="shortlisted">shortlisted</option>
+        <option value="borderline">borderline</option>
+      </select>
+    </div>
+    <button type="submit">Promote</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="section-title">Candidates ({{ attempts_view|length }})</div>
+  {% if attempts_view %}
+  <table>
+    <tr><th>Name</th><th>Email</th><th>Status</th><th>Decision</th><th>Interview link</th><th>Override</th></tr>
+    {% for row in attempts_view %}
+    <tr>
+      <td>{{ row.candidate.name }}</td>
+      <td>{{ row.candidate.email }}</td>
+      <td><span class="status-pill {{ row.attempt.status }}">{{ row.attempt.status }}</span></td>
+      <td>{% if row.attempt.decision %}<span class="band-pill {{ row.attempt.decision }}">{{ row.attempt.decision }}</span>{% else %}<span class="muted">— pending —</span>{% endif %}</td>
+      <td><a class="link" href="{{ row.interview_url }}" target="_blank">Start / resume</a></td>
+      <td>
+        <form action="/technical-discussion/override-decision" method="post" style="display:flex; gap:6px; align-items:center;">
+          <input type="hidden" name="attempt_id" value="{{ row.attempt.id }}">
+          <input type="hidden" name="round_id" value="{{ round_.id }}">
+          <select name="decision" style="min-width:100px;">
+            <option value="selected" {{ 'selected' if row.attempt.decision == 'selected' else '' }}>selected</option>
+            <option value="hold" {{ 'selected' if row.attempt.decision == 'hold' else '' }}>hold</option>
+            <option value="rejected" {{ 'selected' if row.attempt.decision == 'rejected' else '' }}>rejected</option>
+          </select>
+          <input type="text" name="admin_name" placeholder="your name" required style="width:100px;">
+          <button type="submit" style="margin:0;">Set</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No candidates promoted into this round yet — use the form above.</p>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

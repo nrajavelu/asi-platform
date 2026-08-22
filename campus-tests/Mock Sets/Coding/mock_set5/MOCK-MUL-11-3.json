@@ -1,0 +1,34 @@
+{
+  "id": "MOCK-MUL-11-3",
+  "topic": "mock_basic",
+  "difficulty": "easy",
+  "title": "Multiply Two Numbers",
+  "statement": "Read two integers on one line, space-separated. Print their product.",
+  "starter_code": "a, b = map(int, input().split())\n# TODO: print the product\n",
+  "language_id": 71,
+  "hints": [
+    "Split the line and convert both parts to int before multiplying"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "11 3",
+      "expected_output": "33",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "13 3",
+      "expected_output": "39",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "11 5",
+      "expected_output": "55",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

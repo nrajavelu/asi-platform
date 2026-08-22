@@ -1,0 +1,28 @@
+{
+  "id": "API-E07",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Extract Confidence Score",
+  "statement": "Read a mock response JSON with a numeric 'confidence' field (0 to 1). Print 'high' if >= 0.8, else 'low'.",
+  "starter_code": "import json\ndata = json.loads(input())\n# TODO: print high or low based on confidence\n",
+  "language_id": 71,
+  "hints": [
+    "Compare the numeric field directly against 0.8"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"confidence\": 0.95}",
+      "expected_output": "high",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"confidence\": 0.4}",
+      "expected_output": "low",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

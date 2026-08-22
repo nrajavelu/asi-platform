@@ -1,0 +1,40 @@
+{
+  "id": "API-E05",
+  "topic": "api_handling",
+  "difficulty": "easy",
+  "title": "Status Code Category",
+  "statement": "Read an integer HTTP status code. Print 'success' if 200-299, 'client_error' if 400-499, 'server_error' if 500-599, else 'other'.",
+  "starter_code": "code = int(input())\n# TODO: print the category\n",
+  "language_id": 71,
+  "hints": [
+    "Chain if/elif checking each range in order"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "200",
+      "expected_output": "success",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "404",
+      "expected_output": "client_error",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "503",
+      "expected_output": "server_error",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "301",
+      "expected_output": "other",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

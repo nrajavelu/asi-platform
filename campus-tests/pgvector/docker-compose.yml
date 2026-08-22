@@ -1,0 +1,16 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    privileged: true
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_USER: campus_admin
+      POSTGRES_PASSWORD: campus_admin_local_only
+      POSTGRES_DB: campus_sql_grading
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d:ro
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:

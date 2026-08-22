@@ -1,0 +1,34 @@
+{
+  "id": "API-H01",
+  "topic": "api_handling",
+  "difficulty": "hard",
+  "title": "Malformed JSON Fallback",
+  "statement": "Read one line of input that may or may not be valid JSON. If it parses successfully and has an 'answer' key, print the answer. Otherwise print 'PARSE_ERROR'.",
+  "starter_code": "s = input()\nimport json\n# TODO: try to parse s as JSON and print data['answer'], else print PARSE_ERROR\n",
+  "language_id": 71,
+  "hints": [
+    "Wrap the parse+access in try/except catching both JSONDecodeError and KeyError"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "{\"answer\": \"42\"}",
+      "expected_output": "42",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "not valid json at all",
+      "expected_output": "PARSE_ERROR",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "{\"wrong_key\": \"value\"}",
+      "expected_output": "PARSE_ERROR",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

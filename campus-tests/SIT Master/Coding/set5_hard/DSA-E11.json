@@ -1,0 +1,34 @@
+{
+  "id": "DSA-E11",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Average of Numbers",
+  "statement": "Read a line of space-separated integers and print their average, rounded to 2 decimal places.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print the average, rounded to 2 decimals\n",
+  "language_id": 71,
+  "hints": [
+    "round(value, 2) rounds to 2 decimal places"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1 2 3 4 5",
+      "expected_output": "3.0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "10 20",
+      "expected_output": "15.0",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "7 7 7",
+      "expected_output": "7.0",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

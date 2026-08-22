@@ -1,0 +1,40 @@
+{
+  "id": "DSA-E07",
+  "topic": "dsa",
+  "difficulty": "easy",
+  "title": "Title Case",
+  "statement": "Read a line of lowercase words separated by spaces and print it with the first letter of each word capitalized.",
+  "starter_code": "s = input()\n# TODO: print the title-cased version\n",
+  "language_id": 71,
+  "hints": [
+    "str.capitalize() uppercases the first letter of a single word"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "hello world",
+      "expected_output": "Hello World",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "the quick brown fox",
+      "expected_output": "The Quick Brown Fox",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "python",
+      "expected_output": "Python",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "good morning everyone",
+      "expected_output": "Good Morning Everyone",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

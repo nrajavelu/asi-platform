@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Question Bank</h1>
+<p class="subtitle">Upload a .xlsx or .csv bank — this replaces the current bank entirely.</p>
+
+<div class="card">
+  <div class="kv"><strong>Currently loaded</strong> {{ question_count }} questions</div>
+</div>
+
+<div class="card">
+  <form action="/bank/upload" method="post" enctype="multipart/form-data">
+    <label>Question bank file (.xlsx or .csv)</label>
+    <input type="file" name="file" accept=".xlsx,.csv" required>
+    <div class="hint">.xlsx uses the Aptitude / Programming / Answer Key sheet format (see make_template.py). Used for Aptitude and Programming (Google Forms) rounds.</div>
+    <button type="submit">Load bank</button>
+  </form>
+</div>
+
+<h1 style="margin-top:40px;">Coding Question Bank</h1>
+<p class="subtitle">Used for Coding rounds (self-hosted Judge0 assessment, not Google Forms). Each question is one JSON file, matched by its "id" field — re-uploading a file with the same id replaces that question, others are untouched.</p>
+
+<div class="card">
+  <div class="kv"><strong>Currently loaded</strong> {{ coding_question_count }} coding question(s)</div>
+</div>
+
+<div class="card">
+  <form action="/bank/upload-coding" method="post" enctype="multipart/form-data">
+    <label>Coding question file(s) (.json)</label>
+    <input type="file" name="files" accept=".json" multiple required>
+    <div class="hint">
+      Each file needs: id, topic, difficulty, title, statement, starter_code, language_id (Judge0, e.g. 71 = Python 3.8.1),
+      hints, points, test_cases (list of {stdin, expected_output, is_sample, weight}).
+      Sample files: <code>campus-tests/coding_questions/PY-01.json</code> through <code>PY-04.json</code>.
+    </div>
+    <label style="display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:12px;">
+      <input type="checkbox" name="replace" value="true" style="width:auto;">
+      Replace entire bank with just these files (use this when switching to a specific fixed set, e.g. one SIT Master coding set — otherwise old questions stay loaded and can still be randomly drawn into a round)
+    </label>
+    <button type="submit">Load coding question(s)</button>
+  </form>
+</div>
+{% endblock %}

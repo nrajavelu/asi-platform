@@ -1,0 +1,40 @@
+{
+  "id": "DSA-M07",
+  "topic": "dsa",
+  "difficulty": "medium",
+  "title": "Remove Duplicates Preserve Order",
+  "statement": "Read a line of space-separated integers. Print the list with duplicates removed, keeping only the first occurrence, in original order, space-separated.",
+  "starter_code": "nums = list(map(int, input().split()))\n# TODO: print deduplicated numbers, space-separated\n",
+  "language_id": 71,
+  "hints": [
+    "Track seen values in a set while building the result list in order"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "1 2 2 3 1 4",
+      "expected_output": "1 2 3 4",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "5 5 5",
+      "expected_output": "5",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "1 2 3",
+      "expected_output": "1 2 3",
+      "is_sample": false,
+      "weight": 1
+    },
+    {
+      "stdin": "9 8 9 7 8",
+      "expected_output": "9 8 7",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}
