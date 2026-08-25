@@ -1,0 +1,7 @@
+{
+  "id": "TD-09",
+  "area": "prompt_quality",
+  "question": "Tell me about the worst prompt you've ever written, and what you learned.",
+  "rubric_guide": "Strong: specific, self-aware, real before/after understanding.\nRed flag: deflects with \"I've never really had issues\" - likely hasn't done much real work here.",
+  "max_score": 5
+}

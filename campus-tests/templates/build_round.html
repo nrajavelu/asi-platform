@@ -25,7 +25,13 @@
 
     <div id="new-drive-fields">
       <label>Campus name</label>
-      <input type="text" name="campus" id="campus-input" required>
+      <input type="text" name="campus" id="campus-input" required list="campus-list" autocomplete="off">
+      <datalist id="campus-list">
+        {% for c in drives | map(attribute='campus') | unique | list %}
+        <option value="{{ c }}">
+        {% endfor %}
+      </datalist>
+      <div class="hint">Pick a suggestion to reuse an existing campus exactly, or type a new one.</div>
 
       <label>Drive name</label>
       <input type="text" name="drive_name" id="drive-name-input" required>
@@ -99,6 +105,11 @@ function toggleRoundFields() {
   document.getElementById('campus-input').required = !useExisting;
   document.getElementById('drive-name-input').required = !useExisting;
   document.getElementById('existing-drive-select').required = useExisting;
+  if (!useExisting) {
+    // Clear any leftover selection so switching back to "New drive" never
+    // carries a stale existing_drive_id into the next submission.
+    document.getElementById('existing-drive-select').value = '';
+  }
   document.getElementById('forms-only-fields').style.display = (isCoding || isInterview) ? 'none' : 'block';
   document.getElementById('section-plan-field').style.display = isCoding ? 'block' : 'none';
   document.getElementById('duration-field').style.display = isInterview ? 'none' : 'block';

@@ -1,0 +1,7 @@
+{
+  "id": "TD-05",
+  "area": "llm_api_experience",
+  "question": "Describe the actual shape of a request/response you've sent to an LLM API - what's inside it?",
+  "rubric_guide": "Strong: fluently names the messages array / roles (system/user/assistant) or equivalent request/response JSON shape; mentions params like model, temperature, max_tokens.\nWeak: halting, vague, can't describe the structure at all.",
+  "max_score": 5
+}

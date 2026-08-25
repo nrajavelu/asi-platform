@@ -16,17 +16,45 @@ Usage:
 """
 
 import argparse
+import io
 import plistlib
 from pathlib import Path
 
+SEB_TEMPLATE_DIR = Path(__file__).parent / "seb_templates"
 
-def personalize_seb(template_path: Path, start_url: str, out_path: Path) -> None:
+# Which template a round type gets when SEB is delivered as a download link
+# (invite.py's "seb_download" mode) - resolved at download time, not
+# invite-send time, since the round type is all that's known until then.
+# Aptitude/Programming go through a live Google Form (needs the UA
+# spoofing + relaxed URL filtering prog.seb has, to survive Google's
+# sign-in-in-embedded-webview blocking); Coding is served entirely by
+# this same app, so it can use a much stricter, Google-free template.
+SEB_TEMPLATES_BY_ROUND_TYPE = {
+    "aptitude": SEB_TEMPLATE_DIR / "forms.seb",
+    "programming": SEB_TEMPLATE_DIR / "forms.seb",
+    "coding": SEB_TEMPLATE_DIR / "coding.seb",
+}
+
+
+def seb_template_for_round_type(round_type: str) -> Path:
+    path = SEB_TEMPLATES_BY_ROUND_TYPE.get(round_type)
+    if path is None:
+        raise ValueError(f"No SEB template mapping for round type {round_type!r}")
+    return path
+
+
+def personalized_seb_bytes(template_path: Path, start_url: str) -> bytes:
     with template_path.open("rb") as f:
         config = plistlib.load(f)
     config["startURL"] = start_url
+    buf = io.BytesIO()
+    plistlib.dump(config, buf, fmt=plistlib.FMT_XML)
+    return buf.getvalue()
+
+
+def personalize_seb(template_path: Path, start_url: str, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    with out_path.open("wb") as f:
-        plistlib.dump(config, f, fmt=plistlib.FMT_XML)
+    out_path.write_bytes(personalized_seb_bytes(template_path, start_url))
 
 
 def main() -> None:

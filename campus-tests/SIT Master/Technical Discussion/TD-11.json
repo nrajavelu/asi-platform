@@ -1,0 +1,7 @@
+{
+  "id": "TD-11",
+  "area": "git_workflow",
+  "question": "You accidentally committed an API key to a public repo. What do you do, in order?",
+  "rubric_guide": "Strong: rotates/revokes the key FIRST (most candidates miss this and jump straight to git history); then addresses history (filter-repo/BFG, or at least acknowledges it's non-trivial); understands a simple revert doesn't erase history.\nWeak: only mentions removing it from the latest commit, never mentions rotating the key.",
+  "max_score": 5
+}

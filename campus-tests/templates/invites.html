@@ -42,8 +42,22 @@
       <label><input type="radio" name="mode" value="send"> Send for real</label>
     </div>
 
-    <label>SEB template path (optional)</label>
-    <input type="text" name="seb_template" placeholder="e.g. seb_templates/aptitude.seb (blank = no proctoring)">
+    <label>Delivery</label>
+    <div class="radio-row">
+      <label><input type="radio" name="delivery_mode" value="direct" checked onchange="toggleDeliveryMode()"> Direct link</label>
+      <label><input type="radio" name="delivery_mode" value="seb_attach" onchange="toggleDeliveryMode()"> SEB — attach file</label>
+      <label><input type="radio" name="delivery_mode" value="seb_download" onchange="toggleDeliveryMode()"> SEB — download link</label>
+    </div>
+    <div class="hint" id="delivery-mode-hint">
+      <strong>Direct link:</strong> plain test link, no proctoring lockdown. &middot;
+      <strong>SEB — attach file:</strong> a personalized .seb file is attached to the email — some mail gateways strip this attachment type. &middot;
+      <strong>SEB — download link:</strong> email links to a download instead, built fresh at click time — avoids attachment stripping. Requires the Start-gate URL above (Coding rounds already need it) and a template saved at <code>seb_templates/forms.seb</code> (Aptitude/Programming) or <code>seb_templates/coding.seb</code>.
+    </div>
+
+    <div id="seb-template-field" style="display:none;">
+      <label>SEB template path</label>
+      <input type="text" name="seb_template" placeholder="e.g. seb_templates/forms.seb">
+    </div>
 
     <button type="submit">Run</button>
   </form>
@@ -90,4 +104,11 @@
   {% endif %}
 {% endif %}
 {% endif %}
+
+<script>
+function toggleDeliveryMode() {
+  const mode = document.querySelector('input[name="delivery_mode"]:checked').value;
+  document.getElementById('seb-template-field').style.display = mode === 'seb_attach' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

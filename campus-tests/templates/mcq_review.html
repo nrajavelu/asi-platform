@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Answer Review — {{ candidate.name }}</h1>
-<p class="subtitle">{{ candidate.email }} &middot; {{ round_.drive.name }} ({{ round_.drive.campus }}) &middot; <a href="/results?round_id={{ round_.id }}">back to Results</a></p>
+<p class="subtitle">{{ candidate.email }} &middot; {{ round_.drive.name }} ({{ round_.drive.campus }}) &middot; <a href="/results?drive_id={{ round_.drive_id }}&round_id={{ round_.id }}">back to Results</a></p>
 
 <div class="card">
   <div class="kv"><strong>Score</strong> {{ attempt.score }}/{{ attempt.max_score }} ({{ attempt.percent }}%)</div>

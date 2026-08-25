@@ -12,11 +12,18 @@ this content.
 | `Aptitude/` | 7 sets (`set1_easy.xlsx` ... `set7_hard.xlsx`), 20 questions/30 min each | `.xlsx`, matches `load_questions.py`'s existing schema | Web UI → Question Bank → upload the `.xlsx`, **or** `python load_questions.py "SIT Master/Aptitude/set1_easy.xlsx"` |
 | `Programming/` | 7 sets, 30 questions/60 min each | Same `.xlsx` format | Same as above |
 | `Coding/` | 7 sets (`set1_easy/` ... `set7_hard/`), 15 questions/90 min each | One folder per set, one `.json` per question | **Important:** use `--replace` — see below |
+| `Technical Discussion/` | 1 flat set, 17 questions across 4 areas | One `.json` per question | Web UI → Question Bank → Interview Question Bank → upload the `.json` files, **or** `python load_interview_questions.py "SIT Master/Technical Discussion/"` |
 
 Set-type distribution across the 7 sets: **2 easy, 3 medium, 2 hard** (as
 requested) — each set's internal question mix skews toward its label but
 isn't 100% single-difficulty (e.g. an "easy" set is still ~15-20% harder
-questions, so it still discriminates).
+questions, so it still discriminates). The Technical Discussion set is not
+tiered the same way (interviewer-scored rubric questions don't have a
+correctness answer to calibrate difficulty against) - it's a flat 17
+questions across `llm_api_experience`, `prompt_quality`, `git_workflow`,
+and `vibe_coding`, matching the Programming set's AI/LLM-engineer focus.
+A Technical Discussion round draws a random subset per candidate (default
+4) from whatever's loaded.
 
 ## Loading a Coding set — read this before your first drive
 

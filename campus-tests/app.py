@@ -22,7 +22,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -31,6 +31,7 @@ from judge0_client import run_against_test_cases
 from models import Attempt, CodingAttemptQuestion, CodingQuestion, CodingTestCase, Round, SessionLocal, init_db
 from css_grader import run_css_submission
 from react_grader import run_react_submission
+from seb_config import personalized_seb_bytes, seb_template_for_round_type
 from sql_grader import run_sql_submission
 
 
@@ -124,6 +125,41 @@ def start(token: str):
         return RedirectResponse(url=round_.responder_uri, status_code=302)
 
 
+@app.get("/seb/{token}")
+def download_seb(request: Request, token: str):
+    """Builds a personalized .seb file on the fly, rather than one written
+    to disk at invite-send time - keeps the LAN IP baked into startURL as
+    fresh as possible (built from this actual request, via request.base_url,
+    not a separately-detected IP that could differ), and sidesteps mail
+    gateways that strip .seb attachments since invite.py can link here
+    instead of attaching the file directly."""
+    with SessionLocal() as session:
+        attempt = session.query(Attempt).filter_by(token=token).first()
+        if attempt is None:
+            raise HTTPException(status_code=404, detail="Invalid or unknown access link")
+        round_ = session.get(Round, attempt.round_id)
+        if round_ is None:
+            raise HTTPException(status_code=404, detail="Round not found")
+
+        try:
+            template_path = seb_template_for_round_type(round_.round_type)
+        except ValueError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        if not template_path.exists():
+            raise HTTPException(
+                status_code=500,
+                detail=f"No SEB template at {template_path} for round type {round_.round_type!r} yet.",
+            )
+
+        start_url = f"{str(request.base_url).rstrip('/')}/start/{token}"
+        content = personalized_seb_bytes(template_path, start_url)
+        return Response(
+            content=content,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f'attachment; filename="{token}.seb"'},
+        )
+
+
 def _ensure_session_initialized(session, attempt: Attempt, round_: Round) -> None:
     """Idempotent: safe to call from any route that touches a coding
     session, not just the page load - a direct hit, bookmark, or refresh
@@ -150,7 +186,10 @@ def coding_page(request: Request, token: str):
         if round_ is None or round_.round_type != "coding":
             raise HTTPException(status_code=404, detail="This link is not a coding round")
 
-        _ensure_session_initialized(session, attempt, round_)
+        try:
+            _ensure_session_initialized(session, attempt, round_)
+        except ValueError as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
         return templates.TemplateResponse(request, "session.html", {"token": token})
 
@@ -167,7 +206,10 @@ def session_state(token: str):
         if attempt.status == "submitted":
             remaining_seconds = 0
         else:
-            _ensure_session_initialized(session, attempt, round_)
+            try:
+                _ensure_session_initialized(session, attempt, round_)
+            except ValueError as e:
+                raise HTTPException(status_code=500, detail=str(e))
             deadline = _deadline(round_, attempt.session_started_at)
             remaining_seconds = max(0, int((deadline - datetime.now(timezone.utc)).total_seconds()))
             if remaining_seconds == 0:
@@ -294,7 +336,10 @@ def finish_session(token: str):
 def _reject_if_expired(session, round_: Round, attempt: Attempt) -> None:
     if attempt.status == "submitted":
         raise HTTPException(status_code=403, detail="This session has already ended")
-    _ensure_session_initialized(session, attempt, round_)
+    try:
+        _ensure_session_initialized(session, attempt, round_)
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
     deadline = _deadline(round_, attempt.session_started_at)
     if datetime.now(timezone.utc) > deadline:
         with SessionLocal() as session:

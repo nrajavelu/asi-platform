@@ -1,0 +1,7 @@
+{
+  "id": "TD-08",
+  "area": "prompt_quality",
+  "question": "How do you know when a prompt is \"good enough\" to ship? What would you actually measure?",
+  "rubric_guide": "Strong: mentions testing varied/edge-case inputs, not just the happy path; some notion of evaluation (even informal spot-checks or a small test set); aware of cost/latency tradeoffs of longer prompts.\nWeak: \"it looked right when I tried it once\".",
+  "max_score": 5
+}

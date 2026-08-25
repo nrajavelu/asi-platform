@@ -32,7 +32,13 @@ def rows_from_file(path: str) -> list[dict]:
                 continue
             rows.append(dict(zip(header, raw_row)))
     else:
-        raise SystemExit(f"Unsupported file type: {file_path.suffix} (use .csv or .xlsx)")
+        raise ValueError(f"Unsupported file type: {file_path.suffix} (use .csv or .xlsx)")
+
+    # Column names are matched case-insensitively ("Email"/"EMAIL"/"email"
+    # all work) since spreadsheet headers are commonly capitalized - rows
+    # are normalized to lowercase keys so downstream code can always just
+    # use row["email"]/row["name"].
+    rows = [{(k.strip().lower() if isinstance(k, str) else k): v for k, v in row.items()} for row in rows]
 
     found = set(rows[0].keys()) if rows else set()
     missing = {"name", "email"} - found
@@ -45,7 +51,7 @@ def rows_from_file(path: str) -> list[dict]:
                 "column instead of two - remove the surrounding quotes and "
                 "re-save as plain comma-separated values."
             )
-        raise SystemExit(
+        raise ValueError(
             f"Missing required column(s) {sorted(missing)} in {path}. "
             f"Found columns: {sorted(found)}.{hint}"
         )
@@ -102,7 +108,10 @@ def main() -> None:
     if round_ is None:
         raise SystemExit(f"No round with id {args.round_id}")
 
-    created = add_candidates_from_file(session, round_, args.file)
+    try:
+        created = add_candidates_from_file(session, round_, args.file)
+    except ValueError as e:
+        raise SystemExit(str(e))
     print(f"Created {created} attempt(s) for round #{round_.id}")
 
 

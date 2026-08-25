@@ -4,6 +4,31 @@
 <p class="subtitle">Backup, restore, and scoped data cleanup. Question banks (MCQ, coding, interview questions) are managed on the <a class="link" href="/bank">Question Bank</a> page and are never touched here.</p>
 
 <div class="card">
+  <div class="section-title">Network access</div>
+  <p class="hint">
+    This machine's LAN address right now: <strong>{{ lan_ip or "not detected (no network connection?)" }}</strong>{% if lan_ip %} &mdash; share <code>http://{{ lan_ip }}:8787</code>{% endif %}.
+    Off by default: anyone who isn't at this machine gets refused until you enable it below <em>and</em> they enter the access code.
+    Toggling and setting the code only works from this machine, even once LAN access is on, so a guest can never loosen this further.
+  </p>
+
+  <form action="/admin/network/set-code" method="post" class="inline-form">
+    <div class="field">
+      <label>Access code</label>
+      <input type="password" name="code" placeholder="{{ 'set — enter a new one to change it' if net_settings.access_code_hash else 'not set yet' }}">
+    </div>
+    <button type="submit">Set code</button>
+  </form>
+
+  <form action="/admin/network/toggle" method="post" class="inline-form" style="margin-top:14px;">
+    <input type="hidden" name="enabled" value="{{ 'false' if net_settings.lan_access_enabled else 'true' }}">
+    <button type="submit">{{ 'Disable LAN access' if net_settings.lan_access_enabled else 'Enable LAN access' }}</button>
+    <span class="badge {{ 'sent' if net_settings.lan_access_enabled else 'dry-run' }}" style="align-self:center;">
+      {{ 'LAN access ON' if net_settings.lan_access_enabled else 'LAN access OFF' }}
+    </span>
+  </form>
+</div>
+
+<div class="card">
   <div class="section-title">Backup</div>
   <p class="hint">Snapshots the entire database. A backup is also taken automatically before any restore or cleanup below, so you always have a safety net.</p>
   <form action="/admin/backup" method="post" class="inline-form">

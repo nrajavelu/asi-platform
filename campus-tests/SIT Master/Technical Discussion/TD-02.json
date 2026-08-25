@@ -1,0 +1,7 @@
+{
+  "id": "TD-02",
+  "area": "llm_api_experience",
+  "question": "If I gave you an API key and an endpoint right now, walk me through your first five minutes before writing any app code.",
+  "rubric_guide": "Strong: reads docs / checks auth method; tests with curl/Postman/a REPL before wiring into app code; checks rate limits/pricing.\nWeak: jumps straight to writing a full integration blind, no exploration step.",
+  "max_score": 5
+}

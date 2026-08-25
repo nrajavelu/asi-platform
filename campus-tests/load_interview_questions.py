@@ -11,7 +11,20 @@ import argparse
 import json
 from pathlib import Path
 
-from models import InterviewQuestion, SessionLocal, init_db
+from models import InterviewAttemptQuestion, InterviewQuestion, SessionLocal, init_db
+
+
+def clear_bank(session) -> int:
+    """Deletes every interview question (and any InterviewAttemptQuestion
+    rows referencing them). Only call this when you intend to fully replace
+    the active interview bank, never mid-drive with live interview data
+    still needed."""
+    question_ids = [qid for (qid,) in session.query(InterviewQuestion.id).all()]
+    if not question_ids:
+        return 0
+    session.query(InterviewAttemptQuestion).filter(InterviewAttemptQuestion.question_id.in_(question_ids)).delete(synchronize_session=False)
+    session.query(InterviewQuestion).filter(InterviewQuestion.id.in_(question_ids)).delete(synchronize_session=False)
+    return len(question_ids)
 
 
 def load_question_file(session, path: Path) -> str:

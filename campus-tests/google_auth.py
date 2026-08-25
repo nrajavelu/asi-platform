@@ -9,7 +9,7 @@ TOKEN_FILE = Path(__file__).parent / "credentials" / "token.json"
 
 def get_credentials() -> Credentials:
     if not TOKEN_FILE.exists():
-        raise SystemExit(
+        raise ValueError(
             f"Missing {TOKEN_FILE}. Run generate_refresh_token.py first."
         )
     creds = Credentials.from_authorized_user_file(str(TOKEN_FILE))

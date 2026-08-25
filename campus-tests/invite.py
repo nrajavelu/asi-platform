@@ -6,8 +6,16 @@ they open it, then redirects into the real Google Form - requires app.py
 running and reachable for the whole test window. Without --base-url,
 candidates get the direct Form link instead (no "started" tracking).
 
-Optionally attaches a personalized .seb file (its startURL patched to the
-candidate's own link) if proctoring is enabled for the round.
+Three delivery modes (--delivery-mode), independent of --base-url above:
+  direct       - candidates get the plain link (default)
+  seb_attach   - a personalized .seb file (startURL patched to the
+                 candidate's link) is attached to the email
+  seb_download - the email links to /seb/{token} instead, which builds the
+                 .seb on demand at click time rather than at send time -
+                 avoids mail gateways that strip .seb attachments, and
+                 narrows the window in which the LAN IP baked into the
+                 file's startURL could go stale. Requires --base-url,
+                 since app.py is what serves that download route.
 
 Defaults to --dry-run (prints what would be sent, no email leaves the
 account). Pass --send to actually email via Gmail.
@@ -19,9 +27,13 @@ Usage:
     # without started-tracking (direct form link):
     python invite.py --round-id 1 --send
 
-    # with SEB proctoring:
+    # with SEB proctoring, attached:
     python invite.py --round-id 1 --base-url http://192.168.1.42:8788 \
-        --seb-template seb_templates/aptitude.seb --send
+        --delivery-mode seb_attach --seb-template seb_templates/forms.seb --send
+
+    # with SEB proctoring, as a download link:
+    python invite.py --round-id 1 --base-url http://192.168.1.42:8788 \
+        --delivery-mode seb_download --send
 """
 
 import argparse
@@ -37,7 +49,7 @@ from judge0_client import is_judge0_ready
 from css_grader import is_css_grader_ready
 from models import Attempt, Candidate, CodingQuestion, Round, SessionLocal, init_db
 from react_grader import is_react_grader_ready
-from seb_config import personalize_seb
+from seb_config import personalize_seb, seb_template_for_round_type
 from sql_grader import is_pgvector_ready
 
 READINESS_CHECKS = {
@@ -71,12 +83,13 @@ def send_invites(
     session,
     round_: Round,
     base_url: str | None = None,
+    delivery_mode: str = "direct",
     seb_template_path: str | None = None,
     dry_run: bool = True,
 ) -> list[dict]:
     if round_.round_type == "coding":
         if not base_url:
-            raise SystemExit(
+            raise ValueError(
                 "Coding rounds require --base-url (from app.py) - there's no "
                 "Google Form fallback link for this round type."
             )
@@ -90,12 +103,15 @@ def send_invites(
                 continue
             ready, message = check()
             if not ready:
-                raise SystemExit(
+                raise ValueError(
                     f"Pre-flight check failed for '{qtype}' questions: {message} "
                     f"Refusing to send invites - candidates would hit a broken coding session."
                 )
     elif not round_.responder_uri:
-        raise SystemExit(f"Round #{round_.id} has no form yet (build one first)")
+        raise ValueError(f"Round #{round_.id} has no form yet (build one first)")
+
+    if delivery_mode not in ("direct", "seb_attach", "seb_download"):
+        raise ValueError(f"Unknown delivery_mode {delivery_mode!r}")
 
     attempts = session.query(Attempt).filter_by(round_id=round_.id, status="invited").all()
     if not attempts:
@@ -103,10 +119,24 @@ def send_invites(
         return []
 
     template_path = None
-    if seb_template_path:
+    if delivery_mode == "seb_attach":
+        if not seb_template_path:
+            raise ValueError("delivery_mode='seb_attach' requires seb_template_path.")
         template_path = Path(seb_template_path)
         if not template_path.exists():
-            raise SystemExit(f"Missing SEB template: {template_path}")
+            raise ValueError(f"Missing SEB template: {template_path}")
+    elif delivery_mode == "seb_download":
+        if not base_url:
+            raise ValueError(
+                "delivery_mode='seb_download' requires --base-url - the download link "
+                "is served by app.py, same as the /start/{token} redirect."
+            )
+        template_path = seb_template_for_round_type(round_.round_type)
+        if not template_path.exists():
+            raise ValueError(
+                f"No SEB template at {template_path} for round type {round_.round_type!r} - "
+                f"regenerate and save it there before using delivery_mode='seb_download'."
+            )
 
     service = None if dry_run else gmail_service()
     results = []
@@ -118,15 +148,20 @@ def send_invites(
         link = f"{base_url.rstrip('/')}/start/{attempt.token}" if base_url else round_.responder_uri
 
         seb_out = None
-        if template_path is not None:
+        if delivery_mode == "seb_attach":
             seb_out = SEB_OUT_DIR / f"{attempt.token}.seb"
             personalize_seb(template_path, link, seb_out)
-
-        if seb_out is not None:
             instructions = (
                 f"Open the attached .seb file to launch it in the secure test "
                 f"browser (SEB should already be installed on your lab machine).\n\n"
                 f"If needed, your link is: {link}\n\n"
+            )
+        elif delivery_mode == "seb_download":
+            download_link = f"{base_url.rstrip('/')}/seb/{attempt.token}"
+            instructions = (
+                f"Download your secure test file from this link, then open it to launch "
+                f"the secure test browser (SEB should already be installed on your lab "
+                f"machine): {download_link}\n\n"
             )
         else:
             instructions = f"Your test link: {link}\n\n"
@@ -156,7 +191,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--round-id", type=int, required=True)
     parser.add_argument("--base-url", default=None, help="e.g. http://192.168.1.42:8788 (from app.py) - omit for no started-tracking")
-    parser.add_argument("--seb-template", default=None, help="omit to send without proctoring")
+    parser.add_argument(
+        "--delivery-mode", default="direct", choices=["direct", "seb_attach", "seb_download"],
+        help="direct (plain link, default), seb_attach (.seb attached), seb_download (link to /seb/<token>)",
+    )
+    parser.add_argument("--seb-template", default=None, help="required for --delivery-mode seb_attach")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--send", action="store_true")
@@ -168,9 +207,13 @@ def main() -> None:
     if round_ is None:
         raise SystemExit(f"No round with id {args.round_id}")
 
-    send_invites(
-        session, round_, base_url=args.base_url, seb_template_path=args.seb_template, dry_run=args.dry_run
-    )
+    try:
+        send_invites(
+            session, round_, base_url=args.base_url, delivery_mode=args.delivery_mode,
+            seb_template_path=args.seb_template, dry_run=args.dry_run,
+        )
+    except ValueError as e:
+        raise SystemExit(str(e))
     session.close()
 
 

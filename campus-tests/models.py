@@ -188,6 +188,18 @@ class FormAnswer(Base):
     attempt = relationship("Attempt")
 
 
+class Settings(Base):
+    """Singleton row (always id=1) holding admin-configurable app settings -
+    currently just LAN network access. get_or_create_settings() in webui.py
+    is the only intended way to read/create this row."""
+
+    __tablename__ = "settings"
+
+    id = Column(Integer, primary_key=True)
+    lan_access_enabled = Column(Boolean, nullable=False, default=False)
+    access_code_hash = Column(String, nullable=True)  # sha256 hex digest, never plaintext
+
+
 DB_PATH = Path(__file__).parent / "data" / "campus.db"
 engine = create_engine(f"sqlite:///{DB_PATH}")
 SessionLocal = sessionmaker(bind=engine)

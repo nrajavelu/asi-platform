@@ -26,7 +26,7 @@ def assign_interview_questions(session, attempt, count: int, areas: list[str] | 
         query = query.filter(InterviewQuestion.area.in_(areas))
     pool = query.all()
     if len(pool) < count:
-        raise SystemExit(
+        raise ValueError(
             f"Only {len(pool)} interview question(s) available "
             f"(areas={areas or 'all'}); requested {count}."
         )

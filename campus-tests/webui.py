@@ -1,21 +1,23 @@
 """
 Local web UI for the campus test system, styled with Aizentify branding.
 Wraps the same functions the CLI scripts and console.py use, so every
-interface stays in sync. Binds to 127.0.0.1 only - never reachable by
-anyone off this machine.
+interface stays in sync. Listens on every interface, but LAN access is
+closed by default - see lan_access_gate() below and the Network access
+section on the Admin page to open it up temporarily.
 
 Usage:
     python webui.py
     -> open http://127.0.0.1:8787
 """
 
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote, unquote
 
 import uvicorn
-from fastapi import FastAPI, Form, Request, UploadFile
-from fastapi.responses import RedirectResponse, Response
+from fastapi import Depends, FastAPI, Form, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -27,11 +29,13 @@ from google_auth import forms_service, gmail_service
 from interview_session import assign_interview_questions
 from invite import send_invites
 from load_coding_questions import clear_bank as clear_coding_bank, load_question_file
+from load_interview_questions import clear_bank as clear_interview_bank, load_question_file as load_interview_question_file
 from load_questions import load_bank
 from models import (
     Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Drive, FormAnswer, InterviewAttemptQuestion,
-    InterviewQuestion, Question, Round, SessionLocal, init_db,
+    InterviewQuestion, Question, Round, Settings, SessionLocal, init_db,
 )
+from proc_utils import get_lan_ip
 from results import (
     coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, list_drives,
     round_label, rounds_for_drive, shortlist, top_n_attempts,
@@ -46,6 +50,100 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 init_db()
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+LOCALHOST_CLIENTS = {"127.0.0.1", "::1", "testclient"}  # "testclient" = starlette's TestClient
+UNLOCK_COOKIE = "lan_unlock"
+ALWAYS_ALLOWED_PREFIXES = ("/static/", "/network/unlock")
+
+
+def get_or_create_settings(session) -> Settings:
+    settings = session.get(Settings, 1)
+    if settings is None:
+        settings = Settings(id=1, lan_access_enabled=False, access_code_hash=None)
+        session.add(settings)
+        session.commit()
+    return settings
+
+
+def hash_code(code: str) -> str:
+    return hashlib.sha256(code.strip().encode("utf-8")).hexdigest()
+
+
+@app.middleware("http")
+async def lan_access_gate(request: Request, call_next):
+    """Loopback requests (the admin sitting at this machine) always pass
+    straight through. Everything else - i.e. every request that only
+    reaches this process because WEBUI_HOST=0.0.0.0 exposed it to the LAN -
+    is blocked unless an admin has explicitly turned LAN access on AND the
+    visitor has entered the current access code (checked via a cookie
+    holding the code's hash, so changing the code invalidates old cookies
+    automatically without any extra bookkeeping)."""
+    client_host = request.client.host if request.client else None
+    if client_host in LOCALHOST_CLIENTS:
+        return await call_next(request)
+
+    path = request.url.path
+    session = SessionLocal()
+    try:
+        settings = get_or_create_settings(session)
+        if not settings.lan_access_enabled:
+            return Response("LAN access is currently disabled by the admin.", status_code=403)
+        if path.startswith(ALWAYS_ALLOWED_PREFIXES):
+            return await call_next(request)
+        if settings.access_code_hash and request.cookies.get(UNLOCK_COOKIE) == settings.access_code_hash:
+            return await call_next(request)
+        return RedirectResponse(url=f"/network/unlock?next={quote(path)}")
+    finally:
+        session.close()
+
+
+@app.get("/network/unlock")
+def network_unlock_page(next: str = "/"):
+    return HTMLResponse(f"""
+    <html><head><title>Enter access code</title></head>
+    <body style="font-family: sans-serif; max-width: 400px; margin: 80px auto; text-align: center;">
+      <h2>Campus Test Console</h2>
+      <p>Ask the admin for the LAN access code.</p>
+      <form action="/network/unlock" method="post">
+        <input type="hidden" name="next" value="{next}">
+        <input type="password" name="code" placeholder="Access code" autofocus
+               style="padding:10px; font-size:16px; width:100%; box-sizing:border-box;">
+        <button type="submit" style="margin-top:12px; padding:10px 20px; font-size:16px;">Enter</button>
+      </form>
+    </body></html>
+    """)
+
+
+@app.post("/network/unlock")
+def network_unlock_submit(code: str = Form(...), next: str = Form("/")):
+    session = SessionLocal()
+    try:
+        settings = get_or_create_settings(session)
+        if not settings.access_code_hash or hash_code(code) != settings.access_code_hash:
+            return HTMLResponse(
+                '<p style="font-family:sans-serif; text-align:center; margin-top:80px;">'
+                'Wrong code. <a href="javascript:history.back()">Try again</a></p>',
+                status_code=403,
+            )
+        response = RedirectResponse(url=next or "/", status_code=303)
+        response.set_cookie(UNLOCK_COOKIE, settings.access_code_hash, max_age=60 * 60 * 24 * 7, httponly=True)
+        return response
+    finally:
+        session.close()
+
+
+def get_session():
+    # Every route used to call SessionLocal() directly and never close it,
+    # leaking a pooled connection per request - with a default pool of 5 +
+    # 10 overflow, that exhausts after ~15 requests and every request after
+    # that queues for up to 30s before timing out. Routes now take this as
+    # a dependency instead, which guarantees close() via the finally block
+    # no matter which of a handler's return points is hit.
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 def render(request: Request, name: str, context: dict):
@@ -70,8 +168,7 @@ async def save_upload(file: UploadFile) -> str:
 
 
 @app.get("/")
-def home(request: Request):
-    session = SessionLocal()
+def home(request: Request, session=Depends(get_session)):
     rounds = session.query(Round).order_by(Round.id).all()
     for r in rounds:
         r.attempt_count = session.query(Attempt).filter_by(round_id=r.id).count()
@@ -93,8 +190,7 @@ def home(request: Request):
 
 
 @app.get("/bank")
-def bank_page(request: Request):
-    session = SessionLocal()
+def bank_page(request: Request, session=Depends(get_session)):
     flash, err = flash_from_request(request)
     return render(
         request,
@@ -105,6 +201,7 @@ def bank_page(request: Request):
             "flash_error": err,
             "question_count": session.query(Question).count(),
             "coding_question_count": session.query(CodingQuestion).count(),
+            "interview_question_count": session.query(InterviewQuestion).count(),
         },
     )
 
@@ -120,8 +217,7 @@ async def bank_upload(file: UploadFile):
 
 
 @app.post("/bank/upload-coding")
-async def bank_upload_coding(files: list[UploadFile], replace: bool = Form(False)):
-    session = SessionLocal()
+async def bank_upload_coding(files: list[UploadFile], replace: bool = Form(False), session=Depends(get_session)):
     loaded = []
     try:
         cleared = clear_coding_bank(session) if replace else 0
@@ -136,10 +232,25 @@ async def bank_upload_coding(files: list[UploadFile], replace: bool = Form(False
     return flash_redirect("/bank", f"{prefix}Loaded {len(loaded)} coding question(s): {', '.join(loaded)}")
 
 
+@app.post("/bank/upload-interview")
+async def bank_upload_interview(files: list[UploadFile], replace: bool = Form(False), session=Depends(get_session)):
+    loaded = []
+    try:
+        cleared = clear_interview_bank(session) if replace else 0
+        for file in files:
+            path = await save_upload(file)
+            loaded.append(load_interview_question_file(session, Path(path)))
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        return flash_redirect("/bank", str(e), error=True)
+    prefix = f"Cleared {cleared} existing question(s). " if replace else ""
+    return flash_redirect("/bank", f"{prefix}Loaded {len(loaded)} interview question(s): {', '.join(loaded)}")
+
+
 @app.get("/rounds/new")
-def build_round_page(request: Request):
+def build_round_page(request: Request, session=Depends(get_session)):
     flash, err = flash_from_request(request)
-    session = SessionLocal()
     drives = session.query(Drive).order_by(Drive.name).all()
     return render(request, "build_round.html", {"active": "build", "flash": flash, "flash_error": err, "result": None, "drives": drives})
 
@@ -149,6 +260,7 @@ def build_round_submit(
     request: Request,
     round_type: str = Form(...),
     count: int = Form(...),
+    drive_mode: str = Form("new"),
     campus: str = Form(""),
     drive_name: str = Form(""),
     existing_drive_id: str = Form(""),
@@ -156,12 +268,21 @@ def build_round_submit(
     topics: str = Form(""),
     duration_minutes: str = Form(""),
     section_plan: str = Form(""),
+    session=Depends(get_session),
 ):
-    session = SessionLocal()
     parsed_duration = int(duration_minutes) if duration_minutes.strip() else None
     drives = session.query(Drive).order_by(Drive.name).all()
 
-    parsed_drive_id = int(existing_drive_id) if existing_drive_id.strip() else None
+    # Technical Discussion always forces "existing drive" mode client-side
+    # (its toggle is hidden), regardless of the drive_mode radio's stale
+    # default value. For every other round type, drive_mode is the single
+    # source of truth for whether to use existing_drive_id - if the admin is
+    # in "new drive" mode, existing_drive_id is ignored even if a stale
+    # value is present (e.g. left over from an earlier "existing drive"
+    # selection in the same page load), so a leftover hidden-field value can
+    # never silently attach a new round to the wrong drive.
+    effective_mode = "existing" if round_type == "technical_discussion" else drive_mode
+    parsed_drive_id = int(existing_drive_id) if effective_mode == "existing" and existing_drive_id.strip() else None
     if round_type != "technical_discussion" and parsed_drive_id is None and (not campus.strip() or not drive_name.strip()):
         return render(request, "build_round.html", {"active": "build", "flash": "Pick an existing drive, or enter a Campus name and Drive name to create a new one.", "flash_error": True, "result": None, "drives": drives})
 
@@ -240,8 +361,7 @@ def build_round_submit(
 
 
 @app.get("/candidates")
-def candidates_page(request: Request, drive_id: int | None = None):
-    session = SessionLocal()
+def candidates_page(request: Request, drive_id: int | None = None, session=Depends(get_session)):
     flash, err = flash_from_request(request)
     drives = list_drives(session)
     drive_ = session.get(Drive, drive_id) if drive_id else None
@@ -253,8 +373,7 @@ def candidates_page(request: Request, drive_id: int | None = None):
 
 
 @app.post("/candidates/upload")
-async def candidates_upload(round_id: int = Form(...), file: UploadFile = None):
-    session = SessionLocal()
+async def candidates_upload(round_id: int = Form(...), file: UploadFile = None, session=Depends(get_session)):
     round_ = session.get(Round, round_id)
     if round_ is None:
         return flash_redirect("/candidates", f"No round with id {round_id}", error=True)
@@ -280,8 +399,7 @@ def _invites_context(session, drive_id: int | None):
 
 
 @app.get("/invites")
-def invites_page(request: Request, drive_id: int | None = None):
-    session = SessionLocal()
+def invites_page(request: Request, drive_id: int | None = None, session=Depends(get_session)):
     flash, err = flash_from_request(request)
     ctx = _invites_context(session, drive_id)
     ctx["flash"], ctx["flash_error"] = flash, err
@@ -295,9 +413,10 @@ def invites_send(
     round_id: int = Form(...),
     mode: str = Form(...),
     base_url: str = Form(""),
+    delivery_mode: str = Form("direct"),
     seb_template: str = Form(""),
+    session=Depends(get_session),
 ):
-    session = SessionLocal()
     round_ = session.get(Round, round_id)
     ctx = _invites_context(session, drive_id)
     if round_ is None:
@@ -309,6 +428,7 @@ def invites_send(
             session,
             round_,
             base_url=base_url.strip() or None,
+            delivery_mode=delivery_mode,
             seb_template_path=seb_template.strip() or None,
             dry_run=(mode != "send"),
         )
@@ -321,8 +441,7 @@ def invites_send(
 
 
 @app.post("/invites/check-bounces")
-def invites_check_bounces(request: Request, drive_id: int = Form(...), round_id: int = Form(...)):
-    session = SessionLocal()
+def invites_check_bounces(request: Request, drive_id: int = Form(...), round_id: int = Form(...), session=Depends(get_session)):
     round_ = session.get(Round, round_id)
     ctx = _invites_context(session, drive_id)
     if round_ is None:
@@ -344,10 +463,19 @@ def invites_check_bounces(request: Request, drive_id: int = Form(...), round_id:
 def _results_context(session, drive_id: int | None, round_id: int | None, status_filter: str | None):
     drives = list_drives(session)
     drive_ = session.get(Drive, drive_id) if drive_id else None
-    rounds = rounds_for_drive(session, drive_id) if drive_ else []
+    # A link can arrive with just round_id and no drive_id (e.g. "back to
+    # Results" from the coding/MCQ review pages) - resolve drive_ from the
+    # round in that case too, so every form on the page still gets a real
+    # drive_id instead of silently rendering an empty hidden field that
+    # 422s on submit.
+    round_ = session.get(Round, round_id) if round_id else None
+    if round_ and drive_ is None:
+        drive_ = round_.drive
+    rounds = rounds_for_drive(session, drive_.id) if drive_ else []
     # default to the first round in the drive so picking a drive shows
     # something immediately, without a required second click into a tab
-    round_ = session.get(Round, round_id) if round_id else (rounds[0] if rounds else None)
+    if round_ is None:
+        round_ = rounds[0] if rounds else None
     kpis = kpi_summary(session, round_) if round_ else None
     attempts = filter_attempts(session, round_, status_filter) if round_ else []
     coding_analytics = (
@@ -375,8 +503,7 @@ def _results_context(session, drive_id: int | None, round_id: int | None, status
 
 
 @app.get("/results")
-def results_page(request: Request, drive_id: int | None = None, round_id: int | None = None, status: str | None = None):
-    session = SessionLocal()
+def results_page(request: Request, drive_id: int | None = None, round_id: int | None = None, status: str | None = None, session=Depends(get_session)):
     ctx = _results_context(session, drive_id, round_id, status)
     flash, err = flash_from_request(request)
     ctx["flash"], ctx["flash_error"] = flash, err
@@ -384,8 +511,7 @@ def results_page(request: Request, drive_id: int | None = None, round_id: int | 
 
 
 @app.post("/results/process")
-def results_process(request: Request, drive_id: int = Form(...), round_id: int = Form(...)):
-    session = SessionLocal()
+def results_process(request: Request, drive_id: int = Form(...), round_id: int = Form(...), session=Depends(get_session)):
     round_ = session.get(Round, round_id)
     ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
@@ -423,8 +549,8 @@ def results_shortlist(
     round_id: int = Form(...),
     bench_pct: int = Form(...),
     borderline_pct: int = Form(...),
+    session=Depends(get_session),
 ):
-    session = SessionLocal()
     round_ = session.get(Round, round_id)
     ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
@@ -438,8 +564,7 @@ def results_shortlist(
 
 
 @app.post("/results/top-n")
-def results_top_n(request: Request, drive_id: int = Form(...), round_id: int = Form(...), n: int = Form(...)):
-    session = SessionLocal()
+def results_top_n(request: Request, drive_id: int = Form(...), round_id: int = Form(...), n: int = Form(...), session=Depends(get_session)):
     round_ = session.get(Round, round_id)
     ctx = _results_context(session, drive_id, round_id, None)
     if round_ is None:
@@ -483,8 +608,7 @@ def _previous_round_scores(session, candidate: Candidate, drive_id: int, exclude
 
 
 @app.get("/technical-discussion")
-def technical_discussion_page(request: Request, drive_id: int | None = None, round_id: int | None = None):
-    session = SessionLocal()
+def technical_discussion_page(request: Request, drive_id: int | None = None, round_id: int | None = None, session=Depends(get_session)):
     flash, err = flash_from_request(request)
     drives = list_drives(session)
     drive_ = session.get(Drive, drive_id) if drive_id else None
@@ -525,8 +649,8 @@ def technical_discussion_promote(
     target_round_id: int = Form(...),
     source_round_id: int = Form(...),
     band: str = Form("shortlisted"),
+    session=Depends(get_session),
 ):
-    session = SessionLocal()
     target = session.get(Round, target_round_id)
     source = session.get(Round, source_round_id)
     if target is None or source is None:
@@ -546,8 +670,8 @@ def technical_discussion_override(
     decision: str = Form(...),
     admin_name: str = Form(...),
     round_id: int = Form(...),
+    session=Depends(get_session),
 ):
-    session = SessionLocal()
     attempt = session.get(Attempt, attempt_id)
     round_ = session.get(Round, round_id)
     if attempt is None or round_ is None:
@@ -561,8 +685,7 @@ def technical_discussion_override(
 
 
 @app.get("/interview/{token}")
-def interview_session_page(request: Request, token: str):
-    session = SessionLocal()
+def interview_session_page(request: Request, token: str, session=Depends(get_session)):
     attempt = session.query(Attempt).filter_by(token=token).first()
     if attempt is None:
         return Response("Invalid interview link.", status_code=404)
@@ -571,7 +694,10 @@ def interview_session_page(request: Request, token: str):
         return Response("This link is not a Technical Discussion session.", status_code=404)
     candidate = session.get(Candidate, attempt.candidate_id)
 
-    assigned = assign_interview_questions(session, attempt, round_.interview_question_count)
+    try:
+        assigned = assign_interview_questions(session, attempt, round_.interview_question_count)
+    except ValueError as e:
+        return Response(str(e), status_code=400)
     rows = (
         session.query(InterviewAttemptQuestion)
         .filter_by(attempt_id=attempt.id)
@@ -608,8 +734,7 @@ def interview_session_page(request: Request, token: str):
 
 
 @app.post("/interview/{token}/submit")
-async def interview_session_submit(request: Request, token: str):
-    session = SessionLocal()
+async def interview_session_submit(request: Request, token: str, session=Depends(get_session)):
     attempt = session.query(Attempt).filter_by(token=token).first()
     if attempt is None:
         return Response("Invalid interview link.", status_code=404)
@@ -647,8 +772,7 @@ async def interview_session_submit(request: Request, token: str):
 
 
 @app.get("/results/coding-review/{attempt_id}")
-def coding_review_page(request: Request, attempt_id: int, embed: bool = False):
-    session = SessionLocal()
+def coding_review_page(request: Request, attempt_id: int, embed: bool = False, session=Depends(get_session)):
     attempt = session.get(Attempt, attempt_id)
     if attempt is None or attempt.round.round_type != "coding":
         return Response("Not a coding-round attempt.", status_code=404)
@@ -681,8 +805,7 @@ def coding_review_page(request: Request, attempt_id: int, embed: bool = False):
 
 
 @app.get("/results/mcq-review/{attempt_id}")
-def mcq_review_page(request: Request, attempt_id: int, embed: bool = False):
-    session = SessionLocal()
+def mcq_review_page(request: Request, attempt_id: int, embed: bool = False, session=Depends(get_session)):
     attempt = session.get(Attempt, attempt_id)
     if attempt is None or attempt.round.round_type not in ("aptitude", "programming"):
         return Response("Not an MCQ-round attempt.", status_code=404)
@@ -698,8 +821,7 @@ def mcq_review_page(request: Request, attempt_id: int, embed: bool = False):
 
 
 @app.get("/final-conclusion")
-def final_conclusion_page(request: Request, round_id: int | None = None):
-    session = SessionLocal()
+def final_conclusion_page(request: Request, round_id: int | None = None, session=Depends(get_session)):
     rounds = session.query(Round).filter_by(round_type="technical_discussion").order_by(Round.id).all()
     round_ = session.get(Round, round_id) if round_id else None
 
@@ -718,8 +840,7 @@ def final_conclusion_page(request: Request, round_id: int | None = None):
 
 
 @app.get("/final-conclusion/pdf")
-def final_conclusion_pdf(round_id: int):
-    session = SessionLocal()
+def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
     round_ = session.get(Round, round_id)
     if round_ is None:
         return Response("Round not found", status_code=404)
@@ -740,8 +861,7 @@ def final_conclusion_pdf(round_id: int):
 
 
 @app.get("/admin")
-def admin_page(request: Request):
-    session = SessionLocal()
+def admin_page(request: Request, session=Depends(get_session)):
     flash, err = flash_from_request(request)
     drives = session.query(Drive).order_by(Drive.campus, Drive.name).all()
     campuses = sorted({d.campus for d in drives})
@@ -755,6 +875,8 @@ def admin_page(request: Request):
             "drives": drives,
             "campuses": campuses,
             "backups": list_backups(),
+            "net_settings": get_or_create_settings(session),
+            "lan_ip": get_lan_ip(),
         },
     )
 
@@ -774,6 +896,34 @@ def admin_restore(filename: str = Form(...)):
     return flash_redirect("/admin", f"Restored from {filename}. The pre-restore state was also saved as a backup.")
 
 
+@app.post("/admin/network/toggle")
+def admin_network_toggle(request: Request, enabled: str = Form(""), session=Depends(get_session)):
+    # Deliberately not covered by the LAN unlock cookie - only someone at
+    # this machine (or already gated out entirely) can flip LAN access,
+    # so a guest who has the code can never re-open or further restrict it.
+    if request.client.host not in LOCALHOST_CLIENTS:
+        return Response("Only available from this machine.", status_code=403)
+    settings = get_or_create_settings(session)
+    settings.lan_access_enabled = enabled.strip() == "true"
+    if settings.lan_access_enabled and not settings.access_code_hash:
+        session.commit()
+        return flash_redirect("/admin", "Set an access code below before enabling LAN access.", error=True)
+    session.commit()
+    return flash_redirect("/admin", "LAN access enabled." if settings.lan_access_enabled else "LAN access disabled.")
+
+
+@app.post("/admin/network/set-code")
+def admin_network_set_code(request: Request, code: str = Form(...), session=Depends(get_session)):
+    if request.client.host not in LOCALHOST_CLIENTS:
+        return Response("Only available from this machine.", status_code=403)
+    if not code.strip():
+        return flash_redirect("/admin", "Access code can't be blank.", error=True)
+    settings = get_or_create_settings(session)
+    settings.access_code_hash = hash_code(code)
+    session.commit()
+    return flash_redirect("/admin", "Access code updated. Anyone previously unlocked will need to re-enter it.")
+
+
 @app.post("/admin/cleanup")
 def admin_cleanup(
     scope: str = Form(...),
@@ -781,11 +931,11 @@ def admin_cleanup(
     drive_id: str = Form(""),
     confirm_text: str = Form(""),
     clear_banks: str = Form(""),
+    session=Depends(get_session),
 ):
     if confirm_text.strip().upper() != "DELETE":
         return flash_redirect("/admin", "Type DELETE in the confirmation box to proceed.", error=True)
 
-    session = SessionLocal()
     if scope == "all":
         drive_ids = [d_id for (d_id,) in session.query(Drive.id)]
         label = "everything"
@@ -825,5 +975,12 @@ def admin_cleanup(
 
 
 if __name__ == "__main__":
+    # Always binds to every interface now - lan_access_gate (above) is the
+    # actual security boundary, not the socket: non-localhost requests are
+    # rejected by default and only get through once an admin enables LAN
+    # access AND sets a code from Settings on the Admin page. This lets LAN
+    # access be toggled instantly, on whatever network this machine is
+    # currently on, without restarting the process.
     print("Aizentify Campus Console running at http://127.0.0.1:8787")
-    uvicorn.run(app, host="127.0.0.1", port=8787)
+    print("(LAN access is gated by Settings on the Admin page - off by default)")
+    uvicorn.run(app, host="0.0.0.0", port=8787)

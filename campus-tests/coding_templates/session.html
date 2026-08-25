@@ -27,12 +27,14 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .brand .powered { font-size: 10.5px; color: var(--ink-300); letter-spacing: 0.02em; }
-  #backBtn {
-    display: none; background: none; border: 1px solid var(--line); color: var(--ink-700);
+  .timer-block { display: flex; align-items: center; gap: 16px; }
+  .nav-block { display: none; align-items: center; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line); }
+  .nav-block button {
+    background: none; border: 1px solid var(--line); color: var(--ink-700);
     padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer;
   }
-
-  .timer-block { display: flex; align-items: center; gap: 16px; }
+  .nav-block button:disabled { opacity: 0.4; cursor: default; }
+  #qPosition { font-size: 12px; color: var(--ink-500); font-weight: 600; min-width: 44px; text-align: center; }
   #clock { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 22px; color: var(--blue-600); }
   #clock.warn { color: var(--warn); }
   #clock.danger { color: var(--danger); }
@@ -60,9 +62,9 @@
   .q-card .q-points { font-size: 12px; color: var(--ink-500); margin-left: 8px; font-weight: 400; }
 
   /* ---------------- detail view ---------------- */
-  #detailView { flex: 1; display: none; min-height: 0; }
+  #detailView { flex: 1; display: none; flex-direction: column; min-height: 0; }
   .body-row { flex: 1; display: flex; min-height: 0; width: 100%; }
-  #statementPane { width: 42%; flex-shrink: 0; background: var(--paper-0); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 24px; }
+  #statementPane { width: 34%; flex-shrink: 0; background: var(--paper-0); border-right: 1px solid var(--line); overflow-y: auto; padding: 20px 24px; }
   #statementPane h2 { margin: 0 0 10px; font-size: 17px; }
   #statementPane p#q-text { font-size: 13.5px; line-height: 1.6; color: var(--ink-700); white-space: pre-wrap; }
   #hints { margin-top: 14px; font-size: 12.5px; color: var(--ink-500); }
@@ -86,7 +88,7 @@
   button:disabled { opacity: 0.5; cursor: default; }
   #submitConfirm { font-size: 12.5px; color: var(--ok); font-weight: 600; }
 
-  #console { max-height: 30%; overflow-y: auto; padding: 12px 20px; background: #1e1e1e; border-top: 1px solid var(--line); font-size: 12.5px; color: #d4d4d4; font-family: "SF Mono", Consolas, monospace; }
+  #console { margin-top: 16px; border-radius: 8px; padding: 12px 14px; background: #1e1e1e; font-size: 12.5px; color: #d4d4d4; font-family: "SF Mono", Consolas, monospace; }
   #console .console-label { color: #8a8a8a; font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; }
   #console .console-block { margin-bottom: 10px; }
   #console .console-block .tc-label { color: #8a8a8a; margin-bottom: 3px; }
@@ -110,13 +112,18 @@
 <body data-token="{{ token }}">
 <header>
   <div class="brand-row">
-    <button id="backBtn">&larr; Question list</button>
     <div class="brand">
       <span class="name">AICodeStudio</span>
       <span class="powered">powered by Aizentify LLP</span>
     </div>
   </div>
   <div class="timer-block">
+    <div class="nav-block" id="navBlock">
+      <button id="backBtn">&#9776; Questions</button>
+      <button id="prevBtn">&lsaquo; Prev</button>
+      <span id="qPosition"></span>
+      <button id="nextBtn">Next &rsaquo;</button>
+    </div>
     <div id="clock">--:--</div>
     <button id="finishBtn">Finish &amp; Submit</button>
   </div>
@@ -139,6 +146,7 @@
         <strong>HTML you're styling (read-only):</strong>
         <pre id="css-scaffold-code"></pre>
       </div>
+      <div id="console"><div class="console-label">Console</div><div class="empty">Run your code to see output here.</div></div>
     </div>
     <div id="editorPane">
       <div id="editor"></div>
@@ -147,7 +155,6 @@
         <button id="submitBtn">Submit</button>
         <span id="submitConfirm"></span>
       </div>
-      <div id="console"><div class="console-label">Console</div><div class="empty">Run your code to see output here.</div></div>
     </div>
   </div>
 </div>
@@ -206,7 +213,7 @@ function showList() {
   currentIndex = -1;
   document.getElementById("listView").style.display = "block";
   document.getElementById("detailView").style.display = "none";
-  document.getElementById("backBtn").style.display = "none";
+  document.getElementById("navBlock").style.display = "none";
   renderList();
 }
 
@@ -238,8 +245,11 @@ function openQuestion(i) {
   currentIndex = i;
   const q = questions[i];
   document.getElementById("listView").style.display = "none";
-  document.getElementById("detailView").style.display = "block";
-  document.getElementById("backBtn").style.display = "inline-block";
+  document.getElementById("detailView").style.display = "flex";
+  document.getElementById("navBlock").style.display = "flex";
+  document.getElementById("qPosition").textContent = `${i + 1} / ${questions.length}`;
+  document.getElementById("prevBtn").disabled = i === 0;
+  document.getElementById("nextBtn").disabled = i === questions.length - 1;
   document.getElementById("q-title").textContent = q.title;
   document.getElementById("q-text").textContent = q.statement;
   document.getElementById("hints").innerHTML = q.hints.length
@@ -334,6 +344,8 @@ async function initSession() {
   }
   showList();
   document.getElementById("backBtn").addEventListener("click", showList);
+  document.getElementById("prevBtn").addEventListener("click", () => { if (currentIndex > 0) openQuestion(currentIndex - 1); });
+  document.getElementById("nextBtn").addEventListener("click", () => { if (currentIndex < questions.length - 1) openQuestion(currentIndex + 1); });
   document.getElementById("runBtn").addEventListener("click", runCode);
   document.getElementById("submitBtn").addEventListener("click", submitCode);
   document.getElementById("finishBtn").addEventListener("click", finishSession);

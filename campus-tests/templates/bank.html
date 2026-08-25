@@ -39,4 +39,27 @@
     <button type="submit">Load coding question(s)</button>
   </form>
 </div>
+
+<h1 style="margin-top:40px;">Interview Question Bank</h1>
+<p class="subtitle">Used for Technical Discussion rounds (interviewer-scored, no candidate self-test). Each question is one JSON file, matched by its "id" field — re-uploading a file with the same id replaces that question, others are untouched.</p>
+
+<div class="card">
+  <div class="kv"><strong>Currently loaded</strong> {{ interview_question_count }} interview question(s)</div>
+</div>
+
+<div class="card">
+  <form action="/bank/upload-interview" method="post" enctype="multipart/form-data">
+    <label>Interview question file(s) (.json)</label>
+    <input type="file" name="files" accept=".json" multiple required>
+    <div class="hint">
+      Each file needs: id, area, question, rubric_guide, max_score (optional, defaults to 5).
+      Sample files: <code>campus-tests/interview_questions/TD-01.json</code> through <code>TD-17.json</code>.
+    </div>
+    <label style="display:flex; align-items:center; gap:8px; font-weight:normal; margin-top:12px;">
+      <input type="checkbox" name="replace" value="true" style="width:auto;">
+      Replace entire bank with just these files
+    </label>
+    <button type="submit">Load interview question(s)</button>
+  </form>
+</div>
 {% endblock %}

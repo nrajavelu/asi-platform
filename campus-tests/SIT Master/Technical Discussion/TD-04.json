@@ -1,0 +1,7 @@
+{
+  "id": "TD-04",
+  "area": "llm_api_experience",
+  "question": "How would you handle an API key securely in something you're shipping? What would make you fail a code review here?",
+  "rubric_guide": "Strong: env vars / secrets manager; never hardcoded or committed; .gitignore awareness; rotates on suspected leak.\nRed flag: vague or no mention of environment variables at all.",
+  "max_score": 5
+}

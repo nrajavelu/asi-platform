@@ -57,7 +57,7 @@ def ingest_results(session, round_: Round, service) -> dict:
     (requires 'Collect email addresses' Verified to be on for the form),
     and updates score/percent/status='submitted' for each match."""
     if not round_.form_id:
-        raise SystemExit(f"Round #{round_.id} has no form yet")
+        raise ValueError(f"Round #{round_.id} has no form yet")
 
     form = service.forms().get(formId=round_.form_id).execute()
     max_score = 0

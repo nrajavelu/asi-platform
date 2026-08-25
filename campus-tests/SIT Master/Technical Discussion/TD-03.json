@@ -1,0 +1,7 @@
+{
+  "id": "TD-03",
+  "area": "llm_api_experience",
+  "question": "Tell me about a time an LLM gave you a wrong or inconsistent answer in something you built. What did you do?",
+  "rubric_guide": "Strong: treats non-determinism as expected behavior, not \"the model's bug\"; names a concrete mitigation (prompt tightening, validation layer, retry, structured output, lower temperature); mentions testing across multiple runs.\nWeak: single anecdote, no mitigation, blames the model with no fix.",
+  "max_score": 5
+}

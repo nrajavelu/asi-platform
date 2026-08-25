@@ -8,6 +8,10 @@ campus-tests/data/
 interview-shortlist/.venv/
 interview-shortlist/data/
 campus-tests/judge0/judge0-v1.13.1/judge0.conf
+campus-tests/seb_templates/out/
+campus-tests/.run/
+campus-tests/start.sh
+campus-tests/stop.sh
 campus-tests/coding_static/node_modules/
 campus-tests/react_grader/node_modules/
 campus-tests/css_grader/node_modules/

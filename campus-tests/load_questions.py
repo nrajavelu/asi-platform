@@ -72,7 +72,7 @@ def _read_sheet(ws) -> list[dict]:
 def rows_from_xlsx(path: Path) -> list[dict]:
     wb = load_workbook(path, read_only=True, data_only=True)
     if ANSWER_KEY_SHEET not in wb.sheetnames:
-        raise SystemExit(f"Missing required '{ANSWER_KEY_SHEET}' sheet in {path}")
+        raise ValueError(f"Missing required '{ANSWER_KEY_SHEET}' sheet in {path}")
 
     answer_key = {
         str(r["question_id"]).strip(): str(r["correct_option"]).strip().upper()
@@ -95,7 +95,7 @@ def rows_from_xlsx(path: Path) -> list[dict]:
             rows.append(row)
 
     if missing_answers:
-        raise SystemExit(
+        raise ValueError(
             f"No entry in '{ANSWER_KEY_SHEET}' for question_id(s): {', '.join(missing_answers)}"
         )
     return rows
@@ -108,7 +108,7 @@ def load_bank(bank_path: str) -> int:
     elif path.suffix.lower() == ".csv":
         rows = rows_from_csv(path)
     else:
-        raise SystemExit(f"Unsupported file type: {path.suffix} (use .csv or .xlsx)")
+        raise ValueError(f"Unsupported file type: {path.suffix} (use .csv or .xlsx)")
 
     round_types = {str(row["round_type"]).strip() for row in rows}
 
@@ -138,7 +138,10 @@ def load_bank(bank_path: str) -> int:
 
 
 def main(bank_path: str) -> None:
-    count = load_bank(bank_path)
+    try:
+        count = load_bank(bank_path)
+    except ValueError as e:
+        raise SystemExit(str(e))
     print(f"Loaded {count} questions from {bank_path}")
 
 

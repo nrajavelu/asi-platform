@@ -51,7 +51,7 @@ def assign_coding_questions(session, attempt, count: int, topics: list[str] | No
         query = query.filter(CodingQuestion.topic.in_(topics))
     pool = query.all()
     if len(pool) < count:
-        raise SystemExit(
+        raise ValueError(
             f"Only {len(pool)} coding question(s) available "
             f"(topics={topics or 'all'}); requested {count}."
         )
@@ -77,7 +77,7 @@ def assign_sectioned_coding_questions(session, attempt, section_plan: list[tuple
     for topic, count in section_plan:
         pool = session.query(CodingQuestion).filter_by(topic=topic).all()
         if len(pool) < count:
-            raise SystemExit(
+            raise ValueError(
                 f"Only {len(pool)} coding question(s) available for topic '{topic}'; requested {count}."
             )
         chosen.extend(random.sample(pool, count))
