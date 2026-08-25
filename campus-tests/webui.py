@@ -914,7 +914,7 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
             "decision_at": decided,
         })
 
-    pdf_bytes = generate_final_conclusion_pdf(rows, round_.drive.campus, round_.drive.name)
+    pdf_bytes = generate_final_conclusion_pdf(rows)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

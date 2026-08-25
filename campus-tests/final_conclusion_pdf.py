@@ -1,13 +1,15 @@
 """
 Generates the Final Conclusion letter: a company-letterhead PDF (logo,
-date, addressed to the campus's placement coordinator) requesting
-confirmation of Selected candidates for internship, noting that any
-shortfall will be filled from Hold based on test-round performance and
-personal discussion, followed by the Selected + Hold candidate list.
+date, addressed to the placement coordinator) requesting confirmation of
+Selected candidates for internship, noting that any shortfall will be
+filled from Hold based on test-round performance and personal discussion,
+followed by the Selected + Hold candidate list. Deliberately generic (no
+campus/drive/round name) - it's addressed and sent per campus separately,
+not auto-labeled with internal naming.
 
 Usage (as a library, called from webui.py):
     from final_conclusion_pdf import generate_final_conclusion_pdf
-    pdf_bytes = generate_final_conclusion_pdf(rows, campus, drive_name)
+    pdf_bytes = generate_final_conclusion_pdf(rows)
 """
 
 import io
@@ -33,7 +35,7 @@ LOGO_PATH = Path(__file__).parent / "static" / "brand-logo-header.png"
 LOGO_PX_W, LOGO_PX_H = 1332, 218
 
 
-def generate_final_conclusion_pdf(rows: list[dict], campus: str, drive_name: str) -> bytes:
+def generate_final_conclusion_pdf(rows: list[dict]) -> bytes:
     """rows: list of {reg_no, name, gender, degree, stream, email, status, decision_at}"""
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -56,15 +58,15 @@ def generate_final_conclusion_pdf(rows: list[dict], campus: str, drive_name: str
 
     story.append(Paragraph(datetime.now().strftime("%d %B %Y"), date_style))
     story.append(Spacer(1, 8))
-    story.append(Paragraph("To,<br/>The Placement Coordinator,<br/>" + campus, body_style))
+    story.append(Paragraph("To,<br/>The Placement Coordinator,", body_style))
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Subject: Confirmation of Selected Candidates — Campus Recruitment Drive</b>", body_style))
 
     story.append(Paragraph("Dear Placement Coordinator,", body_style))
     story.append(Paragraph(
-        f"Please find below the list of candidates <b>Shortlisted</b> and placed on <b>Hold</b>, following the "
-        f"completion of all assessment rounds and personal discussion conducted as part of the campus "
-        f"recruitment drive at {campus} ({drive_name}).",
+        "Please find below the list of candidates <b>Shortlisted</b> and placed on <b>Hold</b>, following the "
+        "completion of all assessment rounds and personal discussion conducted as part of our campus "
+        "recruitment drive for selecting interns.",
         body_style,
     ))
     story.append(Paragraph(
