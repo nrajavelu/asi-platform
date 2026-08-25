@@ -16,18 +16,23 @@ Usage:
     -> prints the LAN URL to give to invite.py as --base-url
 """
 
+import asyncio
+import contextlib
 import json
+import secrets
 import socket
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from coding_session import assign_coding_questions, assign_sectioned_coding_questions
 from judge0_client import run_against_test_cases
+from metrics_dashboard import Metrics, dashboard_html, docker_stats_sampler
 from models import Attempt, CodingAttemptQuestion, CodingQuestion, CodingTestCase, Round, SessionLocal, init_db
 from css_grader import run_css_submission
 from react_grader import run_react_submission
@@ -71,13 +76,71 @@ def _grade(question: CodingQuestion, code: str, cases: list) -> list[dict]:
 PORT = 8788
 BASE_DIR = Path(__file__).parent
 
-app = FastAPI()
+# Live monitor - lets you watch real candidate traffic (response times,
+# error rates, Judge0/pgvector CPU) during an actual test window, the same
+# KPIs the load-test harness checks. Path-secret protected (like every
+# candidate route here, no separate auth system) since this process is
+# LAN-bound and reachable by candidates.
+MONITOR_TOKEN = secrets.token_urlsafe(12)
+metrics = Metrics()
+
+
+@contextlib.asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    task = asyncio.create_task(docker_stats_sampler(metrics))
+    yield
+    task.cancel()
+
+
+app = FastAPI(lifespan=_lifespan)
 init_db()
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "coding_templates"))
 monaco_dir = BASE_DIR / "coding_static" / "vendor"
 if monaco_dir.exists():
     app.mount("/coding-assets", StaticFiles(directory=str(monaco_dir)), name="coding-assets")
+
+_MONITOR_ENDPOINT_PREFIXES = (
+    ("/start/", "start"),
+    ("/api/session", "session"),
+    ("/api/run", "run"),
+    ("/api/submit", "submit"),
+    ("/api/finish", "finish"),
+)
+
+
+@app.middleware("http")
+async def _record_metrics(request: Request, call_next):
+    path = request.url.path
+    name = next((n for suffix, n in _MONITOR_ENDPOINT_PREFIXES if suffix in path), None)
+    if name is None:
+        return await call_next(request)
+    t0 = time.monotonic()
+    response = await call_next(request)
+    elapsed = time.monotonic() - t0
+    ok = response.status_code < 400
+    metrics.record(name, elapsed, ok)
+    if name == "start" and ok:
+        metrics.candidates_started += 1
+    elif name == "finish" and ok:
+        metrics.candidates_finished += 1
+    return response
+
+
+@app.get("/monitor/{token}", response_class=HTMLResponse)
+def live_monitor(token: str):
+    if token != MONITOR_TOKEN:
+        raise HTTPException(status_code=404)
+    return dashboard_html("Live Candidate Monitor", "Coding Test - Live Monitor", data_url=f"/monitor-data/{MONITOR_TOKEN}")
+
+
+@app.get("/monitor-data/{token}")
+def live_monitor_data(token: str):
+    if token != MONITOR_TOKEN:
+        raise HTTPException(status_code=404)
+    alerts = metrics.check_thresholds()
+    metrics.alerts = alerts
+    return JSONResponse(metrics.snapshot())
 
 
 def get_lan_ip() -> str:
@@ -381,12 +444,17 @@ def _finish_attempt(session, attempt: Attempt) -> None:
 
 
 if __name__ == "__main__":
+    import sys
     import uvicorn
 
+    sys.stdout.reconfigure(line_buffering=True)  # keep startup banner visible even when stdout is redirected to a log file
     lan_ip = get_lan_ip()
     print(f"Candidate start-gate running on the LAN at http://{lan_ip}:{PORT}")
     print(f"Use this as invite.py's --base-url: http://{lan_ip}:{PORT}")
     print("For coding rounds, Judge0 must also be running (docker compose up -d")
     print("in judge0/judge0-v1.13.1/).")
-    print("Keep this window open for the entire test window.\n")
+    print(f"\nLive monitor (response times, error rates, infra CPU) - keep this link private:")
+    print(f"  http://{lan_ip}:{PORT}/monitor/{MONITOR_TOKEN}")
+    print(f"  http://127.0.0.1:{PORT}/monitor/{MONITOR_TOKEN}  (from this Mac)")
+    print("\nKeep this window open for the entire test window.\n")
     uvicorn.run(app, host="0.0.0.0", port=PORT)
