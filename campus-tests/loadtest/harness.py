@@ -30,7 +30,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # models.py/metrics_dashboard.py live in campus-tests/, not loadtest/
-from models import Attempt, SessionLocal  # noqa: E402
+from models import Attempt, CodingAttemptQuestion, SessionLocal  # noqa: E402
 from metrics_dashboard import (  # noqa: E402
     EndpointMetrics, Metrics, dashboard_html, docker_stats_sampler as _docker_stats_sampler,
 )
@@ -41,14 +41,25 @@ BATCH_SIZES = [5, 10, 15]
 
 def reset_tokens_to_invited(tokens: list[str]) -> None:
     """Sync (call via asyncio.to_thread) - puts this level's attempts back
-    to a fresh state so a token already used by a smaller level can be
-    reused here. Only touches Attempt.status/session_started_at; assigned
-    CodingAttemptQuestion rows are left alone (assignment is idempotent
-    and reusing the same questions is fine)."""
+    to a fresh state so a token already used by an earlier level/run can be
+    reused here. Resets both Attempt.status/session_started_at AND each
+    assigned question's progress (CodingAttemptQuestion.status/best_score/
+    last_submitted_code/submitted_at) - without the latter, a token reused
+    across runs shows its *previous* run's "10/10 attempted" progress the
+    instant it's reused, before the new run has issued a single request
+    (assignment itself stays idempotent - the same questions are kept, only
+    their per-run progress is cleared)."""
     session = SessionLocal()
     try:
+        attempt_ids = [
+            row.id for row in session.query(Attempt.id).filter(Attempt.token.in_(tokens)).all()
+        ]
         session.query(Attempt).filter(Attempt.token.in_(tokens)).update(
             {"status": "invited", "session_started_at": None}, synchronize_session=False
+        )
+        session.query(CodingAttemptQuestion).filter(CodingAttemptQuestion.attempt_id.in_(attempt_ids)).update(
+            {"status": "not_attempted", "best_score": 0, "last_submitted_code": None, "submitted_at": None},
+            synchronize_session=False,
         )
         session.commit()
     finally:
