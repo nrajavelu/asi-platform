@@ -11,6 +11,7 @@ Usage:
 """
 
 import hashlib
+import io
 import plistlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -22,6 +23,7 @@ from fastapi import Depends, FastAPI, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from openpyxl import Workbook
 
 from add_candidates import add_candidates_from_file
 from admin_tools import create_backup, list_backups, restore_backup, wipe_question_banks, wipe_scope
@@ -378,6 +380,32 @@ def candidates_page(request: Request, drive_id: int | None = None, session=Depen
         "active": "candidates", "flash": flash, "flash_error": err,
         "drives": drives, "drive_": drive_, "rounds": rounds, "round_label": round_label,
     })
+
+
+@app.get("/candidates/template.xlsx")
+def candidates_template():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Candidates"
+    ws.append([
+        "Name", "Email", "Reg No.", "Gender", "Degree", "Stream",
+        "Resume", "GitHub Profile URL", "Portfolio URL",
+    ])
+    ws.append([
+        "Jane Doe", "jane.doe@gmail.com", "REG123", "Female", "BTECH",
+        "Computer Science and Engineering",
+        "https://drive.google.com/...", "https://github.com/janedoe", "https://janedoe.dev",
+    ])
+    for col, width in zip("ABCDEFGHI", (20, 26, 14, 10, 10, 32, 34, 30, 26)):
+        ws.column_dimensions[col].width = width
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="candidates-template.xlsx"'},
+    )
 
 
 @app.post("/candidates/upload")
@@ -833,17 +861,26 @@ def final_conclusion_page(request: Request, round_id: int | None = None, session
     rounds = session.query(Round).filter_by(round_type="technical_discussion").order_by(Round.id).all()
     round_ = session.get(Round, round_id) if round_id else None
 
-    selected = []
+    final_list = []
     if round_ is not None:
-        attempts = session.query(Attempt).filter_by(round_id=round_.id, decision="selected").order_by(Attempt.id).all()
+        # Hold is included alongside Selected - it's the waitlist reference
+        # for filling seats if the initially-selected candidates don't all
+        # join, so it needs to stay in the same downloadable list, not be
+        # dropped from it.
+        attempts = (
+            session.query(Attempt)
+            .filter(Attempt.round_id == round_.id, Attempt.decision.in_(["selected", "hold"]))
+            .order_by(Attempt.decision, Attempt.id)
+            .all()
+        )
         for a in attempts:
             candidate = session.get(Candidate, a.candidate_id)
-            selected.append({"candidate": candidate, "attempt": a})
+            final_list.append({"candidate": candidate, "attempt": a})
 
     return render(
         request,
         "final_conclusion.html",
-        {"active": "final_conclusion", "rounds": rounds, "round_": round_, "selected": selected},
+        {"active": "final_conclusion", "rounds": rounds, "round_": round_, "final_list": final_list},
     )
 
 
@@ -853,12 +890,26 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
     if round_ is None:
         return Response("Round not found", status_code=404)
 
-    attempts = session.query(Attempt).filter_by(round_id=round_.id, decision="selected").order_by(Attempt.id).all()
+    attempts = (
+        session.query(Attempt)
+        .filter(Attempt.round_id == round_.id, Attempt.decision.in_(["selected", "hold"]))
+        .order_by(Attempt.decision, Attempt.id)
+        .all()
+    )
     rows = []
     for a in attempts:
         candidate = session.get(Candidate, a.candidate_id)
         decided = a.decision_at.split("T")[0] if a.decision_at else None
-        rows.append({"name": candidate.name, "email": candidate.email, "decision_at": decided})
+        rows.append({
+            "reg_no": candidate.reg_no or "—",
+            "name": candidate.name,
+            "gender": candidate.gender or "—",
+            "degree": candidate.degree or "—",
+            "stream": candidate.stream or "—",
+            "email": candidate.email,
+            "status": "Selected" if a.decision == "selected" else "Hold",
+            "decision_at": decided,
+        })
 
     pdf_bytes = generate_final_conclusion_pdf(rows, round_.drive.name)
     return Response(

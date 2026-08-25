@@ -54,8 +54,15 @@ class Candidate(Base):
 
     id = Column(Integer, primary_key=True)
     drive_id = Column(Integer, ForeignKey("drives.id"), nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, nullable=False)  # the candidate's personal Gmail - used for invites/Forms auth, not their college email
     name = Column(String, nullable=False)
+    reg_no = Column(String)
+    gender = Column(String)
+    degree = Column(String)
+    stream = Column(String)
+    resume_url = Column(String)
+    github_url = Column(String)
+    portfolio_url = Column(String)
 
     drive = relationship("Drive")
 
@@ -236,6 +243,13 @@ def init_db() -> None:
         _add_column_if_missing(conn, "attempts", "decision_at", "VARCHAR", "NULL")
         _add_column_if_missing(conn, "rounds", "section_plan", "TEXT", "NULL")
         _add_column_if_missing(conn, "coding_questions", "suggested_minutes", "INTEGER", "5")
+        _add_column_if_missing(conn, "candidates", "reg_no", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "gender", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "degree", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "stream", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "resume_url", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "github_url", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "candidates", "portfolio_url", "VARCHAR", "NULL")
 
         # SQLite can't ALTER TABLE to add a constraint on an existing table -
         # a unique index enforces the same guarantee. Campus+Drive name must

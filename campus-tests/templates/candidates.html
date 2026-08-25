@@ -28,8 +28,15 @@
       {% endfor %}
     </select>
 
-    <label>Candidates file (.csv or .xlsx, columns: name, email)</label>
+    <label>Candidates file (.csv or .xlsx)</label>
     <input type="file" name="file" accept=".csv,.xlsx" required>
+    <p class="hint">
+      Required columns: <strong>name</strong>, <strong>email</strong> (or "Personal Email ID" - use their
+      personal Gmail here, not a college email, since invites/Google Forms need a real Google account).
+      Optional: Reg No., Gender, Degree, Stream, Resume, GitHub Profile URL, Portfolio URL - a college
+      placement-list export with these column names can usually be uploaded as-is, no renaming needed.
+      <a class="link" href="/candidates/template.xlsx">Download a blank template</a>.
+    </p>
 
     <button type="submit">Upload</button>
   </form>

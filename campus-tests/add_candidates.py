@@ -1,8 +1,19 @@
 """
-Bulk-uploads candidates for a round from a CSV or XLSX file (columns:
-name, email) and creates one Attempt per candidate, tracking who's
-invited so responses can be matched back to the roster later during
-scoring.
+Bulk-uploads candidates for a round from a CSV or XLSX file and creates one
+Attempt per candidate, tracking who's invited so responses can be matched
+back to the roster later during scoring.
+
+Required columns: name, email (or "Personal Email ID" - see HEADER_ALIASES).
+Optional profile columns (stored if present, ignored if not): reg no,
+gender, degree, stream, resume, github url, portfolio url.
+
+The college's own placement-list export can usually be uploaded as-is -
+HEADER_ALIASES maps its real column names (e.g. "Reg No.", "Personal Email
+ID", "  GitHub Profile URL  ", "Project / Portfolio URL (if available)")
+to the fields above, so no manual renaming is needed. "Personal Email ID"
+is deliberately mapped to "email" (not "College Email ID"): invites and
+Google Forms need the candidate's real Gmail for Google auth, which a
+college email address usually isn't tied to.
 
 Usage:
     python add_candidates.py --round-id 1 --file candidates.csv
@@ -11,12 +22,45 @@ Usage:
 
 import argparse
 import csv
+import re
 import secrets
 from pathlib import Path
 
 from openpyxl import load_workbook
 
 from models import Attempt, Candidate, Round, SessionLocal, init_db
+
+PROFILE_FIELDS = ("reg_no", "gender", "degree", "stream", "resume_url", "github_url", "portfolio_url")
+
+HEADER_ALIASES = {
+    "name": "name",
+    "email": "email",
+    "personal email id": "email",
+    "personal email": "email",
+    "reg no": "reg_no",
+    "regno": "reg_no",
+    "registration no": "reg_no",
+    "gender": "gender",
+    "degree": "degree",
+    "stream": "stream",
+    "resume": "resume_url",
+    "resume url": "resume_url",
+    "resume link": "resume_url",
+    "github profile url": "github_url",
+    "github url": "github_url",
+    "github": "github_url",
+    "project / portfolio url": "portfolio_url",
+    "portfolio url": "portfolio_url",
+    "portfolio": "portfolio_url",
+}
+
+
+def _normalize_header(h) -> str:
+    if not isinstance(h, str):
+        return h
+    h = h.strip().lower().replace(".", "")
+    h = re.sub(r"\(.*?\)", "", h)  # drop parenthetical notes like "(if available)"
+    return re.sub(r"\s+", " ", h).strip()
 
 
 def rows_from_file(path: str) -> list[dict]:
@@ -34,11 +78,14 @@ def rows_from_file(path: str) -> list[dict]:
     else:
         raise ValueError(f"Unsupported file type: {file_path.suffix} (use .csv or .xlsx)")
 
-    # Column names are matched case-insensitively ("Email"/"EMAIL"/"email"
-    # all work) since spreadsheet headers are commonly capitalized - rows
-    # are normalized to lowercase keys so downstream code can always just
-    # use row["email"]/row["name"].
-    rows = [{(k.strip().lower() if isinstance(k, str) else k): v for k, v in row.items()} for row in rows]
+    # Column names are matched case-insensitively and via HEADER_ALIASES, so
+    # both our own simple template and a real college export (with headers
+    # like "Reg No." or "Personal Email ID") normalize to the same internal
+    # keys - downstream code can always just use row["email"]/row["name"]/etc.
+    rows = [
+        {HEADER_ALIASES.get(_normalize_header(k), _normalize_header(k)): v for k, v in row.items()}
+        for row in rows
+    ]
 
     found = set(rows[0].keys()) if rows else set()
     missing = {"name", "email"} - found
@@ -73,6 +120,14 @@ def add_candidates_from_file(session, round_: Round, file_path: str) -> int:
             candidate = Candidate(drive_id=round_.drive_id, email=email, name=name)
             session.add(candidate)
             session.flush()
+
+        # Fills in profile data whenever a non-empty value is supplied -
+        # covers both first upload and a later, fuller re-upload for the
+        # same drive - without ever clobbering a known value with a blank.
+        for field in PROFILE_FIELDS:
+            value = row.get(field)
+            if value is not None and str(value).strip():
+                setattr(candidate, field, str(value).strip())
 
         existing = (
             session.query(Attempt)

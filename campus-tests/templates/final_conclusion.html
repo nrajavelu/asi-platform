@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Final Conclusion</h1>
-<p class="subtitle">Every candidate marked "Selected" after their Technical Discussion.</p>
+<p class="subtitle">Every candidate marked "Selected" or "Hold" after their Technical Discussion. Hold stays on this list as the waitlist reference for filling seats.</p>
 
 <div class="card">
   <form action="/final-conclusion" method="get" class="inline-form">
@@ -19,24 +19,29 @@
 
 {% if round_ %}
 <div class="card">
-  <div class="section-title">Selected ({{ selected|length }})</div>
-  {% if selected %}
+  <div class="section-title">Selected + Hold ({{ final_list|length }})</div>
+  {% if final_list %}
   <div style="margin-bottom:16px;">
     <a class="link" href="/final-conclusion/pdf?round_id={{ round_.id }}">Download as PDF</a>
   </div>
   <table>
-    <tr><th>Name</th><th>Email</th><th>Score</th><th>Decided</th></tr>
-    {% for row in selected %}
+    <tr><th>Reg No.</th><th>Name</th><th>Gender</th><th>Degree</th><th>Stream</th><th>Personal Email ID</th><th>Status</th><th>Score</th><th>Decided</th></tr>
+    {% for row in final_list %}
     <tr>
+      <td>{{ row.candidate.reg_no or '—' }}</td>
       <td>{{ row.candidate.name }}</td>
+      <td>{{ row.candidate.gender or '—' }}</td>
+      <td>{{ row.candidate.degree or '—' }}</td>
+      <td>{{ row.candidate.stream or '—' }}</td>
       <td>{{ row.candidate.email }}</td>
+      <td><span class="band-pill {{ row.attempt.decision }}">{{ 'Selected' if row.attempt.decision == 'selected' else 'Hold' }}</span></td>
       <td>{% if row.attempt.percent is not none %}{{ row.attempt.score }}/{{ row.attempt.max_score }} ({{ row.attempt.percent }}%){% else %}—{% endif %}</td>
       <td>{{ row.attempt.decision_at.split('T')[0] if row.attempt.decision_at else '—' }}</td>
     </tr>
     {% endfor %}
   </table>
   {% else %}
-  <p class="muted">No candidates marked Selected for this round yet.</p>
+  <p class="muted">No candidates marked Selected or Hold for this round yet.</p>
   {% endif %}
 </div>
 {% endif %}
