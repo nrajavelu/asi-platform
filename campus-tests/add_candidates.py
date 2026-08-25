@@ -105,8 +105,12 @@ def rows_from_file(path: str) -> list[dict]:
     return rows
 
 
-def add_candidates_from_file(session, round_: Round, file_path: str) -> int:
+def add_candidates_from_file(session, round_: Round, file_path: str) -> tuple[int, int]:
+    """Returns (created, already_invited) - already_invited counts rows that
+    matched an existing Attempt for this round (no duplicate invite/token
+    created, by design) but whose profile fields were still refreshed."""
     created = 0
+    already_invited = 0
     for row in rows_from_file(file_path):
         email = str(row["email"]).strip().lower()
         name = str(row["name"]).strip()
@@ -135,6 +139,7 @@ def add_candidates_from_file(session, round_: Round, file_path: str) -> int:
             .first()
         )
         if existing is not None:
+            already_invited += 1
             continue
 
         session.add(
@@ -148,7 +153,7 @@ def add_candidates_from_file(session, round_: Round, file_path: str) -> int:
         created += 1
 
     session.commit()
-    return created
+    return created, already_invited
 
 
 def main() -> None:
@@ -164,10 +169,11 @@ def main() -> None:
         raise SystemExit(f"No round with id {args.round_id}")
 
     try:
-        created = add_candidates_from_file(session, round_, args.file)
+        created, already_invited = add_candidates_from_file(session, round_, args.file)
     except ValueError as e:
         raise SystemExit(str(e))
-    print(f"Created {created} attempt(s) for round #{round_.id}")
+    print(f"Created {created} attempt(s) for round #{round_.id}", end="")
+    print(f" ({already_invited} already invited - profile data refreshed only)" if already_invited else "")
 
 
 if __name__ == "__main__":

@@ -92,8 +92,9 @@ def action_upload_candidates() -> None:
     if round_ is None:
         return
     file_path = prompt("Candidates file (.csv or .xlsx, columns: name,email)")
-    created = add_candidates_from_file(session, round_, file_path)
-    print(f"Created {created} attempt(s) for round #{round_.id}")
+    created, already_invited = add_candidates_from_file(session, round_, file_path)
+    print(f"Created {created} attempt(s) for round #{round_.id}", end="")
+    print(f" ({already_invited} already invited - profile data refreshed only)" if already_invited else "")
 
 
 def action_send_invites() -> None:

@@ -417,10 +417,13 @@ async def candidates_upload(round_id: int = Form(...), file: UploadFile = None, 
     back_url = f"/candidates?drive_id={round_.drive_id}"
     path = await save_upload(file)
     try:
-        created = add_candidates_from_file(session, round_, path)
+        created, already_invited = add_candidates_from_file(session, round_, path)
     except Exception as e:
         return flash_redirect(back_url, str(e), error=True)
-    return flash_redirect(back_url, f"Added {created} candidate(s) to round #{round_.id}")
+    msg = f"Added {created} new candidate(s) to round #{round_.id}"
+    if already_invited:
+        msg += f" ({already_invited} already invited to this round - no duplicate invite created, profile data refreshed)"
+    return flash_redirect(back_url, msg)
 
 
 def _invites_context(session, drive_id: int | None):
