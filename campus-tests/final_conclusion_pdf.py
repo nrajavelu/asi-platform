@@ -1,22 +1,25 @@
 """
-Generates the Final Conclusion PDF: every candidate whose Technical
-Discussion decision is "selected" or "hold" (Hold stays on the list as
-the waitlist reference for filling seats if a Selected candidate doesn't
-join), tabulated with their key profile fields for the college to match
-against a joining list.
+Generates the Final Conclusion letter: a company-letterhead PDF (logo,
+date, addressed to the campus's placement coordinator) requesting
+confirmation of Selected candidates for internship, noting that any
+shortfall will be filled from Hold based on test-round performance and
+personal discussion, followed by the Selected + Hold candidate list.
 
 Usage (as a library, called from webui.py):
     from final_conclusion_pdf import generate_final_conclusion_pdf
-    pdf_bytes = generate_final_conclusion_pdf(rows, drive_name)
+    pdf_bytes = generate_final_conclusion_pdf(rows, campus, drive_name)
 """
 
 import io
+from datetime import datetime
+from pathlib import Path
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_RIGHT
 
 ACCENT = colors.HexColor("#1a7ee8")
 INK = colors.HexColor("#12151c")
@@ -26,22 +29,56 @@ LINE = colors.HexColor("#dde5f0")
 SELECTED_GREEN = colors.HexColor("#1a8a4c")
 HOLD_AMBER = colors.HexColor("#a86a00")
 
+LOGO_PATH = Path(__file__).parent / "static" / "brand-logo-header.png"
+LOGO_PX_W, LOGO_PX_H = 1332, 218
 
-def generate_final_conclusion_pdf(rows: list[dict], drive_name: str) -> bytes:
+
+def generate_final_conclusion_pdf(rows: list[dict], campus: str, drive_name: str) -> bytes:
     """rows: list of {reg_no, name, gender, degree, stream, email, status, decision_at}"""
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
         buf, pagesize=landscape(A4),
-        topMargin=18 * mm, bottomMargin=16 * mm, leftMargin=16 * mm, rightMargin=16 * mm,
+        topMargin=16 * mm, bottomMargin=18 * mm, leftMargin=20 * mm, rightMargin=20 * mm,
     )
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle("Title", parent=styles["Title"], textColor=INK, fontSize=18, spaceAfter=4)
-    sub_style = ParagraphStyle("Sub", parent=styles["Normal"], textColor=INK_SOFT, fontSize=10, spaceAfter=18)
+    date_style = ParagraphStyle("Date", parent=styles["Normal"], textColor=INK_SOFT, fontSize=10, alignment=TA_RIGHT)
+    body_style = ParagraphStyle("Body", parent=styles["Normal"], textColor=INK, fontSize=10.5, leading=15, spaceAfter=8)
+    sub_style = ParagraphStyle("Sub", parent=styles["Normal"], textColor=INK_SOFT, fontSize=9.5, spaceAfter=6)
+    sign_style = ParagraphStyle("Sign", parent=styles["Normal"], textColor=INK, fontSize=10.5, leading=15)
 
-    story = [
-        Paragraph("Aizentify Campus Console — Final Conclusion", title_style),
-        Paragraph(f"Drive: {drive_name} &nbsp;&middot;&nbsp; Status: Selected + Hold", sub_style),
-    ]
+    story = []
+    if LOGO_PATH.exists():
+        logo_w = 60 * mm
+        logo_h = logo_w * LOGO_PX_H / LOGO_PX_W
+        story.append(Image(str(LOGO_PATH), width=logo_w, height=logo_h))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.2, color=ACCENT, spaceAfter=14))
+
+    story.append(Paragraph(datetime.now().strftime("%d %B %Y"), date_style))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph("To,<br/>The Placement Coordinator,<br/>" + campus, body_style))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph("<b>Subject: Confirmation of Selected Candidates — Campus Recruitment Drive</b>", body_style))
+
+    story.append(Paragraph("Dear Placement Coordinator,", body_style))
+    story.append(Paragraph(
+        f"Please find below the list of candidates <b>Shortlisted</b> and placed on <b>Hold</b>, following the "
+        f"completion of all assessment rounds and personal discussion conducted as part of the campus "
+        f"recruitment drive at {campus} ({drive_name}).",
+        body_style,
+    ))
+    story.append(Paragraph(
+        "We request you to kindly coordinate with the Selected candidates and confirm their acceptance for "
+        "internship at the earliest. Should there be any shortfall against our requirement, the vacancy will "
+        "be filled from the Hold list, based on the candidates' performance across the test rounds and the "
+        "personal discussion.",
+        body_style,
+    ))
+    story.append(Paragraph(
+        "Please find the list of Selected and Hold candidates below for your reference and coordination.",
+        body_style,
+    ))
+    story.append(Spacer(1, 6))
 
     if not rows:
         story.append(Paragraph("No candidates marked Selected or Hold yet.", styles["Normal"]))
@@ -77,10 +114,18 @@ def generate_final_conclusion_pdf(rows: list[dict], drive_name: str) -> bytes:
             style.add("TEXTCOLOR", (7, i), (7, i), status_color)
         table.setStyle(style)
         story.append(table)
-        story.append(Spacer(1, 16))
+        story.append(Spacer(1, 10))
         n_selected = sum(1 for r in rows if r["status"] == "Selected")
         n_hold = sum(1 for r in rows if r["status"] == "Hold")
         story.append(Paragraph(f"{n_selected} Selected &middot; {n_hold} Hold ({len(rows)} total).", sub_style))
+
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(
+        "We look forward to your confirmation and continued coordination for this campus visit.",
+        body_style,
+    ))
+    story.append(Spacer(1, 10))
+    story.append(Paragraph("Regards,<br/><b>Aizentify LLP</b>", sign_style))
 
     doc.build(story)
     return buf.getvalue()
