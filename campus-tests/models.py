@@ -201,7 +201,14 @@ class Settings(Base):
 
 
 DB_PATH = Path(__file__).parent / "data" / "campus.db"
-engine = create_engine(f"sqlite:///{DB_PATH}")
+# Default pool (5 + 10 overflow = 15 max connections) was exhausted by
+# real candidate load well before candidate count alone justified it - see
+# app.py's run_code/submit_code fix for the actual root cause (those held
+# a connection open across slow Judge0/SQL grading calls). Widening the
+# pool here is a cheap headroom buffer on top of that fix, not a
+# replacement for it - 30 + 40 overflow covers the 50-candidate target
+# with real margin for webui.py's own concurrent admin usage too.
+engine = create_engine(f"sqlite:///{DB_PATH}", pool_size=30, max_overflow=40)
 SessionLocal = sessionmaker(bind=engine)
 
 

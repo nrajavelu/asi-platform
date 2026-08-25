@@ -17,3 +17,6 @@ campus-tests/react_grader/node_modules/
 campus-tests/css_grader/node_modules/
 campus-tests/react_grader/package-lock.json
 campus-tests/css_grader/package-lock.json
+campus-tests/loadtest_tokens.txt
+campus-tests/loadtest_tokens_smoke.txt
+campus-tests/loadtest/run_output*.log

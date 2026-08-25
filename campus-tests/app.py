@@ -259,25 +259,35 @@ def run_code(token: str, question_id: int = Form(...), code: str = Form(...)):
 
         question = session.get(CodingQuestion, question_id)
         samples = session.query(CodingTestCase).filter_by(question_id=question_id, is_sample=True).all()
-        results = _grade(question, code, samples)
+        attempt_id = attempt.id
 
+    # Grading (Judge0/SQL/etc.) can take several real seconds and holds no
+    # pooled DB connection while it runs - previously this ran inside the
+    # `with SessionLocal()` block above, which held a connection open and
+    # idle for the whole grading round-trip. Under concurrent candidates
+    # that exhausted the connection pool well before candidate-count
+    # actually justified it - question/samples were already fully loaded
+    # above, so grading against them here needs no open session at all.
+    results = _grade(question, code, samples)
+
+    with SessionLocal() as session:
         # Run never affects best_score (it's a sandbox preview against
         # samples only), but it's a real analytics signal: distinguishes
         # "opened and tried" from "never touched" for questions that never
         # reach Submit.
         row = (
             session.query(CodingAttemptQuestion)
-            .filter_by(attempt_id=attempt.id, question_id=question_id)
+            .filter_by(attempt_id=attempt_id, question_id=question_id)
             .first()
         )
         if row.status == "not_attempted":
             row.status = "attempted"
             session.commit()
 
-        # Candidate sees raw output/errors only - never a pass/fail verdict.
-        # They judge correctness themselves against the stated example.
-        safe_results = [_candidate_safe_run_result(r) for r in results]
-        return JSONResponse({"results": safe_results})
+    # Candidate sees raw output/errors only - never a pass/fail verdict.
+    # They judge correctness themselves against the stated example.
+    safe_results = [_candidate_safe_run_result(r) for r in results]
+    return JSONResponse({"results": safe_results})
 
 
 @app.post("/coding/{token}/api/submit")
@@ -291,15 +301,20 @@ def submit_code(token: str, question_id: int = Form(...), code: str = Form(...))
 
         question = session.get(CodingQuestion, question_id)
         all_cases = session.query(CodingTestCase).filter_by(question_id=question_id).all()
-        results = _grade(question, code, all_cases)
+        attempt_id = attempt.id
 
-        total_weight = sum(tc.weight for tc in all_cases)
-        passed_weight = sum(r["weight"] for r in results if r["passed"])
-        score = round(question.points * passed_weight / total_weight) if total_weight else 0
+    # Grading runs with no pooled DB connection held - see run_code's
+    # comment for why this matters under concurrent candidates.
+    results = _grade(question, code, all_cases)
 
+    total_weight = sum(tc.weight for tc in all_cases)
+    passed_weight = sum(r["weight"] for r in results if r["passed"])
+    score = round(question.points * passed_weight / total_weight) if total_weight else 0
+
+    with SessionLocal() as session:
         row = (
             session.query(CodingAttemptQuestion)
-            .filter_by(attempt_id=attempt.id, question_id=question_id)
+            .filter_by(attempt_id=attempt_id, question_id=question_id)
             .first()
         )
         row.last_submitted_code = code
@@ -316,11 +331,11 @@ def submit_code(token: str, question_id: int = Form(...), code: str = Form(...))
             row.status = "failed"
         session.commit()
 
-        # The candidate only ever sees a submission confirmation - no
-        # score, no pass/fail, not even indirectly via which test cases
-        # "failed". The real score/status are stored above for grading/
-        # analytics; nothing about correctness leaves this response.
-        return JSONResponse({"submitted": True})
+    # The candidate only ever sees a submission confirmation - no score, no
+    # pass/fail, not even indirectly via which test cases "failed". The
+    # real score/status are stored above for grading/analytics; nothing
+    # about correctness leaves this response.
+    return JSONResponse({"submitted": True})
 
 
 @app.post("/coding/{token}/api/finish")
