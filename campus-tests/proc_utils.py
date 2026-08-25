@@ -19,6 +19,11 @@ ROOT_DIR = Path(__file__).parent
 RUN_DIR = ROOT_DIR / ".run"
 WEBUI_PID_FILE = RUN_DIR / "webui.pid"
 WEBUI_LOG = ROOT_DIR / "data" / "webui.log"
+# app.py writes its per-run monitor secret here on startup so webui.py's
+# Live Monitor page can proxy /monitor-data itself - the admin never has to
+# copy a token URL, only app.py's own printed link needs it (candidates on
+# the LAN reaching that link directly).
+MONITOR_TOKEN_FILE = RUN_DIR / "monitor_token.txt"
 
 
 def venv_python() -> Path:

@@ -12,13 +12,14 @@ Usage:
 
 import hashlib
 import plistlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+import httpx
 import uvicorn
 from fastapi import Depends, FastAPI, Form, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -36,7 +37,7 @@ from models import (
     Attempt, Candidate, CodingAttemptQuestion, CodingQuestion, Drive, FormAnswer, InterviewAttemptQuestion,
     InterviewQuestion, Question, Round, Settings, SessionLocal, init_db,
 )
-from proc_utils import get_lan_ip
+from proc_utils import MONITOR_TOKEN_FILE, get_lan_ip
 from seb_config import SEB_TEMPLATE_DIR
 from results import (
     coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, list_drives,
@@ -865,6 +866,79 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="final-conclusion-round-{round_id}.pdf"'},
     )
+
+
+def _active_coding_sessions(session) -> list[dict]:
+    """Candidates currently mid-session on a coding round - sourced
+    straight from the DB (not app.py), so it's always accurate even if
+    app.py's own process is down or the LAN request below fails."""
+    attempts = (
+        session.query(Attempt)
+        .join(Round, Attempt.round_id == Round.id)
+        .filter(Round.round_type == "coding", Attempt.status == "started")
+        .all()
+    )
+    now = datetime.now(timezone.utc)
+    rows = []
+    for a in attempts:
+        round_ = a.round
+        candidate = a.candidate
+        started = datetime.fromisoformat(a.session_started_at) if a.session_started_at else None
+        remaining_s = None
+        if started is not None:
+            deadline = started + timedelta(minutes=round_.duration_minutes)
+            remaining_s = (deadline - now).total_seconds()
+        cqs = session.query(CodingAttemptQuestion).filter_by(attempt_id=a.id).all()
+        rows.append({
+            "name": candidate.name,
+            "email": candidate.email,
+            "drive": f"{round_.drive.campus} / {round_.drive.name}",
+            "started_at": a.session_started_at,
+            "remaining_s": remaining_s,
+            "questions_attempted": sum(1 for c in cqs if c.status != "not_attempted"),
+            "questions_total": len(cqs),
+        })
+    rows.sort(key=lambda r: r["remaining_s"] if r["remaining_s"] is not None else float("inf"))
+    return rows
+
+
+def _fetch_system_load() -> dict | None:
+    """Proxies app.py's own /monitor-data - reads the per-run token app.py
+    wrote to .run/monitor_token.txt at its startup, so nobody has to copy a
+    token URL by hand. Returns None if app.py isn't running or hasn't
+    started far enough to have written the token yet."""
+    if not MONITOR_TOKEN_FILE.exists():
+        return None
+    token = MONITOR_TOKEN_FILE.read_text().strip()
+    if not token:
+        return None
+    try:
+        r = httpx.get(f"http://127.0.0.1:8788/monitor-data/{token}", timeout=2.0)
+        r.raise_for_status()
+        return r.json()
+    except Exception:
+        return None
+
+
+@app.get("/live-monitor")
+def live_monitor_page(request: Request, session=Depends(get_session)):
+    return render(
+        request,
+        "live_monitor.html",
+        {
+            "active": "live_monitor",
+            "active_sessions": _active_coding_sessions(session),
+            "system_load": _fetch_system_load(),
+        },
+    )
+
+
+@app.get("/live-monitor/data")
+def live_monitor_data(session=Depends(get_session)):
+    return JSONResponse({
+        "active_sessions": _active_coding_sessions(session),
+        "system_load": _fetch_system_load(),
+    })
 
 
 @app.get("/admin")

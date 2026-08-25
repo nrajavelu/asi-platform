@@ -35,6 +35,7 @@ from judge0_client import run_against_test_cases
 from metrics_dashboard import Metrics, dashboard_html, docker_stats_sampler
 from models import Attempt, CodingAttemptQuestion, CodingQuestion, CodingTestCase, Round, SessionLocal, init_db
 from css_grader import run_css_submission
+from proc_utils import MONITOR_TOKEN_FILE, RUN_DIR
 from react_grader import run_react_submission
 from seb_config import personalized_seb_bytes, seb_template_for_round_type
 from sql_grader import run_sql_submission
@@ -448,6 +449,8 @@ if __name__ == "__main__":
     import uvicorn
 
     sys.stdout.reconfigure(line_buffering=True)  # keep startup banner visible even when stdout is redirected to a log file
+    RUN_DIR.mkdir(parents=True, exist_ok=True)
+    MONITOR_TOKEN_FILE.write_text(MONITOR_TOKEN)
     lan_ip = get_lan_ip()
     print(f"Candidate start-gate running on the LAN at http://{lan_ip}:{PORT}")
     print(f"Use this as invite.py's --base-url: http://{lan_ip}:{PORT}")
