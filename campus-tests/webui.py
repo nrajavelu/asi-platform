@@ -913,7 +913,11 @@ def _coding_sessions(session) -> dict:
             "submitted_at": a.submitted_at,
             "remaining_s": remaining_s,
             "flag": flag,
-            "questions_attempted": sum(1 for c in cqs if c.status != "not_attempted"),
+            # "submitted" = they actually clicked Submit on that question (status
+            # passed/partial/failed, submitted_at set) - a bare Run leaves status
+            # "attempted" with no submitted_at, so it's deliberately not counted
+            # here; that's "opened it" not "handed in an answer".
+            "questions_submitted": sum(1 for c in cqs if c.submitted_at is not None),
             "questions_total": len(cqs),
         })
     rows.sort(key=lambda r: r["remaining_s"] if r["remaining_s"] is not None else float("-inf"), reverse=False)

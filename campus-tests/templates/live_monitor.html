@@ -54,9 +54,9 @@ function renderSessions(rows) {
   if (!rows.length) {
     return '<p class="muted">No coding sessions in the last 24h.</p>';
   }
-  let html = '<table><tr><th>Name</th><th>Email</th><th>Drive / Round</th><th>Started</th><th>Submitted</th><th>Time remaining</th><th>Status</th><th>Questions</th></tr>';
+  let html = '<table><tr><th>Name</th><th>Email</th><th>Drive / Round</th><th>Started</th><th>Final submit</th><th>Time remaining</th><th>Status</th><th>Questions submitted</th></tr>';
   for (const r of rows) {
-    html += `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.drive}</td><td>${fmtTime(r.started_at)}</td><td>${fmtTime(r.submitted_at)}</td><td>${fmtRemaining(r.remaining_s)}</td><td><span class="flag-pill ${r.flag}">${FLAG_LABEL[r.flag]}</span></td><td>${r.questions_attempted} / ${r.questions_total}</td></tr>`;
+    html += `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.drive}</td><td>${fmtTime(r.started_at)}</td><td>${fmtTime(r.submitted_at)}</td><td>${fmtRemaining(r.remaining_s)}</td><td><span class="flag-pill ${r.flag}">${FLAG_LABEL[r.flag]}</span></td><td>${r.questions_submitted} / ${r.questions_total}</td></tr>`;
   }
   html += '</table>';
   return html;
