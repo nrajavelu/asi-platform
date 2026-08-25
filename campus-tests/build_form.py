@@ -25,6 +25,29 @@ OPTION_FIELDS = ["option_a", "option_b", "option_c", "option_d"]
 OPTION_LABELS = ["A", "B", "C", "D"]
 LOGO_URL = "https://aizentify.com/assets/img/brand-logo-header.png"
 
+ROUND_TYPE_FOCUS = {
+    "aptitude": "quantitative reasoning, logical thinking, and problem-solving ability",
+    "programming": "programming fundamentals, tools, and AI/LLM working knowledge",
+}
+
+# Google Forms can't be told "you may use paper but not a calculator" via
+# any setting - this is candidate-facing policy text, not enforceable by
+# the form itself. Reviewed and approved as the standard wording for every
+# Aptitude/Programming round.
+DOS_DONTS = (
+    "Do's:\n"
+    "• Ensure a stable internet connection before you start\n"
+    "• Keep your registered email/ID details ready if asked\n"
+    "• Use rough sheets/paper for your own calculations\n"
+    "• Answer every question - there is no negative marking\n"
+    "• Submit only when you are completely done - it cannot be reopened\n\n"
+    "Don'ts:\n"
+    "• Don't refresh or close the browser tab once started\n"
+    "• Don't switch tabs or windows during the assessment\n"
+    "• Don't use a calculator or any external/AI help\n"
+    "• Don't share your test link - it is tied to your account only"
+)
+
 
 def sanitize_display_text(text: str) -> str:
     """The Forms API rejects newlines in displayed text (item titles,
@@ -71,10 +94,24 @@ def pick_questions(session, round_type: str, count: int, topics: list[str] | Non
     return random.sample(pool, count)
 
 
-def build_batch_requests(questions: list[Question], round_type: str) -> list[dict]:
-    """One question per page: a page break (carrying a running header) goes
-    before every question after the first, and the Aizentify logo opens the
-    first page."""
+def build_batch_requests(questions: list[Question], round_type: str, duration_minutes: int) -> list[dict]:
+    """Section 1: logo, then the assessment title/description. Section 2:
+    Do's and Don'ts. One question per page after that, each on its own
+    page break with a running "Question X of Y" header and its own copy of
+    the logo - Google Forms has no way to make an image or header persist
+    across sections, so both have to repeat once per page rather than
+    being set once."""
+    total = len(questions)
+    focus = ROUND_TYPE_FOCUS.get(round_type, "the areas covered in this round")
+
+    def logo_item(idx: int) -> dict:
+        return {
+            "createItem": {
+                "item": {"imageItem": {"image": {"sourceUri": LOGO_URL, "altText": "Aizentify"}}},
+                "location": {"index": idx},
+            }
+        }
+
     requests = [
         {
             "updateSettings": {
@@ -90,34 +127,44 @@ def build_batch_requests(questions: list[Question], round_type: str) -> list[dic
                 "updateMask": "quizSettings.isQuiz,emailCollectionType",
             }
         },
+        logo_item(0),
         {
             "createItem": {
                 "item": {
-                    "imageItem": {
-                        "image": {"sourceUri": LOGO_URL, "altText": "Aizentify"}
-                    }
+                    "title": f"{round_type.title()} Assessment",
+                    "description": (
+                        f"A timed assessment evaluating {focus}.\n\n"
+                        f"{total} questions - {duration_minutes} minutes - one attempt per Google account."
+                    ),
+                    "textItem": {},
                 },
-                "location": {"index": 0},
+                "location": {"index": 1},
+            }
+        },
+        {
+            "createItem": {
+                "item": {"title": "Before You Begin", "description": DOS_DONTS, "pageBreakItem": {}},
+                "location": {"index": 2},
             }
         },
     ]
 
-    total = len(questions)
-    index = 1
+    index = 3
     for position, q in enumerate(questions, start=1):
-        if position > 1:
-            requests.append(
-                {
-                    "createItem": {
-                        "item": {
-                            "title": f"{round_type.title()} Test — Question {position} of {total}",
-                        },
-                        "location": {"index": index},
-                    }
+        requests.append(
+            {
+                "createItem": {
+                    "item": {
+                        "title": f"{round_type.title()} Test — Question {position} of {total}",
+                        "pageBreakItem": {},
+                    },
+                    "location": {"index": index},
                 }
-            )
-            requests[-1]["createItem"]["item"]["pageBreakItem"] = {}
-            index += 1
+            }
+        )
+        index += 1
+        requests.append(logo_item(index))
+        index += 1
 
         options = [sanitize_display_text(getattr(q, field)) for field in OPTION_FIELDS]
         correct_value = options[OPTION_LABELS.index(q.correct_option)]
@@ -171,7 +218,7 @@ def build_round(
     form_id = form["formId"]
 
     service.forms().batchUpdate(
-        formId=form_id, body={"requests": build_batch_requests(questions, round_type)}
+        formId=form_id, body={"requests": build_batch_requests(questions, round_type, duration_minutes)}
     ).execute()
 
     # Forms created via the API default to unpublished (Google policy change,

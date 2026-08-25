@@ -9,13 +9,17 @@ candidates get the direct Form link instead (no "started" tracking).
 Three delivery modes (--delivery-mode), independent of --base-url above:
   direct       - candidates get the plain link (default)
   seb_attach   - a personalized .seb file (startURL patched to the
-                 candidate's link) is attached to the email
+                 candidate's link) is attached to the email. Uses whichever
+                 template was uploaded from Admin -> SEB Proctoring
+                 Templates for this round's type, unless --seb-template
+                 overrides it with a one-off path.
   seb_download - the email links to /seb/{token} instead, which builds the
                  .seb on demand at click time rather than at send time -
                  avoids mail gateways that strip .seb attachments, and
                  narrows the window in which the LAN IP baked into the
                  file's startURL could go stale. Requires --base-url,
-                 since app.py is what serves that download route.
+                 since app.py is what serves that download route. Also
+                 uses the uploaded template for this round's type.
 
 Defaults to --dry-run (prints what would be sent, no email leaves the
 account). Pass --send to actually email via Gmail.
@@ -27,7 +31,11 @@ Usage:
     # without started-tracking (direct form link):
     python invite.py --round-id 1 --send
 
-    # with SEB proctoring, attached:
+    # with SEB proctoring, attached (uses the uploaded template for this round's type):
+    python invite.py --round-id 1 --base-url http://192.168.1.42:8788 \
+        --delivery-mode seb_attach --send
+
+    # ...or with a one-off template instead of the uploaded one:
     python invite.py --round-id 1 --base-url http://192.168.1.42:8788 \
         --delivery-mode seb_attach --seb-template seb_templates/forms.seb --send
 
@@ -120,11 +128,17 @@ def send_invites(
 
     template_path = None
     if delivery_mode == "seb_attach":
-        if not seb_template_path:
-            raise ValueError("delivery_mode='seb_attach' requires seb_template_path.")
-        template_path = Path(seb_template_path)
+        # seb_template_path is an optional override (e.g. testing a new
+        # template before it's uploaded as the canonical one) - normally
+        # this resolves the same uploaded-via-Admin template seb_download
+        # uses, so the web UI never needs the admin to know a filesystem
+        # path at all.
+        template_path = Path(seb_template_path) if seb_template_path else seb_template_for_round_type(round_.round_type)
         if not template_path.exists():
-            raise ValueError(f"Missing SEB template: {template_path}")
+            raise ValueError(
+                f"No SEB template at {template_path} for round type {round_.round_type!r} - "
+                f"upload one from Admin → SEB Proctoring Templates first."
+            )
     elif delivery_mode == "seb_download":
         if not base_url:
             raise ValueError(
@@ -151,11 +165,15 @@ def send_invites(
         if delivery_mode == "seb_attach":
             seb_out = SEB_OUT_DIR / f"{attempt.token}.seb"
             personalize_seb(template_path, link, seb_out)
+            # Deliberately no plain-link fallback here - showing the raw
+            # link would let a candidate skip the .seb file entirely and
+            # take the test in an unrestricted browser, defeating the
+            # point of proctoring. The .seb file IS the only way in.
             instructions = (
                 f"Open the attached .seb file to launch it in the secure test "
                 f"browser (SEB should already be installed on your lab machine).\n\n"
-                f"If needed, your link is: {link}\n\n"
             )
+            access_noun = "file"
         elif delivery_mode == "seb_download":
             download_link = f"{base_url.rstrip('/')}/seb/{attempt.token}"
             instructions = (
@@ -163,13 +181,15 @@ def send_invites(
                 f"the secure test browser (SEB should already be installed on your lab "
                 f"machine): {download_link}\n\n"
             )
+            access_noun = "link"
         else:
             instructions = f"Your test link: {link}\n\n"
+            access_noun = "link"
 
         body = (
             f"Hi {candidate.name},\n\n"
             f"Your {round_.round_type} test is ready. {instructions}"
-            f"This link is for you only and can only be used once. "
+            f"This {access_noun} is for you only and can only be used once. "
             f"This test also allows only one submission per Google account, so "
             f"make sure you're signed in to your registered Gmail account before starting.\n\n"
             f"Good luck!"
@@ -195,7 +215,10 @@ def main() -> None:
         "--delivery-mode", default="direct", choices=["direct", "seb_attach", "seb_download"],
         help="direct (plain link, default), seb_attach (.seb attached), seb_download (link to /seb/<token>)",
     )
-    parser.add_argument("--seb-template", default=None, help="required for --delivery-mode seb_attach")
+    parser.add_argument(
+        "--seb-template", default=None,
+        help="override the uploaded template for --delivery-mode seb_attach (optional - defaults to the one uploaded from Admin)",
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--send", action="store_true")

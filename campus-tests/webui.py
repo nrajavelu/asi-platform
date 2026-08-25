@@ -11,6 +11,7 @@ Usage:
 """
 
 import hashlib
+import plistlib
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote, unquote
@@ -36,6 +37,7 @@ from models import (
     InterviewQuestion, Question, Round, Settings, SessionLocal, init_db,
 )
 from proc_utils import get_lan_ip
+from seb_config import SEB_TEMPLATE_DIR
 from results import (
     coding_question_analytics, detect_bounces, filter_attempts, ingest_results, kpi_summary, list_drives,
     round_label, rounds_for_drive, shortlist, top_n_attempts,
@@ -54,6 +56,11 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 LOCALHOST_CLIENTS = {"127.0.0.1", "::1", "testclient"}  # "testclient" = starlette's TestClient
 UNLOCK_COOKIE = "lan_unlock"
 ALWAYS_ALLOWED_PREFIXES = ("/static/", "/network/unlock")
+
+# The two physical SEB template files invite.py's seb_attach/seb_download
+# modes resolve by round type (see seb_config.SEB_TEMPLATES_BY_ROUND_TYPE) -
+# aptitude/programming share "forms", coding gets its own stricter one.
+SEB_SLOTS = {"forms": "Aptitude / Programming", "coding": "Coding"}
 
 
 def get_or_create_settings(session) -> Settings:
@@ -877,8 +884,33 @@ def admin_page(request: Request, session=Depends(get_session)):
             "backups": list_backups(),
             "net_settings": get_or_create_settings(session),
             "lan_ip": get_lan_ip(),
+            "seb_slots": SEB_SLOTS,
+            "seb_status": {slot: (SEB_TEMPLATE_DIR / f"{slot}.seb").exists() for slot in SEB_SLOTS},
         },
     )
+
+
+@app.post("/admin/seb-templates/upload")
+async def admin_seb_template_upload(slot: str = Form(...), file: UploadFile = None):
+    if slot not in SEB_SLOTS:
+        return flash_redirect("/admin", "Unknown SEB template slot.", error=True)
+    if file is None or not file.filename:
+        return flash_redirect("/admin", "Choose a .seb file to upload.", error=True)
+
+    content = await file.read()
+    try:
+        plistlib.loads(content)
+    except Exception:
+        return flash_redirect(
+            "/admin",
+            "That doesn't look like a valid unencrypted .seb file - export as UNENCRYPTED "
+            "from the SEB Config Tool (Password protected/encrypted .seb files aren't readable here).",
+            error=True,
+        )
+
+    SEB_TEMPLATE_DIR.mkdir(parents=True, exist_ok=True)
+    (SEB_TEMPLATE_DIR / f"{slot}.seb").write_bytes(content)
+    return flash_redirect("/admin", f"Uploaded {SEB_SLOTS[slot]} SEB template.")
 
 
 @app.post("/admin/backup")

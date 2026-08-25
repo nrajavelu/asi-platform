@@ -28,7 +28,7 @@
   }
   .brand .powered { font-size: 10.5px; color: var(--ink-300); letter-spacing: 0.02em; }
   .timer-block { display: flex; align-items: center; gap: 16px; }
-  .nav-block { display: none; align-items: center; gap: 6px; padding-right: 16px; margin-right: 16px; border-right: 1px solid var(--line); }
+  .nav-block { display: none; align-items: center; gap: 6px; }
   .nav-block button {
     background: none; border: 1px solid var(--line); color: var(--ink-700);
     padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer;
@@ -79,8 +79,9 @@
   #editorPane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   #editor { flex: 1; min-height: 0; }
 
-  .action-row { display: flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--paper-0); border-top: 1px solid var(--line); }
-  .action-row button {
+  .action-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 20px; background: var(--paper-0); border-top: 1px solid var(--line); }
+  .run-submit-group { display: flex; align-items: center; gap: 10px; }
+  .run-submit-group button {
     padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; border: none;
   }
   #runBtn { background: var(--paper-100); color: var(--ink-700); }
@@ -118,12 +119,6 @@
     </div>
   </div>
   <div class="timer-block">
-    <div class="nav-block" id="navBlock">
-      <button id="backBtn">&#9776; Questions</button>
-      <button id="prevBtn">&lsaquo; Prev</button>
-      <span id="qPosition"></span>
-      <button id="nextBtn">Next &rsaquo;</button>
-    </div>
     <div id="clock">--:--</div>
     <button id="finishBtn">Finish &amp; Submit</button>
   </div>
@@ -151,9 +146,17 @@
     <div id="editorPane">
       <div id="editor"></div>
       <div class="action-row">
-        <button id="runBtn">Run</button>
-        <button id="submitBtn">Submit</button>
-        <span id="submitConfirm"></span>
+        <div class="nav-block" id="navBlock">
+          <button id="backBtn">&#9776; Questions</button>
+          <button id="prevBtn">&lsaquo; Prev</button>
+          <span id="qPosition"></span>
+          <button id="nextBtn">Next &rsaquo;</button>
+        </div>
+        <div class="run-submit-group">
+          <button id="runBtn">Run</button>
+          <button id="submitBtn">Submit</button>
+          <span id="submitConfirm"></span>
+        </div>
       </div>
     </div>
   </div>

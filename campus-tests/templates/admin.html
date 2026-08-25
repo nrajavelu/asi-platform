@@ -29,6 +29,29 @@
 </div>
 
 <div class="card">
+  <div class="section-title">SEB Proctoring Templates</div>
+  <p class="hint">
+    Upload once per round type, exported <strong>unencrypted</strong> from the
+    <a class="link" href="https://safeexambrowser.org/download.html" target="_blank" rel="noopener">SEB Config Tool</a>.
+    Invites' "SEB — attach file" and "SEB — download link" delivery modes use whichever template is uploaded here for
+    the round's type — no file path to type or remember.
+  </p>
+  {% for slot, label in seb_slots.items() %}
+  <form action="/admin/seb-templates/upload" method="post" enctype="multipart/form-data" class="inline-form" style="margin-top:10px;">
+    <input type="hidden" name="slot" value="{{ slot }}">
+    <div class="field">
+      <label>{{ label }}</label>
+      <input type="file" name="file" accept=".seb" required>
+    </div>
+    <button type="submit">Upload</button>
+    <span class="badge {{ 'sent' if seb_status[slot] else 'dry-run' }}" style="align-self:center;">
+      {{ 'uploaded' if seb_status[slot] else 'not uploaded yet' }}
+    </span>
+  </form>
+  {% endfor %}
+</div>
+
+<div class="card">
   <div class="section-title">Backup</div>
   <p class="hint">Snapshots the entire database. A backup is also taken automatically before any restore or cleanup below, so you always have a safety net.</p>
   <form action="/admin/backup" method="post" class="inline-form">
