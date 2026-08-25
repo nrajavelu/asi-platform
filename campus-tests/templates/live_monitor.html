@@ -1,35 +1,62 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Live Monitor</h1>
-<p class="subtitle">Who's currently mid-session on a coding round, plus real-time response times and infra load from app.py. Auto-refreshes every 3s.</p>
+<p class="subtitle">Who's taking a coding test right now, on time or overdue, plus system health if it starts to struggle. Auto-refreshes every 3s.</p>
 
 <div class="card">
-  <div class="section-title">Active Coding Sessions</div>
-  <p class="hint">Sorted by time remaining, soonest first.</p>
+  <div id="kpi-root"></div>
+</div>
+
+<div class="card">
+  <div class="section-title">Candidate Sessions</div>
+  <p class="hint">In-progress first (soonest deadline), then completed (most recent first). Completed sessions older than 24h drop off this view.</p>
   <div id="sessions-root"></div>
 </div>
 
 <div class="card">
-  <div class="section-title">System Load</div>
-  <p class="hint">Live traffic on app.py (start/session/run/submit response times, error rates) and Judge0/pgvector CPU. Only populated while app.py is running.</p>
+  <div class="section-title">System Health <span class="muted" style="font-weight:400;font-size:12px;">(response times &amp; infra CPU - only matters if things start slowing down)</span></div>
   <div id="load-root"></div>
 </div>
 
+<style>
+.kpi-strip { display: flex; gap: 24px; }
+.kpi-strip .kpi { flex: 1; text-align: center; }
+.kpi-strip .kpi .num { font-family: var(--font-head); font-size: 32px; font-weight: 700; color: var(--ink-900); }
+.kpi-strip .kpi .label { font-size: 13px; color: var(--ink-500); margin-top: 4px; }
+.flag-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.flag-pill.on_time { background: #e7f7ee; color: #1a8a4c; }
+.flag-pill.in_progress { background: #eaf1ff; color: #1a5fe8; }
+.flag-pill.overdue { background: #fdeceb; color: #c0392b; }
+</style>
+
 <script>
+function fmtTime(iso) {
+  return iso ? new Date(iso).toLocaleTimeString() : '—';
+}
 function fmtRemaining(s) {
   if (s === null || s === undefined) return '—';
-  if (s < 0) return '<span style="color:#c0392b;font-weight:600;">overdue</span>';
-  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
-  return `${m}m ${sec}s`;
+  const sign = s < 0 ? '-' : '';
+  const abs = Math.abs(s);
+  const m = Math.floor(abs / 60), sec = Math.floor(abs % 60);
+  return `${sign}${m}m ${sec}s`;
+}
+const FLAG_LABEL = { on_time: 'On time', in_progress: 'In progress', overdue: 'Overdue' };
+
+function renderKpi(kpi) {
+  return `<div class="kpi-strip">
+    <div class="kpi"><div class="num">${kpi.started}</div><div class="label">Started</div></div>
+    <div class="kpi"><div class="num">${kpi.in_progress}</div><div class="label">In progress</div></div>
+    <div class="kpi"><div class="num">${kpi.completed}</div><div class="label">Completed</div></div>
+  </div>`;
 }
 
 function renderSessions(rows) {
   if (!rows.length) {
-    return '<p class="muted">No candidates are currently mid-session.</p>';
+    return '<p class="muted">No coding sessions in the last 24h.</p>';
   }
-  let html = '<table><tr><th>Name</th><th>Email</th><th>Drive / Round</th><th>Started</th><th>Time remaining</th><th>Questions</th></tr>';
+  let html = '<table><tr><th>Name</th><th>Email</th><th>Drive / Round</th><th>Started</th><th>Submitted</th><th>Time remaining</th><th>Status</th><th>Questions</th></tr>';
   for (const r of rows) {
-    html += `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.drive}</td><td>${r.started_at ? new Date(r.started_at).toLocaleTimeString() : '—'}</td><td>${fmtRemaining(r.remaining_s)}</td><td>${r.questions_attempted} / ${r.questions_total}</td></tr>`;
+    html += `<tr><td>${r.name}</td><td>${r.email}</td><td>${r.drive}</td><td>${fmtTime(r.started_at)}</td><td>${fmtTime(r.submitted_at)}</td><td>${fmtRemaining(r.remaining_s)}</td><td><span class="flag-pill ${r.flag}">${FLAG_LABEL[r.flag]}</span></td><td>${r.questions_attempted} / ${r.questions_total}</td></tr>`;
   }
   html += '</table>';
   return html;
@@ -39,13 +66,10 @@ function renderLoad(d) {
   if (!d) {
     return '<p class="muted">app.py is not running (or hasn\'t finished starting up yet) - start it to see live traffic here.</p>';
   }
-  let html = `<p class="hint">Elapsed: ${d.elapsed_s}s &middot; Started: ${d.candidates_started} &middot; Finished: ${d.candidates_finished}</p>`;
-  html += '<div style="margin-bottom:12px;">';
-  html += d.alerts.length
+  let html = d.alerts.length
     ? d.alerts.map(a => `<div style="padding:8px 12px;border-radius:6px;margin-bottom:6px;font-size:13px;${a.startsWith('BROKEN') ? 'background:#fdeceb;color:#c0392b;' : 'background:#fff6e5;color:#a86a00;'}">${a}</div>`).join('')
     : '<span class="muted">No alerts</span>';
-  html += '</div>';
-  html += '<table><tr><th>Endpoint</th><th>Count</th><th>Errors</th><th>Error rate</th><th>p50</th><th>p95</th><th>p99</th></tr>';
+  html += '<table style="margin-top:10px;"><tr><th>Endpoint</th><th>Count</th><th>Errors</th><th>Error rate</th><th>p50</th><th>p95</th><th>p99</th></tr>';
   for (const [name, e] of Object.entries(d.endpoints)) {
     html += `<tr><td>${name}</td><td>${e.count}</td><td>${e.errors}</td><td>${(e.error_rate * 100).toFixed(1)}%</td><td>${e.p50}s</td><td>${e.p95}s</td><td>${e.p99}s</td></tr>`;
   }
@@ -62,14 +86,16 @@ async function tick() {
   try {
     const r = await fetch('/live-monitor/data');
     const d = await r.json();
-    document.getElementById('sessions-root').innerHTML = renderSessions(d.active_sessions);
+    document.getElementById('kpi-root').innerHTML = renderKpi(d.kpi);
+    document.getElementById('sessions-root').innerHTML = renderSessions(d.sessions);
     document.getElementById('load-root').innerHTML = renderLoad(d.system_load);
   } catch (e) {
     // transient fetch failure - leave the last known render in place
   }
 }
 
-document.getElementById('sessions-root').innerHTML = renderSessions({{ active_sessions | tojson }});
+document.getElementById('kpi-root').innerHTML = renderKpi({{ kpi | tojson }});
+document.getElementById('sessions-root').innerHTML = renderSessions({{ sessions | tojson }});
 document.getElementById('load-root').innerHTML = renderLoad({{ system_load | tojson }});
 setInterval(tick, 3000);
 </script>

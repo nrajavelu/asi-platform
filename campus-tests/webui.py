@@ -868,38 +868,66 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
     )
 
 
-def _active_coding_sessions(session) -> list[dict]:
-    """Candidates currently mid-session on a coding round - sourced
-    straight from the DB (not app.py), so it's always accurate even if
-    app.py's own process is down or the LAN request below fails."""
+def _coding_sessions(session) -> dict:
+    """Candidates who have opened a coding session - in progress or
+    completed - sourced straight from the DB (not app.py), so it's always
+    accurate even if app.py's own process is down. In-progress rows are
+    shown regardless of age (a stuck/abandoned session is exactly what an
+    admin needs to notice); completed rows are capped to the last 24h so
+    old drives don't clutter a live view."""
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(hours=24)).isoformat()
     attempts = (
         session.query(Attempt)
         .join(Round, Attempt.round_id == Round.id)
-        .filter(Round.round_type == "coding", Attempt.status == "started")
+        .filter(
+            Round.round_type == "coding",
+            Attempt.session_started_at.isnot(None),
+            (Attempt.status == "started") | ((Attempt.status == "submitted") & (Attempt.submitted_at >= cutoff)),
+        )
         .all()
     )
-    now = datetime.now(timezone.utc)
     rows = []
     for a in attempts:
         round_ = a.round
         candidate = a.candidate
-        started = datetime.fromisoformat(a.session_started_at) if a.session_started_at else None
-        remaining_s = None
-        if started is not None:
-            deadline = started + timedelta(minutes=round_.duration_minutes)
-            remaining_s = (deadline - now).total_seconds()
+        started = datetime.fromisoformat(a.session_started_at)
+        deadline = started + timedelta(minutes=round_.duration_minutes)
         cqs = session.query(CodingAttemptQuestion).filter_by(attempt_id=a.id).all()
+
+        if a.status == "submitted":
+            submitted = datetime.fromisoformat(a.submitted_at) if a.submitted_at else None
+            on_time = submitted is not None and submitted <= deadline
+            flag = "on_time" if on_time else "overdue"
+            remaining_s = None
+        else:
+            remaining_s = (deadline - now).total_seconds()
+            flag = "overdue" if remaining_s < 0 else "in_progress"
+
         rows.append({
             "name": candidate.name,
             "email": candidate.email,
             "drive": f"{round_.drive.campus} / {round_.drive.name}",
+            "status": a.status,
             "started_at": a.session_started_at,
+            "submitted_at": a.submitted_at,
             "remaining_s": remaining_s,
+            "flag": flag,
             "questions_attempted": sum(1 for c in cqs if c.status != "not_attempted"),
             "questions_total": len(cqs),
         })
-    rows.sort(key=lambda r: r["remaining_s"] if r["remaining_s"] is not None else float("inf"))
-    return rows
+    rows.sort(key=lambda r: r["remaining_s"] if r["remaining_s"] is not None else float("-inf"), reverse=False)
+    # in-progress rows (soonest deadline first) ahead of completed rows (most recent first)
+    in_progress = sorted((r for r in rows if r["status"] == "started"), key=lambda r: r["remaining_s"])
+    completed = sorted((r for r in rows if r["status"] == "submitted"), key=lambda r: r["submitted_at"], reverse=True)
+    return {
+        "rows": in_progress + completed,
+        "kpi": {
+            "started": len(rows),
+            "in_progress": len(in_progress),
+            "completed": len(completed),
+        },
+    }
 
 
 def _fetch_system_load() -> dict | None:
@@ -922,12 +950,14 @@ def _fetch_system_load() -> dict | None:
 
 @app.get("/live-monitor")
 def live_monitor_page(request: Request, session=Depends(get_session)):
+    sessions = _coding_sessions(session)
     return render(
         request,
         "live_monitor.html",
         {
             "active": "live_monitor",
-            "active_sessions": _active_coding_sessions(session),
+            "sessions": sessions["rows"],
+            "kpi": sessions["kpi"],
             "system_load": _fetch_system_load(),
         },
     )
@@ -935,8 +965,10 @@ def live_monitor_page(request: Request, session=Depends(get_session)):
 
 @app.get("/live-monitor/data")
 def live_monitor_data(session=Depends(get_session)):
+    sessions = _coding_sessions(session)
     return JSONResponse({
-        "active_sessions": _active_coding_sessions(session),
+        "sessions": sessions["rows"],
+        "kpi": sessions["kpi"],
         "system_load": _fetch_system_load(),
     })
 
