@@ -35,8 +35,19 @@ def clear_bank(session) -> int:
     return len(question_ids)
 
 
+REQUIRED_FIELDS = ("id", "topic", "difficulty", "title", "statement", "test_cases")
+
+
 def load_question_file(session, path: Path) -> str:
     data = json.loads(path.read_text())
+
+    for field in REQUIRED_FIELDS:
+        if field not in data:
+            raise ValueError(
+                f"{path.name}: missing required field '{field}' for a coding question. "
+                f"If this file has an 'area'/'rubric_guide' field instead, it's a Technical "
+                f"Discussion question - upload it to the Interview Question Bank, not here."
+            )
 
     question = session.query(CodingQuestion).filter_by(external_id=data["id"]).first()
     if question is None:
