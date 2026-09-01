@@ -1,0 +1,22 @@
+{
+  "id": "SQL-H06",
+  "topic": "vector_basics_b2",
+  "difficulty": "hard",
+  "title": "Count Tickets Closer Than a Threshold",
+  "statement": "Write a query returning the count of tickets whose embedding distance to [1,0,0] is less than 0.5 (using the `<->` operator directly in a WHERE-style computed comparison).",
+  "starter_code": "SELECT COUNT(*) FROM tickets\nWHERE -- TODO\n;\n",
+  "question_type": "sql",
+  "harness_fixture": "\nCREATE TABLE tickets (id INT PRIMARY KEY, subject TEXT NOT NULL, category TEXT NOT NULL, embedding vector(3));\nINSERT INTO tickets (id, subject, category, embedding) VALUES\n  (1, 'Cannot login', 'account', '[1,0,0]'), (2, 'Password reset broken', 'account', '[0.9,0.1,0]'),\n  (3, 'Payment failed', 'billing', '[0,1,0]'), (4, 'Refund request', 'billing', '[0.1,0.9,0]'),\n  (5, 'App crashes on start', 'bug', '[0,0,1]');\n",
+  "hints": [
+    "The <-> operator can be used directly in a WHERE comparison, not just ORDER BY"
+  ],
+  "points": 10,
+  "test_cases": [
+    {
+      "expected_output": "[[2]]",
+      "ordered": true,
+      "is_sample": true,
+      "weight": 1
+    }
+  ]
+}

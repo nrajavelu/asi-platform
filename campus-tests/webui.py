@@ -273,6 +273,7 @@ def build_round_submit(
     drive_mode: str = Form("new"),
     campus: str = Form(""),
     drive_name: str = Form(""),
+    college_name: str = Form(""),
     existing_drive_id: str = Form(""),
     title: str = Form(""),
     topics: str = Form(""),
@@ -316,6 +317,7 @@ def build_round_submit(
             round_ = build_coding_round(
                 session, campus or None, drive_name or None, count,
                 duration_minutes=parsed_duration, section_plan=parsed_plan, drive_id=parsed_drive_id,
+                college_name=college_name or None,
             )
         except Exception as e:
             return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
@@ -355,7 +357,7 @@ def build_round_submit(
         service = forms_service()
         round_ = build_round(
             session, service, campus or None, drive_name or None, round_type, count, final_title, topic_list,
-            duration_minutes=parsed_duration or 45, drive_id=parsed_drive_id,
+            duration_minutes=parsed_duration or 45, drive_id=parsed_drive_id, college_name=college_name or None,
         )
     except Exception as e:
         return render(request, "build_round.html", {"active": "build", "flash": str(e), "flash_error": True, "result": None, "drives": drives})
@@ -859,6 +861,16 @@ def mcq_review_page(request: Request, attempt_id: int, embed: bool = False, sess
     )
 
 
+@app.post("/final-conclusion/college-name")
+def final_conclusion_set_college_name(round_id: int = Form(...), college_name: str = Form(""), session=Depends(get_session)):
+    round_ = session.get(Round, round_id)
+    if round_ is None:
+        return flash_redirect("/final-conclusion", f"No round with id {round_id}", error=True)
+    round_.drive.college_name = college_name.strip() or None
+    session.commit()
+    return flash_redirect(f"/final-conclusion?round_id={round_id}", "College name updated.")
+
+
 @app.get("/final-conclusion")
 def final_conclusion_page(request: Request, round_id: int | None = None, session=Depends(get_session)):
     rounds = session.query(Round).filter_by(round_type="technical_discussion").order_by(Round.id).all()
@@ -911,7 +923,7 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
             "status": "Selected" if a.decision == "selected" else "Hold",
         })
 
-    pdf_bytes = generate_final_conclusion_pdf(rows)
+    pdf_bytes = generate_final_conclusion_pdf(rows, round_.drive.college_name)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

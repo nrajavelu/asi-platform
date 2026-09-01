@@ -70,8 +70,11 @@ def _draw_letterhead_footer(canvas, doc):
     canvas.restoreState()
 
 
-def generate_final_conclusion_pdf(rows: list[dict]) -> bytes:
-    """rows: list of {reg_no, name, gender, stream, email, status}"""
+def generate_final_conclusion_pdf(rows: list[dict], college_name: str | None = None) -> bytes:
+    """rows: list of {reg_no, name, gender, stream, email, status}
+    college_name (optional): the institution's real name, printed as a
+    third address line below "The Placement Coordinator," - distinct from
+    any internal campus/drive naming, which never appears in this letter."""
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
         buf, pagesize=A4,
@@ -100,7 +103,10 @@ def generate_final_conclusion_pdf(rows: list[dict]) -> bytes:
 
     story.append(Paragraph(datetime.now().strftime("%d %B %Y"), date_style))
     story.append(Spacer(1, 8))
-    story.append(Paragraph("To,<br/>The Placement Coordinator,", body_style))
+    address_lines = "To,<br/>The Placement Coordinator,"
+    if college_name:
+        address_lines += f"<br/>{college_name}"
+    story.append(Paragraph(address_lines, body_style))
     story.append(Spacer(1, 4))
     story.append(Paragraph("<b>Subject: Confirmation of Selected Candidates — Campus Recruitment Drive</b>", body_style))
 

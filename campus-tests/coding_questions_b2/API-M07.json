@@ -1,0 +1,22 @@
+{
+  "id": "API-M07",
+  "topic": "api_handling_b2",
+  "difficulty": "medium",
+  "title": "Dedupe Error Codes",
+  "statement": "Read n, then n integer error codes (one per line, may repeat). Print the distinct codes sorted ascending, space-separated.",
+  "starter_code": "n = int(input())\ncodes = [int(input()) for _ in range(n)]\n# TODO: print sorted distinct codes, space-separated\n",
+  "language_id": 71,
+  "hints": [
+    "set() removes duplicates, sorted() then orders them"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "5\n500\n404\n500\n404\n503",
+      "expected_output": "404 500 503",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

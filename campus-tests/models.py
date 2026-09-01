@@ -29,6 +29,7 @@ class Drive(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     campus = Column(String, nullable=False)
+    college_name = Column(String)  # the actual institution name (e.g. "Bannari Amman Institute of Technology - Sathyamangalam"), printed on the Final Conclusion letter - distinct from the internal campus/drive labels
 
 
 class Round(Base):
@@ -250,6 +251,7 @@ def init_db() -> None:
         _add_column_if_missing(conn, "candidates", "resume_url", "VARCHAR", "NULL")
         _add_column_if_missing(conn, "candidates", "github_url", "VARCHAR", "NULL")
         _add_column_if_missing(conn, "candidates", "portfolio_url", "VARCHAR", "NULL")
+        _add_column_if_missing(conn, "drives", "college_name", "VARCHAR", "NULL")
 
         # SQLite can't ALTER TABLE to add a constraint on an existing table -
         # a unique index enforces the same guarantee. Campus+Drive name must

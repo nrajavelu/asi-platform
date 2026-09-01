@@ -19,6 +19,18 @@
 
 {% if round_ %}
 <div class="card">
+  <div class="section-title">College name</div>
+  <p class="hint">The actual institution name, printed on the Final Conclusion letter below "The Placement Coordinator," - separate from the Campus/Drive labels used internally.</p>
+  <form action="/final-conclusion/college-name" method="post" class="inline-form">
+    <input type="hidden" name="round_id" value="{{ round_.id }}">
+    <div class="field" style="flex:1;">
+      <input type="text" name="college_name" value="{{ round_.drive.college_name or '' }}" placeholder="e.g. Bannari Amman Institute of Technology - Sathyamangalam" style="width:100%;">
+    </div>
+    <button type="submit">Save</button>
+  </form>
+</div>
+
+<div class="card">
   <div class="section-title">Selected + Hold ({{ final_list|length }})</div>
   {% if final_list %}
   <div style="margin-bottom:16px;">

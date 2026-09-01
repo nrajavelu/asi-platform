@@ -1,0 +1,34 @@
+{
+  "id": "DSA-H12",
+  "topic": "dsa_b2",
+  "difficulty": "hard",
+  "title": "Shortest Unique Prefix Length",
+  "statement": "Read a word and a line of other reference words. Print the minimum length of a prefix of the target word that does NOT appear as a prefix of any of the reference words.",
+  "starter_code": "target = input().strip()\nrefs = input().split()\n# TODO: print the minimum unique prefix length\n",
+  "language_id": 71,
+  "hints": [
+    "Try increasing prefix lengths of the target until no reference word shares that prefix"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "apple\napricot banana grape",
+      "expected_output": "3",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "cat\ndog bird fish",
+      "expected_output": "1",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "the\nthere then that",
+      "expected_output": "3",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

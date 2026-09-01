@@ -1,0 +1,28 @@
+{
+  "id": "API-H07",
+  "topic": "api_handling_b2",
+  "difficulty": "hard",
+  "title": "Detect Duplicate Requests",
+  "statement": "Read n, then n lines each a JSON object with a 'request_id' field. Print 'DUPLICATE' if any request_id repeats, else 'UNIQUE'.",
+  "starter_code": "n = int(input())\nimport json\nids = [json.loads(input())['request_id'] for _ in range(n)]\n# TODO: print DUPLICATE or UNIQUE\n",
+  "language_id": 71,
+  "hints": [
+    "Compare the length of the list to the length of the set built from it"
+  ],
+  "points": 10,
+  "question_type": "code",
+  "test_cases": [
+    {
+      "stdin": "3\n{\"request_id\": \"a1\"}\n{\"request_id\": \"a2\"}\n{\"request_id\": \"a1\"}",
+      "expected_output": "DUPLICATE",
+      "is_sample": true,
+      "weight": 1
+    },
+    {
+      "stdin": "2\n{\"request_id\": \"x\"}\n{\"request_id\": \"y\"}",
+      "expected_output": "UNIQUE",
+      "is_sample": false,
+      "weight": 1
+    }
+  ]
+}

@@ -56,29 +56,44 @@ def sanitize_display_text(text: str) -> str:
     return re.sub(r"\n+", " — ", text.strip())
 
 
-def get_or_create_drive(session, name: str, campus: str) -> Drive:
+def get_or_create_drive(session, name: str, campus: str, college_name: str | None = None) -> Drive:
     drive = session.query(Drive).filter_by(name=name, campus=campus).first()
     if drive is None:
-        drive = Drive(name=name, campus=campus)
+        drive = Drive(name=name, campus=campus, college_name=college_name or None)
         session.add(drive)
+        session.commit()
+    elif college_name and not drive.college_name:
+        # Fills in a missing college name on an existing drive rather than
+        # ignoring it - never overwrites one that's already set.
+        drive.college_name = college_name
         session.commit()
     return drive
 
 
-def resolve_drive(session, drive_id: int | None, campus: str | None, drive_name: str | None) -> Drive:
+def resolve_drive(
+    session, drive_id: int | None, campus: str | None, drive_name: str | None, college_name: str | None = None
+) -> Drive:
     """Either attaches to an existing drive (drive_id) or creates/reuses one
     by (campus, drive_name) - the two ways every round-builder now offers
     picking a drive. Campus+Drive is unique at the DB level, so a typo'd
     'new' drive name that actually matches an existing one just reuses it
-    rather than erroring, same as get_or_create_drive always did."""
+    rather than erroring, same as get_or_create_drive always did.
+
+    college_name (optional): the actual institution name, e.g. "Bannari
+    Amman Institute of Technology - Sathyamangalam" - distinct from the
+    internal campus/drive labels, printed on the Final Conclusion letter.
+    Only applied when creating a new drive, or filling in a blank one."""
     if drive_id is not None:
         drive = session.get(Drive, drive_id)
         if drive is None:
             raise ValueError(f"No drive with id {drive_id}")
+        if college_name and not drive.college_name:
+            drive.college_name = college_name
+            session.commit()
         return drive
     if not campus or not drive_name:
         raise ValueError("Either drive_id or both campus and drive_name are required.")
-    return get_or_create_drive(session, drive_name, campus)
+    return get_or_create_drive(session, drive_name, campus, college_name)
 
 
 def pick_questions(session, round_type: str, count: int, topics: list[str] | None):
@@ -210,8 +225,9 @@ def build_round(
     topics: list[str] | None = None,
     duration_minutes: int = 45,
     drive_id: int | None = None,
+    college_name: str | None = None,
 ) -> Round:
-    drive = resolve_drive(session, drive_id, campus, drive_name)
+    drive = resolve_drive(session, drive_id, campus, drive_name, college_name)
     questions = pick_questions(session, round_type, count, topics)
 
     form = service.forms().create(body={"info": {"title": title}}).execute()
@@ -268,6 +284,7 @@ def build_coding_round(
     duration_minutes: int | None = 45,
     section_plan: list[tuple[str, int]] | None = None,
     drive_id: int | None = None,
+    college_name: str | None = None,
 ) -> Round:
     """Coding rounds don't use Google Forms at all - the candidate UI is
     served directly by app.py (Monaco + Judge0). This just registers the
@@ -283,7 +300,7 @@ def build_coding_round(
     included question's suggested_minutes (per-topic average, weighted by
     how many questions from that topic will be assigned) - pass an
     explicit int to override with your own duration instead."""
-    drive = resolve_drive(session, drive_id, campus, drive_name)
+    drive = resolve_drive(session, drive_id, campus, drive_name, college_name)
 
     if section_plan:
         total_count = sum(c for _, c in section_plan)
