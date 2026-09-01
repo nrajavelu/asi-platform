@@ -873,7 +873,7 @@ def final_conclusion_page(request: Request, round_id: int | None = None, session
         attempts = (
             session.query(Attempt)
             .filter(Attempt.round_id == round_.id, Attempt.decision.in_(["selected", "hold"]))
-            .order_by(Attempt.decision, Attempt.id)
+            .order_by(Attempt.decision.desc(), Attempt.id)  # "selected" > "hold" alphabetically, so desc() puts Selected first
             .all()
         )
         for a in attempts:
@@ -896,22 +896,19 @@ def final_conclusion_pdf(round_id: int, session=Depends(get_session)):
     attempts = (
         session.query(Attempt)
         .filter(Attempt.round_id == round_.id, Attempt.decision.in_(["selected", "hold"]))
-        .order_by(Attempt.decision, Attempt.id)
+        .order_by(Attempt.decision.desc(), Attempt.id)  # "selected" > "hold" alphabetically, so desc() puts Selected first
         .all()
     )
     rows = []
     for a in attempts:
         candidate = session.get(Candidate, a.candidate_id)
-        decided = a.decision_at.split("T")[0] if a.decision_at else None
         rows.append({
             "reg_no": candidate.reg_no or "—",
             "name": candidate.name,
             "gender": candidate.gender or "—",
-            "degree": candidate.degree or "—",
             "stream": candidate.stream or "—",
             "email": candidate.email,
             "status": "Selected" if a.decision == "selected" else "Hold",
-            "decision_at": decided,
         })
 
     pdf_bytes = generate_final_conclusion_pdf(rows)
